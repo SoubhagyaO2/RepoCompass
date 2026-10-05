@@ -18,7 +18,7 @@ The project's focus is measuring whether AST-aware chunking, BM25, hybrid retrie
 
 ## Backend setup
 
-Requires Python 3.11+ and Git.
+Requires Python 3.12+ and Git.
 
 ```bash
 cd backend
