@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Secrets — never commit real keys; .env.example is the committed template
+.env
+.env.*
+!.env.example
+
+# RepoCompass runtime data (cloned repos, indexes, vector store files)
+data/
+
+# Node / Next.js (frontend, later)
+node_modules/
+.next/
+out/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
