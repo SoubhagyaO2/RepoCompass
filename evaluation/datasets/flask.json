@@ -1,0 +1,1397 @@
+{
+  "name": "flask-eval-v1",
+  "repository": "pallets/flask",
+  "commit": "d73fa1cdcbd8b1465c151db8924ba58b1dd14e35",
+  "description": "Questions about the Flask library source (src/flask) with manually verified expected files and symbols, pinned to one commit.",
+  "methodology": {
+    "scope": "Only files under src/flask/ are ever ground truth; tests, docs and examples never are.",
+    "primary": "The file(s) where the behaviour the question asks about is implemented: the one-line answer. For definition questions, every file that defines the named symbol. For caller and dependency questions, the files on the other end of the call sites / import edges (the answer itself).",
+    "supporting": "Other files a complete answer must also cite to be correct: triggers, hand-offs and base implementations, included only when the question's wording asks for that step. Omit test: if a correct, complete answer could leave a file out, the file is not listed at all. A file that merely calls the primary code is never listed outside caller questions.",
+    "relevant_symbols": "Qualified names of the functions/classes/methods that implement the answer (for chunk-level scoring); each must live in a primary or supporting file. Empty when the answer is module-level code.",
+    "category": "definition: where is a named symbol defined. caller: what calls/uses a named symbol. dependency: which modules import / are imported by a named module. concept: where is a described behaviour implemented. flow: how does a described multi-step process work.",
+    "difficulty": "Structural, from the shape of the ground truth, assigned by a fixed rubric (checked by the validator): named questions (definition/caller/dependency) are easy with 1 file, medium with 2-3, hard with 4+; described questions (concept/flow) are medium with 1 file and hard with 2+. It measures how much must be found and combined, not how a retrieval system performs; the benchmark reports whether the two agree.",
+    "callers": "Call sites (including passing a method as a callback) found by searching src/flask; definitions and docstring mentions excluded.",
+    "dependency": "Edges of the import graph of src/flask, extracted with the Tree-sitter parser with relative imports resolved. Imports inside TYPE_CHECKING blocks count.",
+    "freeze": "Once frozen, the questions are never edited to suit retrieval results. The validator checks a fingerprint of the questions. A factual correction must be published as a new dataset version with a changelog.",
+    "verification": "Each entry's evidence field cites the lines read at the pinned commit. python -m app.evaluation.validate re-checks that files and symbols exist."
+  },
+  "frozen": true,
+  "frozen_on": "2026-10-06",
+  "questions_sha256": "6e78d06ad988b637eb3f77f047232238667e0cf9b325abd971f1eab3c024a311",
+  "questions": [
+    {
+      "id": "flask-001",
+      "question": "Where is the `Flask` class defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "primary": [
+        "src/flask/app.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask"
+        }
+      ],
+      "evidence": "class Flask(App) at app.py:110."
+    },
+    {
+      "id": "flask-002",
+      "question": "Where is `SecureCookieSessionInterface` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "primary": [
+        "src/flask/sessions.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/sessions.py",
+          "name": "SecureCookieSessionInterface"
+        }
+      ],
+      "evidence": "class at sessions.py:284."
+    },
+    {
+      "id": "flask-003",
+      "question": "Where is the `Blueprint` class defined?",
+      "category": "definition",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/blueprints.py",
+        "src/flask/sansio/blueprints.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/blueprints.py",
+          "name": "Blueprint"
+        },
+        {
+          "file": "src/flask/sansio/blueprints.py",
+          "name": "Blueprint"
+        }
+      ],
+      "evidence": "Two classes named Blueprint, both primary: the public subclass at blueprints.py:18 and the base class at sansio/blueprints.py:119."
+    },
+    {
+      "id": "flask-004",
+      "question": "Where is `render_template` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "primary": [
+        "src/flask/templating.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/templating.py",
+          "name": "render_template"
+        }
+      ],
+      "evidence": "def at templating.py:136."
+    },
+    {
+      "id": "flask-005",
+      "question": "Where is `jsonify` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "primary": [
+        "src/flask/json/__init__.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/json/__init__.py",
+          "name": "jsonify"
+        }
+      ],
+      "evidence": "def at json/__init__.py:138."
+    },
+    {
+      "id": "flask-006",
+      "question": "Where is `AppContext` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "primary": [
+        "src/flask/ctx.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/ctx.py",
+          "name": "AppContext"
+        }
+      ],
+      "evidence": "class at ctx.py:260."
+    },
+    {
+      "id": "flask-007",
+      "question": "Where is `load_dotenv` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "primary": [
+        "src/flask/cli.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/cli.py",
+          "name": "load_dotenv"
+        }
+      ],
+      "evidence": "def at cli.py:698."
+    },
+    {
+      "id": "flask-008",
+      "question": "Where is `after_this_request` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "primary": [
+        "src/flask/ctx.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/ctx.py",
+          "name": "after_this_request"
+        }
+      ],
+      "evidence": "def at ctx.py:118."
+    },
+    {
+      "id": "flask-009",
+      "question": "Where is `MethodView` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "primary": [
+        "src/flask/views.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/views.py",
+          "name": "MethodView"
+        }
+      ],
+      "evidence": "class at views.py:138."
+    },
+    {
+      "id": "flask-010",
+      "question": "Where is `from_prefixed_env` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "primary": [
+        "src/flask/config.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/config.py",
+          "name": "Config.from_prefixed_env"
+        }
+      ],
+      "evidence": "Config.from_prefixed_env at config.py:126."
+    },
+    {
+      "id": "flask-011",
+      "question": "Where is `send_from_directory` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "primary": [
+        "src/flask/helpers.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/helpers.py",
+          "name": "send_from_directory"
+        }
+      ],
+      "evidence": "def at helpers.py:543."
+    },
+    {
+      "id": "flask-012",
+      "question": "Where is `TaggedJSONSerializer` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "primary": [
+        "src/flask/json/tag.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/json/tag.py",
+          "name": "TaggedJSONSerializer"
+        }
+      ],
+      "evidence": "class at json/tag.py:219."
+    },
+    {
+      "id": "flask-013",
+      "question": "Where is `FlaskClient` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "primary": [
+        "src/flask/testing.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/testing.py",
+          "name": "FlaskClient"
+        }
+      ],
+      "evidence": "class at testing.py:109."
+    },
+    {
+      "id": "flask-014",
+      "question": "Where is `url_for` defined?",
+      "category": "definition",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/helpers.py",
+        "src/flask/app.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/helpers.py",
+          "name": "url_for"
+        },
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.url_for"
+        }
+      ],
+      "evidence": "Both primary: module-level function helpers.py:200 (the public flask.url_for, delegates at :244) and the method Flask.url_for at app.py:1105."
+    },
+    {
+      "id": "flask-015",
+      "question": "Where is the `errorhandler` decorator defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "primary": [
+        "src/flask/sansio/scaffold.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/sansio/scaffold.py",
+          "name": "Scaffold.errorhandler"
+        }
+      ],
+      "evidence": "Scaffold.errorhandler at sansio/scaffold.py:605; Flask and Blueprint inherit it."
+    },
+    {
+      "id": "flask-016",
+      "question": "Where is `stream_with_context` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "primary": [
+        "src/flask/helpers.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/helpers.py",
+          "name": "stream_with_context"
+        }
+      ],
+      "evidence": "def (with two overload stubs) at helpers.py:51-148."
+    },
+    {
+      "id": "flask-017",
+      "question": "Where is the session cookie written to the response?",
+      "category": "concept",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/sessions.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/sessions.py",
+          "name": "SecureCookieSessionInterface.save_session"
+        }
+      ],
+      "evidence": "save_session (sessions.py:337-385) calls response.set_cookie at :374 and delete_cookie at :356."
+    },
+    {
+      "id": "flask-018",
+      "question": "What code runs when a Flask application object is constructed?",
+      "category": "concept",
+      "difficulty": "hard",
+      "primary": [
+        "src/flask/app.py",
+        "src/flask/sansio/app.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.__init__"
+        },
+        {
+          "file": "src/flask/sansio/app.py",
+          "name": "App.__init__"
+        }
+      ],
+      "evidence": "Both primary, neither is a thin delegate: Flask.__init__ (app.py:311) sets up the CLI group and static route after super().__init__; App.__init__ (sansio/app.py:279-408) does the bulk of initialisation."
+    },
+    {
+      "id": "flask-019",
+      "question": "Where are environment variables with a FLASK_ prefix loaded into the app config?",
+      "category": "concept",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/config.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/config.py",
+          "name": "Config.from_prefixed_env"
+        }
+      ],
+      "evidence": "Config.from_prefixed_env (config.py:126) iterates os.environ (:154); docstring: 'Load any environment variables that start with FLASK_'."
+    },
+    {
+      "id": "flask-020",
+      "question": "How does Flask look up which registered error handler should handle an exception?",
+      "category": "concept",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/sansio/app.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/sansio/app.py",
+          "name": "App._find_error_handler"
+        }
+      ],
+      "evidence": "The whole lookup (blueprint vs app, code vs class, MRO walk) is App._find_error_handler (sansio/app.py:868-891). Its callers in app.py are not needed to answer it, so they are not listed."
+    },
+    {
+      "id": "flask-021",
+      "question": "Where is the Jinja2 template environment created and given Flask globals such as url_for?",
+      "category": "concept",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/app.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.create_jinja_environment"
+        }
+      ],
+      "evidence": "Flask.create_jinja_environment app.py:470-508; rv.globals.update(url_for=..., get_flashed_messages=..., request, session, g) at :496-506."
+    },
+    {
+      "id": "flask-022",
+      "question": "Where is URL routing performed for an incoming request?",
+      "category": "concept",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/ctx.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/ctx.py",
+          "name": "AppContext.match_request"
+        }
+      ],
+      "evidence": "AppContext.match_request (ctx.py:405-414) calls url_adapter.match and stores the rule/args or routing exception; run from AppContext.push (:444). create_url_adapter (app.py:510) only builds the adapter and is not needed to answer, so it is not listed."
+    },
+    {
+      "id": "flask-023",
+      "question": "Where is the static file route registered for the application?",
+      "category": "concept",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/app.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.__init__"
+        }
+      ],
+      "evidence": "add_url_rule(f'{static_url_path}/<path:filename>', endpoint='static', ...) at app.py:359-364, inside Flask.__init__."
+    },
+    {
+      "id": "flask-024",
+      "question": "How does Flask decide whether the session cookie needs to be set on a response?",
+      "category": "concept",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/sessions.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/sessions.py",
+          "name": "SessionInterface.should_set_cookie"
+        }
+      ],
+      "evidence": "SessionInterface.should_set_cookie sessions.py:233; used by save_session at :369."
+    },
+    {
+      "id": "flask-025",
+      "question": "Where is the `flask run` command implemented?",
+      "category": "concept",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/cli.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/cli.py",
+          "name": "run_command"
+        }
+      ],
+      "evidence": "run_command cli.py:882-993 (loads the app, then calls werkzeug run_simple at :983)."
+    },
+    {
+      "id": "flask-026",
+      "question": "Where is the secret key used to sign the session cookie?",
+      "category": "concept",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/sessions.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/sessions.py",
+          "name": "SecureCookieSessionInterface.get_signing_serializer"
+        }
+      ],
+      "evidence": "get_signing_serializer sessions.py:303 reads app.secret_key (:304, :312) and builds URLSafeTimedSerializer (:313)."
+    },
+    {
+      "id": "flask-027",
+      "question": "Where is the JSON response built when a view calls `jsonify`?",
+      "category": "concept",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/json/provider.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/json/provider.py",
+          "name": "DefaultJSONProvider.response"
+        }
+      ],
+      "evidence": "The response is built in DefaultJSONProvider.response (json/provider.py:189-215). jsonify (json/__init__.py:138) only delegates to it (:170), so a correct answer can omit it and it is not listed."
+    },
+    {
+      "id": "flask-028",
+      "question": "Where are the `request`, `session`, `g` and `current_app` proxy objects defined?",
+      "category": "concept",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/globals.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [],
+      "evidence": "Module-level LocalProxy assignments in globals.py:44-62 (no function/class symbols)."
+    },
+    {
+      "id": "flask-029",
+      "question": "Where is the class behind the `g` object implemented?",
+      "category": "concept",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/ctx.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/ctx.py",
+          "name": "_AppCtxGlobals"
+        }
+      ],
+      "evidence": "class _AppCtxGlobals ctx.py:30; the g proxy (globals.py:47) points at AppContext.g."
+    },
+    {
+      "id": "flask-030",
+      "question": "How does Flask turn an HTTP exception such as a 404 into a response?",
+      "category": "concept",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/app.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.handle_http_exception"
+        }
+      ],
+      "evidence": "Flask.handle_http_exception app.py:833-866 finds a handler via _find_error_handler (:863) or returns the exception itself."
+    },
+    {
+      "id": "flask-031",
+      "question": "Where does a blueprint copy its routes and handlers into the application?",
+      "category": "concept",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/sansio/blueprints.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/sansio/blueprints.py",
+          "name": "Blueprint.register"
+        },
+        {
+          "file": "src/flask/sansio/blueprints.py",
+          "name": "BlueprintSetupState.add_url_rule"
+        }
+      ],
+      "evidence": "Blueprint.register sansio/blueprints.py:273-377 runs deferred functions (:334) and merges handlers (:332); BlueprintSetupState.add_url_rule (:87) forwards to app.add_url_rule (:110)."
+    },
+    {
+      "id": "flask-032",
+      "question": "Where are flashed messages stored?",
+      "category": "concept",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/helpers.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/helpers.py",
+          "name": "flash"
+        },
+        {
+          "file": "src/flask/helpers.py",
+          "name": "get_flashed_messages"
+        }
+      ],
+      "evidence": "flash appends to session['_flashes'] (helpers.py:348-350); get_flashed_messages pops them (:393)."
+    },
+    {
+      "id": "flask-033",
+      "question": "Where are `request` and `g` added to the template context before a template is rendered?",
+      "category": "concept",
+      "difficulty": "hard",
+      "primary": [
+        "src/flask/templating.py"
+      ],
+      "supporting": [
+        "src/flask/app.py"
+      ],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/templating.py",
+          "name": "_default_template_ctx_processor"
+        },
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.update_template_context"
+        }
+      ],
+      "evidence": "Primary: _default_template_ctx_processor (templating.py:21-33) returns {'g': ctx.g} and, in a request, 'request': ctx.request (session is NOT added here; it is a Jinja global set in create_jinja_environment, app.py:504). Supporting: Flask.update_template_context (app.py:591-619) is what runs the processors before rendering (called from templating.py:125, :167)."
+    },
+    {
+      "id": "flask-034",
+      "question": "Where is the debug flag read from the environment?",
+      "category": "concept",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/helpers.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/helpers.py",
+          "name": "get_debug_flag"
+        }
+      ],
+      "evidence": "get_debug_flag helpers.py:28 reads os.environ.get('FLASK_DEBUG') at :32."
+    },
+    {
+      "id": "flask-035",
+      "question": "Where is the maximum request body size read from the app configuration?",
+      "category": "concept",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/wrappers.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/wrappers.py",
+          "name": "Request.max_content_length"
+        }
+      ],
+      "evidence": "Request.max_content_length property wrappers.py:59-86 returns current_app.config['MAX_CONTENT_LENGTH'] (:86)."
+    },
+    {
+      "id": "flask-036",
+      "question": "Where is the automatic response to an OPTIONS request generated?",
+      "category": "concept",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/app.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.make_default_options_response"
+        }
+      ],
+      "evidence": "make_default_options_response app.py:1056, called from dispatch_request (:990) when the rule provides automatic options."
+    },
+    {
+      "id": "flask-037",
+      "question": "Where are teardown functions called when a context is popped?",
+      "category": "concept",
+      "difficulty": "hard",
+      "primary": [
+        "src/flask/app.py"
+      ],
+      "supporting": [
+        "src/flask/ctx.py"
+      ],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.do_teardown_request"
+        },
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.do_teardown_appcontext"
+        },
+        {
+          "file": "src/flask/ctx.py",
+          "name": "AppContext.pop"
+        }
+      ],
+      "evidence": "Primary: the teardown functions are actually called in Flask.do_teardown_request (app.py:1423-1454, loops over teardown_request_funcs) and do_teardown_appcontext (:1456). Supporting: AppContext.pop (ctx.py:446) is what triggers them (:490, :496) and the question asks about pop time."
+    },
+    {
+      "id": "flask-038",
+      "question": "What calls `ensure_sync`?",
+      "category": "caller",
+      "difficulty": "hard",
+      "primary": [
+        "src/flask/app.py",
+        "src/flask/ctx.py",
+        "src/flask/helpers.py",
+        "src/flask/templating.py",
+        "src/flask/views.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [],
+      "evidence": "Library usages (src/flask only): app.py (many), ctx.py:204/434/502, helpers.py:354, templating.py:127-175, views.py:110/116/191. Definition at app.py:1068."
+    },
+    {
+      "id": "flask-039",
+      "question": "What calls `get_debug_flag`?",
+      "category": "caller",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/app.py",
+        "src/flask/cli.py",
+        "src/flask/sansio/app.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.run"
+        },
+        {
+          "file": "src/flask/cli.py",
+          "name": "ScriptInfo.load_app"
+        },
+        {
+          "file": "src/flask/cli.py",
+          "name": "run_command"
+        },
+        {
+          "file": "src/flask/sansio/app.py",
+          "name": "App.make_config"
+        }
+      ],
+      "evidence": "Call sites: app.py:715 (Flask.run), cli.py:369 (ScriptInfo.load_app), cli.py:973 (run_command), sansio/app.py:492 (App.make_config). Definition helpers.py:28."
+    },
+    {
+      "id": "flask-040",
+      "question": "Which functions use `_endpoint_from_view_func`?",
+      "category": "caller",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/sansio/app.py",
+        "src/flask/sansio/blueprints.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/sansio/app.py",
+          "name": "App.add_url_rule"
+        },
+        {
+          "file": "src/flask/sansio/blueprints.py",
+          "name": "BlueprintSetupState.add_url_rule"
+        }
+      ],
+      "evidence": "Call sites: sansio/app.py:614, sansio/blueprints.py:105. Definition sansio/scaffold.py:709."
+    },
+    {
+      "id": "flask-041",
+      "question": "What calls `get_root_path`?",
+      "category": "caller",
+      "difficulty": "easy",
+      "primary": [
+        "src/flask/sansio/scaffold.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/sansio/scaffold.py",
+          "name": "Scaffold.__init__"
+        }
+      ],
+      "evidence": "Only call site: sansio/scaffold.py:96. Definition helpers.py:587."
+    },
+    {
+      "id": "flask-042",
+      "question": "What calls `Flask.process_response`?",
+      "category": "caller",
+      "difficulty": "easy",
+      "primary": [
+        "src/flask/app.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.finalize_request"
+        }
+      ],
+      "evidence": "Only call: app.py:1044 in finalize_request (:271 merely references it in __init_subclass__)."
+    },
+    {
+      "id": "flask-043",
+      "question": "What calls `open_session` to load the session for a request?",
+      "category": "caller",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/ctx.py",
+        "src/flask/testing.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/ctx.py",
+          "name": "AppContext._get_session"
+        },
+        {
+          "file": "src/flask/testing.py",
+          "name": "FlaskClient.session_transaction"
+        }
+      ],
+      "evidence": "Call sites: ctx.py:388 (_get_session), testing.py:165 (session_transaction). Definitions sessions.py:249, :323."
+    },
+    {
+      "id": "flask-044",
+      "question": "What calls `save_session`?",
+      "category": "caller",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/app.py",
+        "src/flask/testing.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.process_response"
+        },
+        {
+          "file": "src/flask/testing.py",
+          "name": "FlaskClient.session_transaction"
+        }
+      ],
+      "evidence": "Call sites: app.py:1419 (process_response), testing.py:177 (session_transaction). Definitions sessions.py:263, :337."
+    },
+    {
+      "id": "flask-045",
+      "question": "What calls `match_request`?",
+      "category": "caller",
+      "difficulty": "easy",
+      "primary": [
+        "src/flask/ctx.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/ctx.py",
+          "name": "AppContext.push"
+        }
+      ],
+      "evidence": "Only call: ctx.py:444 in AppContext.push. Definition ctx.py:405."
+    },
+    {
+      "id": "flask-046",
+      "question": "What calls `find_best_app`?",
+      "category": "caller",
+      "difficulty": "easy",
+      "primary": [
+        "src/flask/cli.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/cli.py",
+          "name": "locate_app"
+        }
+      ],
+      "evidence": "Only call: cli.py:262 inside locate_app. Definition cli.py:41."
+    },
+    {
+      "id": "flask-047",
+      "question": "What calls `Blueprint.register`?",
+      "category": "caller",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/sansio/app.py",
+        "src/flask/sansio/blueprints.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/sansio/app.py",
+          "name": "App.register_blueprint"
+        },
+        {
+          "file": "src/flask/sansio/blueprints.py",
+          "name": "Blueprint.register"
+        }
+      ],
+      "evidence": "Call sites: sansio/app.py:595 (register_blueprint) and sansio/blueprints.py:377 (nested blueprints inside Blueprint.register)."
+    },
+    {
+      "id": "flask-048",
+      "question": "What calls `full_dispatch_request`?",
+      "category": "caller",
+      "difficulty": "easy",
+      "primary": [
+        "src/flask/app.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.wsgi_app"
+        }
+      ],
+      "evidence": "Only call: app.py:1600 in wsgi_app. Definition app.py:995."
+    },
+    {
+      "id": "flask-049",
+      "question": "What calls `create_url_adapter`?",
+      "category": "caller",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/app.py",
+        "src/flask/ctx.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.url_for"
+        },
+        {
+          "file": "src/flask/ctx.py",
+          "name": "AppContext.__init__"
+        }
+      ],
+      "evidence": "Call sites: app.py:1185 (url_for) and ctx.py:326 (AppContext.__init__). Definition app.py:510."
+    },
+    {
+      "id": "flask-050",
+      "question": "What uses `_default_template_ctx_processor`?",
+      "category": "caller",
+      "difficulty": "easy",
+      "primary": [
+        "src/flask/sansio/scaffold.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/sansio/scaffold.py",
+          "name": "Scaffold.__init__"
+        }
+      ],
+      "evidence": "Only use: sansio/scaffold.py:184 in Scaffold.__init__. Definition templating.py:21."
+    },
+    {
+      "id": "flask-051",
+      "question": "Which files import `flask.sessions`?",
+      "category": "dependency",
+      "difficulty": "hard",
+      "primary": [
+        "src/flask/app.py",
+        "src/flask/ctx.py",
+        "src/flask/globals.py",
+        "src/flask/testing.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [],
+      "evidence": "Resolved import graph of src/flask (parser-extracted imports, relative imports resolved, TYPE_CHECKING imports included). Importers of sessions.py."
+    },
+    {
+      "id": "flask-052",
+      "question": "Which files import `flask.signals`?",
+      "category": "dependency",
+      "difficulty": "hard",
+      "primary": [
+        "src/flask/__init__.py",
+        "src/flask/app.py",
+        "src/flask/ctx.py",
+        "src/flask/helpers.py",
+        "src/flask/templating.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [],
+      "evidence": "Resolved import graph of src/flask (parser-extracted imports, relative imports resolved, TYPE_CHECKING imports included). Importers of signals.py."
+    },
+    {
+      "id": "flask-053",
+      "question": "Which files import `flask.templating`?",
+      "category": "dependency",
+      "difficulty": "hard",
+      "primary": [
+        "src/flask/__init__.py",
+        "src/flask/app.py",
+        "src/flask/sansio/app.py",
+        "src/flask/sansio/scaffold.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [],
+      "evidence": "Resolved import graph of src/flask (parser-extracted imports, relative imports resolved, TYPE_CHECKING imports included). Importers of templating.py."
+    },
+    {
+      "id": "flask-054",
+      "question": "Which files import `flask.json.provider`?",
+      "category": "dependency",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/json/__init__.py",
+        "src/flask/sansio/app.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [],
+      "evidence": "Resolved import graph of src/flask (parser-extracted imports, relative imports resolved, TYPE_CHECKING imports included). Importers of json/provider.py."
+    },
+    {
+      "id": "flask-055",
+      "question": "Which files import `flask.debughelpers`?",
+      "category": "dependency",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/app.py",
+        "src/flask/templating.py",
+        "src/flask/wrappers.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [],
+      "evidence": "Resolved import graph of src/flask (parser-extracted imports, relative imports resolved, TYPE_CHECKING imports included). Importers of debughelpers.py."
+    },
+    {
+      "id": "flask-056",
+      "question": "Which files import `flask.config`?",
+      "category": "dependency",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/__init__.py",
+        "src/flask/sansio/app.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [],
+      "evidence": "Resolved import graph of src/flask (parser-extracted imports, relative imports resolved, TYPE_CHECKING imports included). Importers of config.py."
+    },
+    {
+      "id": "flask-057",
+      "question": "Which files import `flask.testing`?",
+      "category": "dependency",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/app.py",
+        "src/flask/sansio/app.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [],
+      "evidence": "Resolved import graph of src/flask (parser-extracted imports, relative imports resolved, TYPE_CHECKING imports included). Importers of testing.py."
+    },
+    {
+      "id": "flask-058",
+      "question": "Which files import the `flask.sansio.scaffold` module?",
+      "category": "dependency",
+      "difficulty": "hard",
+      "primary": [
+        "src/flask/blueprints.py",
+        "src/flask/debughelpers.py",
+        "src/flask/sansio/app.py",
+        "src/flask/sansio/blueprints.py",
+        "src/flask/templating.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [],
+      "evidence": "Resolved import graph of src/flask (parser-extracted imports, relative imports resolved, TYPE_CHECKING imports included). Importers of sansio/scaffold.py."
+    },
+    {
+      "id": "flask-059",
+      "question": "Which files import `flask.ctx`?",
+      "category": "dependency",
+      "difficulty": "hard",
+      "primary": [
+        "src/flask/__init__.py",
+        "src/flask/app.py",
+        "src/flask/globals.py",
+        "src/flask/sansio/app.py",
+        "src/flask/templating.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [],
+      "evidence": "Resolved import graph of src/flask (parser-extracted imports, relative imports resolved, TYPE_CHECKING imports included). Importers of ctx.py."
+    },
+    {
+      "id": "flask-060",
+      "question": "Which other Flask modules does `flask/sessions.py` import?",
+      "category": "dependency",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/app.py",
+        "src/flask/json/tag.py",
+        "src/flask/wrappers.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [],
+      "evidence": "Resolved import graph of src/flask (parser-extracted imports, relative imports resolved, TYPE_CHECKING imports included). Imports of sessions.py."
+    },
+    {
+      "id": "flask-061",
+      "question": "Which other Flask modules does `flask/views.py` depend on?",
+      "category": "dependency",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/globals.py",
+        "src/flask/typing.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [],
+      "evidence": "Resolved import graph of src/flask (parser-extracted imports, relative imports resolved, TYPE_CHECKING imports included). Imports of views.py."
+    },
+    {
+      "id": "flask-062",
+      "question": "Which other Flask modules does `flask/helpers.py` import?",
+      "category": "dependency",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/globals.py",
+        "src/flask/signals.py",
+        "src/flask/wrappers.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [],
+      "evidence": "Resolved import graph of src/flask (parser-extracted imports, relative imports resolved, TYPE_CHECKING imports included). Imports of helpers.py."
+    },
+    {
+      "id": "flask-063",
+      "question": "How is an incoming WSGI request dispatched to a view function?",
+      "category": "flow",
+      "difficulty": "hard",
+      "primary": [
+        "src/flask/app.py"
+      ],
+      "supporting": [
+        "src/flask/ctx.py"
+      ],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.wsgi_app"
+        },
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.full_dispatch_request"
+        },
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.dispatch_request"
+        },
+        {
+          "file": "src/flask/ctx.py",
+          "name": "AppContext.push"
+        }
+      ],
+      "evidence": "Primary: wsgi_app (app.py:1569) -> full_dispatch_request (:1600) -> dispatch_request (:1019) -> view_functions[endpoint] (:993). Supporting: AppContext.push (ctx.py:416) runs match_request (:444), which sets the url_rule dispatch_request uses; without it the answer cannot say how the view is chosen."
+    },
+    {
+      "id": "flask-064",
+      "question": "How is the user's session loaded at the start of a request and saved at the end?",
+      "category": "flow",
+      "difficulty": "hard",
+      "primary": [
+        "src/flask/sessions.py"
+      ],
+      "supporting": [
+        "src/flask/ctx.py",
+        "src/flask/app.py"
+      ],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/sessions.py",
+          "name": "SecureCookieSessionInterface.open_session"
+        },
+        {
+          "file": "src/flask/sessions.py",
+          "name": "SecureCookieSessionInterface.save_session"
+        },
+        {
+          "file": "src/flask/ctx.py",
+          "name": "AppContext._get_session"
+        },
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.process_response"
+        }
+      ],
+      "evidence": "Primary: loading and saving are implemented by open_session (sessions.py:323) and save_session (:337). Supporting: the question asks when, which is AppContext.push -> _get_session -> open_session (ctx.py:439, :388) at the start and Flask.process_response -> save_session (app.py:1419) at the end."
+    },
+    {
+      "id": "flask-065",
+      "question": "How does the `@app.route` decorator register a URL rule?",
+      "category": "flow",
+      "difficulty": "hard",
+      "primary": [
+        "src/flask/sansio/app.py"
+      ],
+      "supporting": [
+        "src/flask/sansio/scaffold.py"
+      ],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/sansio/app.py",
+          "name": "App.add_url_rule"
+        },
+        {
+          "file": "src/flask/sansio/scaffold.py",
+          "name": "Scaffold.route"
+        }
+      ],
+      "evidence": "Primary: the rule is created and added to url_map by App.add_url_rule (sansio/app.py:604-661, url_map.add at :653). Supporting: the decorator Scaffold.route (sansio/scaffold.py:343) is the entry point the question names and calls add_url_rule (:370)."
+    },
+    {
+      "id": "flask-066",
+      "question": "How does a blueprint get registered on an app and its routes added?",
+      "category": "flow",
+      "difficulty": "hard",
+      "primary": [
+        "src/flask/sansio/blueprints.py"
+      ],
+      "supporting": [
+        "src/flask/sansio/app.py"
+      ],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/sansio/blueprints.py",
+          "name": "Blueprint.register"
+        },
+        {
+          "file": "src/flask/sansio/blueprints.py",
+          "name": "BlueprintSetupState.add_url_rule"
+        },
+        {
+          "file": "src/flask/sansio/app.py",
+          "name": "App.register_blueprint"
+        }
+      ],
+      "evidence": "Primary: Blueprint.register (sansio/blueprints.py:273-377) builds a BlueprintSetupState and runs the deferred functions (:334) that call app.add_url_rule (:110). Supporting: App.register_blueprint (sansio/app.py:569) is the entry point that delegates to it (:595)."
+    },
+    {
+      "id": "flask-067",
+      "question": "How does Flask convert a view's return value into a response object?",
+      "category": "flow",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/app.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.make_response"
+        },
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.finalize_request"
+        }
+      ],
+      "evidence": "finalize_request (app.py:1024) calls make_response (:1042); Flask.make_response is app.py:1227-1367."
+    },
+    {
+      "id": "flask-068",
+      "question": "How are before_request and after_request callbacks executed?",
+      "category": "flow",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/app.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.preprocess_request"
+        },
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.process_response"
+        }
+      ],
+      "evidence": "Executed by preprocess_request (app.py:1388-1390) and process_response (:1414-1416, reversed). The decorators that register them (Scaffold.before_request/after_request) are not needed to explain execution, so they are not listed."
+    },
+    {
+      "id": "flask-069",
+      "question": "What happens when a view raises an unhandled exception?",
+      "category": "flow",
+      "difficulty": "hard",
+      "primary": [
+        "src/flask/app.py"
+      ],
+      "supporting": [
+        "src/flask/sansio/app.py"
+      ],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.handle_user_exception"
+        },
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.handle_exception"
+        },
+        {
+          "file": "src/flask/sansio/app.py",
+          "name": "App._find_error_handler"
+        }
+      ],
+      "evidence": "Primary: full_dispatch_request catches it (app.py:1020) -> handle_user_exception (:868); if re-raised, wsgi_app calls handle_exception (:1603, def :900). Supporting: handler selection is App._find_error_handler (sansio/app.py:868), which decides whether a registered handler runs."
+    },
+    {
+      "id": "flask-070",
+      "question": "How does the `flask run` command start the development server?",
+      "category": "flow",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/cli.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/cli.py",
+          "name": "run_command"
+        },
+        {
+          "file": "src/flask/cli.py",
+          "name": "ScriptInfo.load_app"
+        }
+      ],
+      "evidence": "run_command (cli.py:882) calls info.load_app() (:955), reads get_debug_flag (:973) and calls run_simple (:983)."
+    },
+    {
+      "id": "flask-071",
+      "question": "How does the Flask command line find the application to load?",
+      "category": "flow",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/cli.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/cli.py",
+          "name": "ScriptInfo.load_app"
+        },
+        {
+          "file": "src/flask/cli.py",
+          "name": "locate_app"
+        },
+        {
+          "file": "src/flask/cli.py",
+          "name": "find_best_app"
+        },
+        {
+          "file": "src/flask/cli.py",
+          "name": "prepare_import"
+        }
+      ],
+      "evidence": "ScriptInfo.load_app (cli.py:333) calls prepare_import (:348) and locate_app (:349); locate_app calls find_best_app (:262)."
+    },
+    {
+      "id": "flask-072",
+      "question": "How does the test client send a request to the application?",
+      "category": "flow",
+      "difficulty": "medium",
+      "primary": [
+        "src/flask/testing.py"
+      ],
+      "supporting": [],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/testing.py",
+          "name": "FlaskClient.open"
+        },
+        {
+          "file": "src/flask/testing.py",
+          "name": "FlaskClient._request_from_builder_args"
+        },
+        {
+          "file": "src/flask/testing.py",
+          "name": "EnvironBuilder"
+        }
+      ],
+      "evidence": "FlaskClient.open (testing.py:204) builds a request via EnvironBuilder (:197, :217) and calls super().open (:235)."
+    },
+    {
+      "id": "flask-073",
+      "question": "How does `url_for` build a URL for an endpoint?",
+      "category": "flow",
+      "difficulty": "hard",
+      "primary": [
+        "src/flask/app.py"
+      ],
+      "supporting": [
+        "src/flask/helpers.py"
+      ],
+      "relevant_symbols": [
+        {
+          "file": "src/flask/app.py",
+          "name": "Flask.url_for"
+        },
+        {
+          "file": "src/flask/helpers.py",
+          "name": "url_for"
+        }
+      ],
+      "evidence": "Primary: the URL is built by Flask.url_for (app.py:1105-1225, using create_url_adapter at :1185). Supporting: helpers.url_for (helpers.py:200), the public function the question names, delegates to current_app.url_for (:244)."
+    }
+  ]
+}
