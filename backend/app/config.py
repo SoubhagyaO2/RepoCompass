@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     def repos_dir(self) -> Path:
         return self.data_dir / "repos"
 
+    @property
+    def index_dir(self) -> Path:
+        return self.data_dir / "index"
+
 
 @lru_cache
 def get_settings() -> Settings:
