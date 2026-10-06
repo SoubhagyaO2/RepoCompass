@@ -22,6 +22,19 @@ class Settings(BaseSettings):
     # Where cloned repositories and index artifacts are stored.
     data_dir: Path = Path("data")
 
+    # Embeddings. bge models expect this prefix on *queries* (not on documents); set it to
+    # an empty string if you switch to a model that does not use one.
+    embedding_model: str = "BAAI/bge-small-en-v1.5"
+    embedding_query_prefix: str = "Represent this sentence for searching relevant passages: "
+
+    # Naive baseline chunking (Milestone 4).
+    baseline_chunk_size: int = 1000
+    baseline_chunk_overlap: int = 200
+
+    @property
+    def qdrant_path(self) -> Path:
+        return self.data_dir / "qdrant"
+
     @property
     def repos_dir(self) -> Path:
         return self.data_dir / "repos"

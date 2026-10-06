@@ -16,6 +16,8 @@ dependencies = [
     # definitions and crashes with an access violation (seen on Windows, Python 3.13).
     "tree-sitter>=0.23,<0.26",
     "tree-sitter-python>=0.23",
+    "sentence-transformers>=3.0",
+    "qdrant-client>=1.10",
 ]
 
 [project.optional-dependencies]
