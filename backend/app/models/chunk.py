@@ -8,6 +8,18 @@ ChunkType = Literal["function", "method", "class", "module"]
 FileCategory = Literal["source", "test", "docs"]
 
 
+class TextChunk(BaseModel):
+    """A plain character window (naive baseline). Knows nothing about code structure."""
+
+    id: str  # "<repository>:<file_path>:<start_char_offset>"
+    repository: str
+    file_path: str
+    start_line: int  # 1-based, inclusive
+    end_line: int
+    content: str
+    category: FileCategory
+
+
 class Chunk(BaseModel):
     """A contiguous slice of one file, aligned to a logical code unit.
 
