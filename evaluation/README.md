@@ -102,14 +102,77 @@ git -C data/repos/pallets/flask fetch --depth 1 origin d73fa1cdcbd8b1465c151db89
 git -C data/repos/pallets/flask checkout d73fa1cdcbd8b1465c151db8924ba58b1dd14e35
 ```
 
-## Scoring rules (used from Milestone 6)
+## Scoring methodology (locked)
 
-Results are scored against **primary** files (the headline) and, separately, against
-primary + supporting files ("any required evidence"). Reporting both shows whether a retriever
-finds the real answer location or only related code.
+Decided before any results existed; never changed after seeing them. Implemented in
+[`scoring.py`](../backend/app/evaluation/scoring.py) and [`runner.py`](../backend/app/evaluation/runner.py).
 
-- **Hit@k:** at least one of the top-k results is in a counted file.
-- **MRR:** 1 / rank of the first result in a counted file (0 if none in the results).
-- Results from files outside the counted set never score, even if plausible (for example a test
+For each question:
+
+1. Retrieve a ranked list of **50 chunks** (retrieval depth).
+2. Map each chunk to its file path.
+3. Remove duplicate paths, keeping each file's **first occurrence**.
+4. Score the ranked list of **unique files** against the ground truth.
+
+- **Top-1 / Top-5:** a hit if at least one counted file is among the first 1 / 5 unique files.
+- **MRR:** mean of 1 / (rank of the *first* counted file in the unique-file ranking), 0 if none
+  of the 50 chunks is in a counted file. It measures the first relevant file; it does **not**
+  require every required file to be found.
+- Two scopes are always reported: **primary** (the headline) and **primary + supporting**
+  (broader coverage). Files outside the counted set never score, even if plausible (e.g. a test
   that exercises the function).
-- Every metric is reported overall **and** broken down by category and by difficulty.
+- Every metric is reported overall and by category and difficulty.
+- Latency is per query (embed the question + vector search, model already loaded, after one
+  untimed warm-up query); indexing time is a fresh full index.
+
+Each run saves its metadata (dataset fingerprint, method, chunking, embedding model, depth, top-k,
+deduplication rule, timestamp, indexing time, package versions, per-question results) to
+[`results/`](results/) so it can be reproduced:
+
+```bash
+cd backend
+python -m app.evaluation.run_baseline        # about 2 minutes on CPU
+```
+
+## Results
+
+### Fixed-chunk baseline (Milestone 6)
+
+[`results/flask_fixed_chunk_baseline.json`](results/flask_fixed_chunk_baseline.json), 2026-10-06:
+1,000-character chunks with 200 overlap, `BAAI/bge-small-en-v1.5` (CPU), `flask-eval-v1`
+(73 questions, fingerprint `6e78d06a…`), depth 50 chunks, top-5.
+
+|  | n | Top-1 | Top-5 | MRR | Top-1 (+supp.) | Top-5 (+supp.) | MRR (+supp.) |
+|---|---|---|---|---|---|---|---|
+| **Overall** | 73 | **32.9%** | **80.8%** | **0.541** | 35.6% | 82.2% | 0.569 |
+| definition | 16 | 31.2% | 93.8% | 0.595 | 31.2% | 93.8% | 0.595 |
+| caller | 13 | 53.8% | 100.0% | 0.756 | 53.8% | 100.0% | 0.756 |
+| dependency | 12 | 0.0% | 33.3% | 0.215 | 0.0% | 33.3% | 0.215 |
+| concept | 21 | 38.1% | 90.5% | 0.565 | 42.9% | 90.5% | 0.601 |
+| flow | 11 | 36.4% | 72.7% | 0.515 | 45.5% | 81.8% | 0.634 |
+| easy | 20 | 45.0% | 95.0% | 0.667 | 45.0% | 95.0% | 0.667 |
+| medium | 38 | 31.6% | 73.7% | 0.506 | 31.6% | 73.7% | 0.506 |
+| hard | 15 | 20.0% | 80.0% | 0.458 | 33.3% | 86.7% | 0.595 |
+
+Query latency: mean 26 ms, median 24 ms, p95 35 ms. Indexing: 71.6 s (83 files, 792 chunks).
+
+For reference, ranking the 80 indexed files at random would score about Top-1 2.0%, Top-5 9.5%,
+MRR 0.082 on this dataset (computed exactly from the number of primary files per question).
+
+**How to read these numbers**
+
+- The sample is small: categories have 11-21 questions, so one question moves a category's Top-1
+  by 5-9 points. Treat differences of a few points between categories as noise.
+- **Dependency is the clear weakness** (0% Top-1, 33% Top-5): "which files import X" is a
+  structural question that text similarity answers poorly.
+- **Test and example files crowd the results.** The #1 file is outside `src/flask/` for 21 of 73
+  questions, and 166 of the 365 top-5 slots are non-library files; they can never score.
+- **The caller score is inflated by dataset construction.** For 7 of 13 caller questions the
+  function's definition is in the same file as a call site, so finding the definition counts as a
+  hit. On the other 6 (exploratory, not part of the locked scoring) the baseline hit Top-5 6/6 but
+  Top-1 only 1/6, with the first counted file at rank 2 for five of them.
+- **Structural difficulty tracks Top-1 and MRR** (easy 45% / 0.667, medium 31.6% / 0.506,
+  hard 20% / 0.458) **but not Top-5.** The medium bucket is dragged down because 7 of its 38
+  questions are dependency questions.
+- The index contains all 83 Python files in the repository (including tests, docs and examples),
+  while only `src/flask/` files can score. This is deliberate: the baseline is the naive approach.
