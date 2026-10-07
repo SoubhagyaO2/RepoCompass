@@ -28,3 +28,16 @@ tuning must be evaluated on a separate dev set, not on the frozen benchmark (see
 - **Splitting very large AST chunks** at statement boundaries.
 - **AST + embeddings with truncation handled** (a clean test of the chunking effect under
   embeddings).
+
+## Added after Milestone 9 (reranking did not help)
+
+Ideas for why, all untested; run them on a dev set, never on the frozen benchmark:
+
+- **Domain mismatch:** `ms-marco-MiniLM-L-6-v2` is trained on natural-language passages. Try a
+  stronger or code-aware reranker where compute allows (`bge-reranker-base` or larger).
+- **Give the reranker the context retrieval uses:** prepend the file path and symbol name to the
+  chunk text it scores (the first stage never sees them either).
+- **Score more than one chunk per file** and take the max, instead of one representative chunk.
+- **Candidate depth** (20 files was fixed in advance; 10 or 50 are untested).
+- **Truncation:** 133 of R2's 1,460 scored pairs exceed the reranker's 512 tokens.
+- **Interpolate** the reranker score with the first-stage rank instead of replacing the order.

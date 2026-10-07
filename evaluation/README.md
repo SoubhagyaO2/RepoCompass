@@ -325,3 +325,83 @@ for six comparisons is p < 0.0083):
 - Six comparisons on one repository with 73 questions: a result that does not hold on a second
   repository (planned) or a held-out question set should not be trusted. Tuning any parameter
   (RRF `k`, BM25 `b`, chunk size) on these 73 questions would need a separate dev set.
+
+### Cross-encoder reranking (Milestone 9)
+
+The method, the three comparisons and the statistics were frozen in
+[`plans/m09-reranking.md`](plans/m09-reranking.md) and committed (`fe76816`) before any reranking
+result existed. Reproduce with `python -m app.evaluation.run_rerank` (about 4 minutes; needs the
+Milestone 8 indexes); `--report-only` re-prints everything below from the saved files. Results:
+[`flask_fixed_chunk_hybrid_rerank.json`](results/flask_fixed_chunk_hybrid_rerank.json) (R1) and
+[`flask_ast_chunk_hybrid_rerank.json`](results/flask_ast_chunk_hybrid_rerank.json) (R2), 2026-10-07.
+
+**Method (pre-registered, not tuned):** the first stage is exactly the Milestone 8 hybrid (checked
+question by question before reranking). The top 20 unique files are the candidates, each
+represented by its best-ranked retrieved chunk. `cross-encoder/ms-marco-MiniLM-L-6-v2` scores
+`(question, raw chunk content)` and the file's score is that raw logit. The final ranking is the
+20 candidates by score followed by the remaining files in first-stage order. Every candidate's
+`retrieval_rank` and `reranker_rank` is saved in the results (`candidate_pools`).
+
+Overall, primary scope, Top-1 / Top-5 / MRR:
+
+| Chunking | Hybrid (M8) | Hybrid + rerank |
+|---|---|---|
+| Fixed | 39.7% / 87.7% / 0.614 | 32.9% / 82.2% / 0.517 |
+| AST | 43.8% / 87.7% / 0.626 | 41.1% / 82.2% / 0.580 |
+
+MRR by category (hybrid -> hybrid + rerank):
+
+| | Fixed | AST |
+|---|---|---|
+| definition (16) | 0.611 -> 0.565 | 0.738 -> 0.661 |
+| caller (13) | 0.872 -> 0.782 | 0.718 -> 0.639 |
+| dependency (12) | 0.334 -> 0.324 | 0.274 -> 0.227 |
+| concept (21) | 0.630 -> 0.454 | 0.742 -> 0.696 |
+| flow (11) | 0.587 -> 0.468 | 0.519 -> 0.559 |
+
+Pre-registered paired comparisons (B vs A; Bonferroni sign-test threshold for three comparisons
+p < 0.0167):
+
+| B vs A | B better / worse / equal | Top-1 | Top-5 | MRR (95% CI) | sign test p |
+|---|---|---|---|---|---|
+| 1. R1 vs H1 (fixed) | 18 / 34 / 21 | -6.8% | -5.5% | -0.096 (-0.189 to -0.005) | 0.036 |
+| 2. R2 vs H2 (AST) | 18 / 24 / 31 | -2.7% | -5.5% | -0.046 (-0.127 to +0.034) | 0.441 |
+| 3. R2 vs R1 | 33 / 21 / 19 | +8.2% | +0.0% | +0.063 (-0.038 to +0.160) | 0.134 |
+
+Pre-registered descriptive statistics (first primary file, rank before vs after reranking):
+
+| | R1 (fixed) | R2 (AST) |
+|---|---|---|
+| questions with a primary file among the 20 candidates (the ceiling) | 72 of 73 | 71 of 73 |
+| rank improved / worsened / unchanged | 18 / 34 / 20 | 18 / 24 / 29 |
+| **rescued** (retrieval rank 6-20 -> reranker rank 1-5) | 5 | 3 |
+| **pushed out** (retrieval rank 1-5 -> reranker rank 6 or lower) | 9 | 7 |
+
+Latency (median, CPU): hybrid alone about 21 ms; with reranking **1,093 ms (R1) and 1,163 ms (R2)**,
+of which the cross-encoder is about 1,050 and 1,138 ms (20 pairs at roughly 45-55 ms each).
+
+**How to read these numbers**
+
+- **Reranking did not help; on fixed chunks it most likely hurt.** By the pre-registered rule
+  (improvement only if the MRR interval excludes zero) there is no improvement in either system.
+  For fixed chunks the MRR interval excludes zero on the negative side (-0.096), but the sign
+  test (p = 0.036) does not survive the correction for three comparisons, so call the harm
+  suggestive. For AST chunks the difference is within noise. In neither system is there evidence
+  of a benefit, and it costs about 50 times the latency.
+- **There was room to improve.** Almost every question (72 and 71 of 73) had a primary file among
+  the candidates. The reranker did rescue some relevant files (5 and 3 questions) but pushed out
+  more (9 and 7).
+- **Exploratory, post hoc (not in the plan):** the reranker is informative but weaker than the
+  hybrid it was applied to. Relevant-file candidates get a much higher mean logit than others
+  (+0.7 vs -4.6 for R1, +1.0 vs -4.4 for R2), yet within each candidate pool the hybrid's order puts
+  the relevant file above an other file in 85.9% (R1) and 85.5% (R2) of pairs, against 78.3% and
+  77.7% for the reranker. The reranker did slightly reduce test/example files at #1 (16 to 14 for
+  fixed, 20 to 12 for AST).
+- **Likely causes, none tested:** the model was trained on natural-language passage ranking
+  (MS MARCO) and source code is out of domain; it sees only raw chunk content, while BM25 sees
+  exact names and the hybrid fuses two signals; one chunk represents each file. All of these are in
+  the backlog.
+- **A confound for AST (R2):** 133 of its 1,460 scored (question, chunk) pairs exceed the model's
+  512-token limit (62 questions affected) and are truncated; none do for fixed chunks (R1).
+- Only one reranker, one candidate depth and one chunk per file were tried, none tuned, so this
+  says that *this* off-the-shelf reranker did not help here, not that reranking cannot.
