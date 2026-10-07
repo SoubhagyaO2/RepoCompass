@@ -11,12 +11,11 @@ import time
 
 from pydantic import BaseModel
 
-from app.chunking.fixed_chunker import chunk_fixed
+from app.chunking.fixed_chunker import chunk_repository
 from app.config import Settings, get_settings
 from app.ingestion.clone import CloneError
 from app.ingestion.service import ingest_repository
 from app.ingestion.url import InvalidRepoURLError, parse_github_url
-from app.models.chunk import TextChunk
 from app.models.repository import IngestedRepository
 from app.models.search import SearchHit
 from app.retrieval.embedder import Embedder, get_embedder
@@ -60,17 +59,7 @@ class FixedChunkBaseline:
     def index(self, ingested: IngestedRepository) -> BaselineIndexStats:
         repository = ingested.ref.full_name
         t0 = time.perf_counter()
-
-        chunks: list[TextChunk] = []
-        files = 0
-        for f in ingested.files:
-            if f.language != "Python":
-                continue
-            text = (ingested.local_path / f.path).read_bytes().decode("utf-8", errors="replace")
-            chunks.extend(
-                chunk_fixed(text, f.path, repository, self.chunk_size, self.chunk_overlap)
-            )
-            files += 1
+        chunks, files = chunk_repository(ingested, self.chunk_size, self.chunk_overlap)
         t1 = time.perf_counter()
 
         # Naive on purpose: the embedded text is the raw window, nothing else.

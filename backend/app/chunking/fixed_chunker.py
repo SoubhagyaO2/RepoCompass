@@ -9,6 +9,7 @@ from bisect import bisect_left
 
 from app.chunking.categories import classify_file
 from app.models.chunk import TextChunk
+from app.models.repository import IngestedRepository
 
 DEFAULT_SIZE = 1000
 DEFAULT_OVERLAP = 200
@@ -50,6 +51,22 @@ def chunk_fixed(
             break
         start += step
     return chunks
+
+
+def chunk_repository(
+    ingested: IngestedRepository, size: int = DEFAULT_SIZE, overlap: int = DEFAULT_OVERLAP
+) -> tuple[list[TextChunk], int]:
+    """Fixed-size chunks of every Python file in a repository. Returns (chunks, files read)."""
+    repository = ingested.ref.full_name
+    chunks: list[TextChunk] = []
+    files = 0
+    for f in ingested.files:
+        if f.language != "Python":
+            continue
+        text = (ingested.local_path / f.path).read_bytes().decode("utf-8", errors="replace")
+        chunks.extend(chunk_fixed(text, f.path, repository, size, overlap))
+        files += 1
+    return chunks, files
 
 
 def _newline_offsets(text: str) -> list[int]:
