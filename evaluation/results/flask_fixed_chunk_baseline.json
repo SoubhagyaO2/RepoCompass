@@ -1,0 +1,2442 @@
+{
+  "dataset": "flask-eval-v1",
+  "dataset_repository": "pallets/flask",
+  "dataset_commit": "d73fa1cdcbd8b1465c151db8924ba58b1dd14e35",
+  "dataset_fingerprint": "6e78d06ad988b637eb3f77f047232238667e0cf9b325abd971f1eab3c024a311",
+  "n_questions": 73,
+  "retrieval_method": "fixed_chunk_baseline",
+  "chunk_size": 1000,
+  "chunk_overlap": 200,
+  "embedding_model": "BAAI/bge-small-en-v1.5",
+  "embedding_query_prefix": "Represent this sentence for searching relevant passages: ",
+  "device": "cpu",
+  "top_k": 5,
+  "retrieval_depth_chunks": 50,
+  "deduplication": "first_file_occurrence",
+  "scoring": "file_level",
+  "hit_definition": "at least one counted file is among the first top_k unique files",
+  "mrr_definition": "mean 1/rank of the first counted file in the unique-file ranking (0 if none was retrieved); does not require every required file",
+  "scopes": {
+    "primary": "counted files = primary (headline)",
+    "primary_plus_supporting": "counted files = primary + supporting"
+  },
+  "latency_note": "per query: embed the question + vector search, model already loaded, after one untimed warm-up query",
+  "timestamp": "2026-10-06T16:57:20+00:00",
+  "index_reused": false,
+  "indexing_time_seconds": 71.61018180000247,
+  "indexing": {
+    "repository": "pallets/flask",
+    "files": 83,
+    "chunks": 792,
+    "chunk_size": 1000,
+    "chunk_overlap": 200,
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "device": "cpu",
+    "chunking_seconds": 0.04419350000534905,
+    "embedding_seconds": 69.0728844999976,
+    "upsert_seconds": 2.493103799999517,
+    "total_seconds": 71.61018180000247
+  },
+  "environment": {
+    "python": "3.13.3",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "sentence_transformers": "6.1.0",
+    "torch": "2.14.1",
+    "qdrant_client": "1.19.1",
+    "repocompass_commit": "a9ba1ca02ace2bc8b29925b75ec18a74d6e4e8ff",
+    "repocompass_tree_dirty": true
+  },
+  "results": {
+    "primary": {
+      "overall": {
+        "n": 73,
+        "top1": 0.3287671232876712,
+        "topk": 0.8082191780821918,
+        "mrr": 0.5405419162268478
+      },
+      "by_category": {
+        "definition": {
+          "n": 16,
+          "top1": 0.3125,
+          "topk": 0.9375,
+          "mrr": 0.5947916666666667
+        },
+        "caller": {
+          "n": 13,
+          "top1": 0.5384615384615384,
+          "topk": 1.0,
+          "mrr": 0.7564102564102565
+        },
+        "dependency": {
+          "n": 12,
+          "top1": 0.0,
+          "topk": 0.3333333333333333,
+          "mrr": 0.21468554593554592
+        },
+        "concept": {
+          "n": 21,
+          "top1": 0.38095238095238093,
+          "topk": 0.9047619047619048,
+          "mrr": 0.5650793650793651
+        },
+        "flow": {
+          "n": 11,
+          "top1": 0.36363636363636365,
+          "topk": 0.7272727272727273,
+          "mrr": 0.5151515151515151
+        }
+      },
+      "by_difficulty": {
+        "easy": {
+          "n": 20,
+          "top1": 0.45,
+          "topk": 0.95,
+          "mrr": 0.6675
+        },
+        "medium": {
+          "n": 38,
+          "top1": 0.3157894736842105,
+          "topk": 0.7368421052631579,
+          "mrr": 0.5063387635756057
+        },
+        "hard": {
+          "n": 15,
+          "top1": 0.2,
+          "topk": 0.8,
+          "mrr": 0.4579124579124579
+        }
+      }
+    },
+    "primary_plus_supporting": {
+      "overall": {
+        "n": 73,
+        "top1": 0.3561643835616438,
+        "topk": 0.821917808219178,
+        "mrr": 0.5687002115084306
+      },
+      "by_category": {
+        "definition": {
+          "n": 16,
+          "top1": 0.3125,
+          "topk": 0.9375,
+          "mrr": 0.5947916666666667
+        },
+        "caller": {
+          "n": 13,
+          "top1": 0.5384615384615384,
+          "topk": 1.0,
+          "mrr": 0.7564102564102565
+        },
+        "dependency": {
+          "n": 12,
+          "top1": 0.0,
+          "topk": 0.3333333333333333,
+          "mrr": 0.21468554593554592
+        },
+        "concept": {
+          "n": 21,
+          "top1": 0.42857142857142855,
+          "topk": 0.9047619047619048,
+          "mrr": 0.6007936507936508
+        },
+        "flow": {
+          "n": 11,
+          "top1": 0.45454545454545453,
+          "topk": 0.8181818181818182,
+          "mrr": 0.6338383838383839
+        }
+      },
+      "by_difficulty": {
+        "easy": {
+          "n": 20,
+          "top1": 0.45,
+          "topk": 0.95,
+          "mrr": 0.6675
+        },
+        "medium": {
+          "n": 38,
+          "top1": 0.3157894736842105,
+          "topk": 0.7368421052631579,
+          "mrr": 0.5063387635756057
+        },
+        "hard": {
+          "n": 15,
+          "top1": 0.3333333333333333,
+          "topk": 0.8666666666666667,
+          "mrr": 0.5949494949494949
+        }
+      }
+    },
+    "latency_ms": {
+      "mean_ms": 25.580158903784188,
+      "median_ms": 23.930700001074,
+      "p95_ms": 35.05320000112988,
+      "max_ms": 42.717099997389596
+    }
+  },
+  "per_question": [
+    {
+      "id": "flask-001",
+      "question": "Where is the `Flask` class defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "retrieved_files": [
+        "tests/test_apps/cliapp/inner1/__init__.py",
+        "tests/test_apps/cliapp/inner1/inner2/flask.py",
+        "src/flask/sansio/app.py",
+        "tests/test_apps/cliapp/app.py",
+        "tests/test_apps/helloworld/hello.py",
+        "tests/test_apps/subdomaintestmodule/__init__.py",
+        "examples/javascript/js_example/__init__.py",
+        "tests/test_views.py",
+        "tests/test_cli.py",
+        "src/flask/app.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 10,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.1
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 10,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.1
+      },
+      "latency_ms": 24.75100000447128
+    },
+    {
+      "id": "flask-002",
+      "question": "Where is `SecureCookieSessionInterface` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "retrieved_files": [
+        "src/flask/app.py",
+        "src/flask/sessions.py",
+        "tests/test_reqctx.py",
+        "tests/test_basic.py",
+        "src/flask/json/tag.py",
+        "docs/conf.py",
+        "src/flask/sansio/app.py",
+        "src/flask/testing.py",
+        "src/flask/globals.py",
+        "src/flask/ctx.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "latency_ms": 23.264600000402424
+    },
+    {
+      "id": "flask-003",
+      "question": "Where is the `Blueprint` class defined?",
+      "category": "definition",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/sansio/app.py",
+        "src/flask/sansio/blueprints.py",
+        "src/flask/wrappers.py",
+        "tests/test_blueprints.py",
+        "src/flask/sansio/scaffold.py",
+        "src/flask/helpers.py",
+        "src/flask/blueprints.py",
+        "tests/test_templating.py",
+        "tests/test_apps/blueprintapp/__init__.py",
+        "tests/test_apps/blueprintapp/apps/frontend/__init__.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "latency_ms": 21.10990000073798
+    },
+    {
+      "id": "flask-004",
+      "question": "Where is `render_template` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "retrieved_files": [
+        "tests/test_apps/blueprintapp/apps/frontend/__init__.py",
+        "tests/type_check/typing_route.py",
+        "src/flask/templating.py",
+        "tests/test_apps/blueprintapp/apps/admin/__init__.py",
+        "tests/test_signals.py",
+        "examples/javascript/tests/test_js_example.py",
+        "tests/test_templating.py",
+        "src/flask/helpers.py",
+        "src/flask/sansio/scaffold.py",
+        "tests/test_blueprints.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 3,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.3333333333333333
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 3,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.3333333333333333
+      },
+      "latency_ms": 20.780399994691834
+    },
+    {
+      "id": "flask-005",
+      "question": "Where is `jsonify` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "retrieved_files": [
+        "examples/javascript/js_example/views.py",
+        "tests/test_json.py",
+        "src/flask/json/__init__.py",
+        "tests/test_basic.py",
+        "tests/type_check/typing_route.py",
+        "src/flask/testing.py",
+        "src/flask/sansio/app.py",
+        "tests/test_testing.py",
+        "src/flask/json/provider.py",
+        "src/flask/json/tag.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 3,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.3333333333333333
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 3,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.3333333333333333
+      },
+      "latency_ms": 22.447199997259304
+    },
+    {
+      "id": "flask-006",
+      "question": "Where is `AppContext` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "retrieved_files": [
+        "src/flask/app.py",
+        "src/flask/ctx.py",
+        "src/flask/cli.py",
+        "tests/test_cli.py",
+        "tests/test_appctx.py",
+        "src/flask/globals.py",
+        "tests/test_helpers.py",
+        "tests/test_reqctx.py",
+        "src/flask/sansio/app.py",
+        "src/flask/testing.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "latency_ms": 21.798599998874124
+    },
+    {
+      "id": "flask-007",
+      "question": "Where is `load_dotenv` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "retrieved_files": [
+        "tests/test_cli.py",
+        "src/flask/cli.py",
+        "src/flask/helpers.py",
+        "src/flask/app.py",
+        "src/flask/config.py",
+        "src/flask/templating.py",
+        "src/flask/sansio/blueprints.py",
+        "tests/test_config.py",
+        "src/flask/globals.py",
+        "src/flask/sansio/scaffold.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "latency_ms": 21.382899998570792
+    },
+    {
+      "id": "flask-008",
+      "question": "Where is `after_this_request` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "retrieved_files": [
+        "src/flask/ctx.py",
+        "src/flask/sansio/blueprints.py",
+        "src/flask/sansio/scaffold.py",
+        "tests/test_signals.py",
+        "tests/test_basic.py",
+        "src/flask/globals.py",
+        "tests/test_async.py",
+        "src/flask/app.py",
+        "tests/test_testing.py",
+        "src/flask/wrappers.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 23.240200003783684
+    },
+    {
+      "id": "flask-009",
+      "question": "Where is `MethodView` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "retrieved_files": [
+        "src/flask/views.py",
+        "tests/test_views.py",
+        "tests/test_async.py",
+        "src/flask/sansio/scaffold.py",
+        "src/flask/sansio/app.py",
+        "tests/test_basic.py",
+        "tests/test_helpers.py",
+        "src/flask/app.py",
+        "src/flask/ctx.py",
+        "tests/type_check/typing_route.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 28.75510000012582
+    },
+    {
+      "id": "flask-010",
+      "question": "Where is `from_prefixed_env` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "retrieved_files": [
+        "src/flask/config.py",
+        "src/flask/cli.py",
+        "tests/test_config.py",
+        "src/flask/sansio/scaffold.py",
+        "src/flask/helpers.py",
+        "tests/test_cli.py",
+        "src/flask/sansio/blueprints.py",
+        "tests/test_testing.py",
+        "tests/test_blueprints.py",
+        "src/flask/templating.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 32.22900000400841
+    },
+    {
+      "id": "flask-011",
+      "question": "Where is `send_from_directory` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "retrieved_files": [
+        "src/flask/helpers.py",
+        "src/flask/blueprints.py",
+        "tests/test_helpers.py",
+        "src/flask/app.py",
+        "src/flask/sansio/scaffold.py",
+        "src/flask/config.py",
+        "tests/test_basic.py",
+        "src/flask/debughelpers.py",
+        "src/flask/cli.py",
+        "tests/test_cli.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 23.23449999676086
+    },
+    {
+      "id": "flask-012",
+      "question": "Where is `TaggedJSONSerializer` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "retrieved_files": [
+        "src/flask/json/tag.py",
+        "tests/test_json_tag.py",
+        "src/flask/sessions.py",
+        "tests/test_json.py",
+        "src/flask/json/provider.py",
+        "src/flask/sansio/app.py",
+        "src/flask/json/__init__.py",
+        "tests/test_basic.py",
+        "src/flask/testing.py",
+        "src/flask/app.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 25.691200004075654
+    },
+    {
+      "id": "flask-013",
+      "question": "Where is `FlaskClient` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "retrieved_files": [
+        "src/flask/sansio/app.py",
+        "src/flask/app.py",
+        "tests/test_basic.py",
+        "src/flask/testing.py",
+        "tests/test_apps/cliapp/inner1/__init__.py",
+        "tests/test_apps/cliapp/inner1/inner2/flask.py",
+        "tests/test_apps/cliapp/app.py",
+        "src/flask/cli.py",
+        "tests/test_helpers.py",
+        "tests/test_testing.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 4,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.25
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 4,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.25
+      },
+      "latency_ms": 29.881599999498576
+    },
+    {
+      "id": "flask-014",
+      "question": "Where is `url_for` defined?",
+      "category": "definition",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/sansio/app.py",
+        "src/flask/helpers.py",
+        "tests/test_helpers.py",
+        "src/flask/app.py",
+        "src/flask/sansio/blueprints.py",
+        "src/flask/sansio/scaffold.py",
+        "tests/test_testing.py",
+        "tests/test_basic.py",
+        "tests/type_check/typing_route.py",
+        "src/flask/testing.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "latency_ms": 37.5246999974479
+    },
+    {
+      "id": "flask-015",
+      "question": "Where is the `errorhandler` decorator defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "retrieved_files": [
+        "src/flask/sansio/blueprints.py",
+        "src/flask/sansio/scaffold.py",
+        "tests/test_blueprints.py",
+        "tests/test_basic.py",
+        "src/flask/sansio/app.py",
+        "tests/test_user_error_handler.py",
+        "tests/test_appctx.py",
+        "src/flask/cli.py",
+        "src/flask/logging.py",
+        "tests/type_check/typing_error_handler.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "latency_ms": 42.717099997389596
+    },
+    {
+      "id": "flask-016",
+      "question": "Where is `stream_with_context` defined?",
+      "category": "definition",
+      "difficulty": "easy",
+      "retrieved_files": [
+        "tests/test_helpers.py",
+        "src/flask/helpers.py",
+        "src/flask/templating.py",
+        "src/flask/app.py",
+        "tests/test_testing.py",
+        "tests/test_reqctx.py",
+        "src/flask/ctx.py",
+        "tests/test_templating.py",
+        "src/flask/testing.py",
+        "src/flask/globals.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "latency_ms": 35.26799999963259
+    },
+    {
+      "id": "flask-017",
+      "question": "Where is the session cookie written to the response?",
+      "category": "concept",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/sessions.py",
+        "tests/test_basic.py",
+        "tests/test_testing.py",
+        "src/flask/testing.py",
+        "tests/test_reqctx.py",
+        "src/flask/wrappers.py",
+        "src/flask/app.py",
+        "examples/tutorial/tests/test_auth.py",
+        "src/flask/helpers.py",
+        "src/flask/ctx.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 26.813800002855714
+    },
+    {
+      "id": "flask-018",
+      "question": "What code runs when a Flask application object is constructed?",
+      "category": "concept",
+      "difficulty": "hard",
+      "retrieved_files": [
+        "src/flask/cli.py",
+        "tests/test_cli.py",
+        "src/flask/sansio/app.py",
+        "tests/test_apps/cliapp/app.py",
+        "tests/test_apps/cliapp/inner1/__init__.py",
+        "tests/test_apps/cliapp/inner1/inner2/flask.py",
+        "examples/tutorial/tests/test_factory.py",
+        "src/flask/app.py",
+        "tests/test_apps/helloworld/hello.py",
+        "src/flask/json/provider.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 3,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.3333333333333333
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 3,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.3333333333333333
+      },
+      "latency_ms": 20.92330000596121
+    },
+    {
+      "id": "flask-019",
+      "question": "Where are environment variables with a FLASK_ prefix loaded into the app config?",
+      "category": "concept",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/config.py",
+        "tests/test_config.py",
+        "src/flask/cli.py",
+        "tests/test_testing.py",
+        "src/flask/testing.py",
+        "tests/test_apps/cliapp/app.py",
+        "tests/test_apps/cliapp/inner1/inner2/flask.py",
+        "tests/test_apps/subdomaintestmodule/__init__.py",
+        "tests/test_apps/cliapp/inner1/__init__.py",
+        "tests/test_apps/helloworld/hello.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 23.443700003554113
+    },
+    {
+      "id": "flask-020",
+      "question": "How does Flask look up which registered error handler should handle an exception?",
+      "category": "concept",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/sansio/scaffold.py",
+        "tests/test_appctx.py",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py",
+        "src/flask/app.py",
+        "tests/test_user_error_handler.py",
+        "tests/test_logging.py",
+        "src/flask/sansio/app.py",
+        "src/flask/sansio/blueprints.py",
+        "src/flask/cli.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 8,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.125
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 8,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.125
+      },
+      "latency_ms": 35.05320000112988
+    },
+    {
+      "id": "flask-021",
+      "question": "Where is the Jinja2 template environment created and given Flask globals such as url_for?",
+      "category": "concept",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "tests/test_templating.py",
+        "src/flask/sansio/blueprints.py",
+        "src/flask/app.py",
+        "tests/test_apps/blueprintapp/apps/frontend/__init__.py",
+        "src/flask/sansio/app.py",
+        "tests/test_blueprints.py",
+        "tests/test_apps/blueprintapp/apps/admin/__init__.py",
+        "src/flask/sansio/scaffold.py",
+        "src/flask/templating.py",
+        "examples/javascript/js_example/views.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 3,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.3333333333333333
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 3,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.3333333333333333
+      },
+      "latency_ms": 25.3658000001451
+    },
+    {
+      "id": "flask-022",
+      "question": "Where is URL routing performed for an incoming request?",
+      "category": "concept",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/sansio/scaffold.py",
+        "src/flask/debughelpers.py",
+        "src/flask/views.py",
+        "src/flask/app.py",
+        "src/flask/ctx.py",
+        "src/flask/sansio/app.py",
+        "src/flask/helpers.py",
+        "tests/test_basic.py",
+        "tests/test_helpers.py",
+        "tests/test_cli.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 5,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.2
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 5,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.2
+      },
+      "latency_ms": 23.88280000013765
+    },
+    {
+      "id": "flask-023",
+      "question": "Where is the static file route registered for the application?",
+      "category": "concept",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/app.py",
+        "src/flask/sansio/scaffold.py",
+        "src/flask/sansio/blueprints.py",
+        "tests/test_helpers.py",
+        "src/flask/sansio/app.py",
+        "tests/test_basic.py",
+        "src/flask/testing.py",
+        "src/flask/cli.py",
+        "src/flask/blueprints.py",
+        "tests/test_cli.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 31.57400000054622
+    },
+    {
+      "id": "flask-024",
+      "question": "How does Flask decide whether the session cookie needs to be set on a response?",
+      "category": "concept",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/sessions.py",
+        "tests/test_basic.py",
+        "tests/test_testing.py",
+        "tests/test_reqctx.py",
+        "src/flask/testing.py",
+        "src/flask/helpers.py",
+        "tests/test_session_interface.py",
+        "src/flask/app.py",
+        "tests/test_helpers.py",
+        "src/flask/ctx.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 30.151800005114637
+    },
+    {
+      "id": "flask-025",
+      "question": "Where is the `flask run` command implemented?",
+      "category": "concept",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "tests/test_cli.py",
+        "src/flask/cli.py",
+        "tests/test_apps/cliapp/app.py",
+        "src/flask/app.py",
+        "tests/conftest.py",
+        "tests/test_apps/cliapp/inner1/__init__.py",
+        "tests/test_apps/cliapp/inner1/inner2/flask.py",
+        "tests/test_appctx.py",
+        "tests/test_testing.py",
+        "tests/test_apps/helloworld/hello.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "latency_ms": 25.115100004768465
+    },
+    {
+      "id": "flask-026",
+      "question": "Where is the secret key used to sign the session cookie?",
+      "category": "concept",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/sansio/app.py",
+        "tests/test_basic.py",
+        "src/flask/sessions.py",
+        "src/flask/app.py",
+        "tests/test_reqctx.py",
+        "src/flask/testing.py",
+        "examples/tutorial/flaskr/auth.py",
+        "tests/test_testing.py",
+        "src/flask/wrappers.py",
+        "src/flask/ctx.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 3,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.3333333333333333
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 3,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.3333333333333333
+      },
+      "latency_ms": 28.488899995863903
+    },
+    {
+      "id": "flask-027",
+      "question": "Where is the JSON response built when a view calls `jsonify`?",
+      "category": "concept",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/json/__init__.py",
+        "examples/javascript/js_example/views.py",
+        "tests/test_basic.py",
+        "tests/test_json.py",
+        "tests/type_check/typing_route.py",
+        "src/flask/app.py",
+        "src/flask/sansio/app.py",
+        "src/flask/json/provider.py",
+        "tests/test_testing.py",
+        "src/flask/wrappers.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 8,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.125
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 8,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.125
+      },
+      "latency_ms": 28.17479999794159
+    },
+    {
+      "id": "flask-028",
+      "question": "Where are the `request`, `session`, `g` and `current_app` proxy objects defined?",
+      "category": "concept",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/globals.py",
+        "src/flask/ctx.py",
+        "src/flask/templating.py",
+        "src/flask/app.py",
+        "tests/test_reqctx.py",
+        "tests/test_testing.py",
+        "src/flask/wrappers.py",
+        "src/flask/testing.py",
+        "tests/test_appctx.py",
+        "src/flask/helpers.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 29.957300001115073
+    },
+    {
+      "id": "flask-029",
+      "question": "Where is the class behind the `g` object implemented?",
+      "category": "concept",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/ctx.py",
+        "tests/test_basic.py",
+        "src/flask/sansio/app.py",
+        "src/flask/views.py",
+        "docs/conf.py",
+        "tests/type_check/typing_route.py",
+        "src/flask/config.py",
+        "tests/test_views.py",
+        "src/flask/sansio/scaffold.py",
+        "src/flask/json/provider.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 26.05059999768855
+    },
+    {
+      "id": "flask-030",
+      "question": "How does Flask turn an HTTP exception such as a 404 into a response?",
+      "category": "concept",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/app.py",
+        "tests/test_basic.py",
+        "src/flask/helpers.py",
+        "tests/test_appctx.py",
+        "tests/test_subclassing.py",
+        "tests/test_helpers.py",
+        "src/flask/sansio/app.py",
+        "tests/type_check/typing_error_handler.py",
+        "tests/test_testing.py",
+        "src/flask/wrappers.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 26.231299998471513
+    },
+    {
+      "id": "flask-031",
+      "question": "Where does a blueprint copy its routes and handlers into the application?",
+      "category": "concept",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "tests/test_templating.py",
+        "src/flask/sansio/blueprints.py",
+        "src/flask/sansio/app.py",
+        "tests/test_apps/blueprintapp/__init__.py",
+        "src/flask/sansio/scaffold.py",
+        "tests/test_apps/blueprintapp/apps/frontend/__init__.py",
+        "tests/test_apps/blueprintapp/apps/admin/__init__.py",
+        "src/flask/blueprints.py",
+        "tests/test_blueprints.py",
+        "tests/test_basic.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "latency_ms": 23.69360000011511
+    },
+    {
+      "id": "flask-032",
+      "question": "Where are flashed messages stored?",
+      "category": "concept",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "tests/test_basic.py",
+        "tests/test_signals.py",
+        "src/flask/helpers.py",
+        "src/flask/signals.py",
+        "tests/conftest.py",
+        "tests/test_testing.py",
+        "src/flask/ctx.py",
+        "src/flask/sessions.py",
+        "src/flask/sansio/app.py",
+        "examples/tutorial/tests/conftest.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 3,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.3333333333333333
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 3,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.3333333333333333
+      },
+      "latency_ms": 21.668299996235874
+    },
+    {
+      "id": "flask-033",
+      "question": "Where are `request` and `g` added to the template context before a template is rendered?",
+      "category": "concept",
+      "difficulty": "hard",
+      "retrieved_files": [
+        "src/flask/app.py",
+        "tests/type_check/typing_route.py",
+        "tests/test_templating.py",
+        "src/flask/templating.py",
+        "src/flask/sansio/scaffold.py",
+        "src/flask/ctx.py",
+        "src/flask/sansio/blueprints.py",
+        "examples/javascript/tests/test_js_example.py",
+        "src/flask/sansio/app.py",
+        "src/flask/__init__.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 4,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.25
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 23.930700001074
+    },
+    {
+      "id": "flask-034",
+      "question": "Where is the debug flag read from the environment?",
+      "category": "concept",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/cli.py",
+        "src/flask/sansio/app.py",
+        "src/flask/app.py",
+        "src/flask/helpers.py",
+        "tests/test_cli.py",
+        "src/flask/testing.py",
+        "tests/test_templating.py",
+        "tests/test_helpers.py",
+        "src/flask/templating.py",
+        "tests/test_basic.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 4,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.25
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 4,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.25
+      },
+      "latency_ms": 26.30759999738075
+    },
+    {
+      "id": "flask-035",
+      "question": "Where is the maximum request body size read from the app configuration?",
+      "category": "concept",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/wrappers.py",
+        "tests/test_request.py",
+        "src/flask/app.py",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py",
+        "src/flask/blueprints.py",
+        "tests/test_helpers.py",
+        "tests/test_reqctx.py",
+        "src/flask/ctx.py",
+        "src/flask/globals.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 22.454799996921793
+    },
+    {
+      "id": "flask-036",
+      "question": "Where is the automatic response to an OPTIONS request generated?",
+      "category": "concept",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "tests/test_views.py",
+        "tests/test_basic.py",
+        "src/flask/sansio/app.py",
+        "src/flask/app.py",
+        "src/flask/helpers.py",
+        "src/flask/views.py",
+        "src/flask/ctx.py",
+        "src/flask/sansio/scaffold.py",
+        "tests/test_request.py",
+        "tests/type_check/typing_route.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 4,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.25
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 4,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.25
+      },
+      "latency_ms": 23.389999994833488
+    },
+    {
+      "id": "flask-037",
+      "question": "Where are teardown functions called when a context is popped?",
+      "category": "concept",
+      "difficulty": "hard",
+      "retrieved_files": [
+        "src/flask/sansio/app.py",
+        "src/flask/sansio/scaffold.py",
+        "src/flask/app.py",
+        "src/flask/ctx.py",
+        "tests/test_appctx.py",
+        "src/flask/sansio/blueprints.py",
+        "src/flask/cli.py",
+        "src/flask/testing.py",
+        "tests/test_reqctx.py",
+        "src/flask/signals.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 3,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.3333333333333333
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 3,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.3333333333333333
+      },
+      "latency_ms": 25.02699999604374
+    },
+    {
+      "id": "flask-038",
+      "question": "What calls `ensure_sync`?",
+      "category": "caller",
+      "difficulty": "hard",
+      "retrieved_files": [
+        "src/flask/app.py",
+        "src/flask/views.py",
+        "src/flask/ctx.py",
+        "src/flask/testing.py",
+        "tests/type_check/typing_app_decorators.py",
+        "tests/test_basic.py",
+        "src/flask/sessions.py",
+        "tests/test_testing.py",
+        "src/flask/globals.py",
+        "src/flask/sansio/blueprints.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 22.10709999781102
+    },
+    {
+      "id": "flask-039",
+      "question": "What calls `get_debug_flag`?",
+      "category": "caller",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "tests/test_cli.py",
+        "src/flask/app.py",
+        "src/flask/cli.py",
+        "tests/test_basic.py",
+        "src/flask/sansio/app.py",
+        "tests/test_helpers.py",
+        "src/flask/helpers.py",
+        "tests/test_appctx.py",
+        "src/flask/templating.py",
+        "src/flask/logging.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "latency_ms": 22.353399996063672
+    },
+    {
+      "id": "flask-040",
+      "question": "Which functions use `_endpoint_from_view_func`?",
+      "category": "caller",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/sansio/scaffold.py",
+        "src/flask/sansio/app.py",
+        "src/flask/app.py",
+        "src/flask/sansio/blueprints.py",
+        "tests/test_views.py",
+        "src/flask/views.py",
+        "src/flask/helpers.py",
+        "src/flask/ctx.py",
+        "tests/test_async.py",
+        "tests/test_blueprints.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "latency_ms": 23.436499999661464
+    },
+    {
+      "id": "flask-041",
+      "question": "What calls `get_root_path`?",
+      "category": "caller",
+      "difficulty": "easy",
+      "retrieved_files": [
+        "src/flask/helpers.py",
+        "src/flask/sansio/scaffold.py",
+        "src/flask/config.py",
+        "src/flask/sansio/app.py",
+        "src/flask/app.py",
+        "src/flask/cli.py",
+        "src/flask/sansio/blueprints.py",
+        "tests/test_helpers.py",
+        "tests/test_basic.py",
+        "src/flask/blueprints.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "latency_ms": 24.275100004160777
+    },
+    {
+      "id": "flask-042",
+      "question": "What calls `Flask.process_response`?",
+      "category": "caller",
+      "difficulty": "easy",
+      "retrieved_files": [
+        "src/flask/app.py",
+        "tests/type_check/typing_app_decorators.py",
+        "src/flask/helpers.py",
+        "tests/test_helpers.py",
+        "tests/test_basic.py",
+        "examples/celery/src/task_app/views.py",
+        "src/flask/wrappers.py",
+        "src/flask/json/provider.py",
+        "tests/test_apps/cliapp/inner1/__init__.py",
+        "src/flask/json/__init__.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 24.341099997400306
+    },
+    {
+      "id": "flask-043",
+      "question": "What calls `open_session` to load the session for a request?",
+      "category": "caller",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "tests/test_session_interface.py",
+        "src/flask/ctx.py",
+        "src/flask/sessions.py",
+        "src/flask/testing.py",
+        "src/flask/globals.py",
+        "src/flask/sansio/scaffold.py",
+        "tests/test_basic.py",
+        "tests/test_reqctx.py",
+        "tests/test_helpers.py",
+        "tests/test_testing.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "latency_ms": 25.702999999339227
+    },
+    {
+      "id": "flask-044",
+      "question": "What calls `save_session`?",
+      "category": "caller",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/sessions.py",
+        "src/flask/testing.py",
+        "tests/test_session_interface.py",
+        "tests/test_basic.py",
+        "src/flask/ctx.py",
+        "src/flask/app.py",
+        "examples/tutorial/flaskr/auth.py",
+        "tests/test_helpers.py",
+        "tests/test_testing.py",
+        "src/flask/globals.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "latency_ms": 23.70820000214735
+    },
+    {
+      "id": "flask-045",
+      "question": "What calls `match_request`?",
+      "category": "caller",
+      "difficulty": "easy",
+      "retrieved_files": [
+        "src/flask/ctx.py",
+        "src/flask/globals.py",
+        "tests/test_session_interface.py",
+        "tests/test_basic.py",
+        "src/flask/debughelpers.py",
+        "src/flask/sansio/app.py",
+        "tests/test_reqctx.py",
+        "src/flask/app.py",
+        "src/flask/wrappers.py",
+        "src/flask/views.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 22.905900004843716
+    },
+    {
+      "id": "flask-046",
+      "question": "What calls `find_best_app`?",
+      "category": "caller",
+      "difficulty": "easy",
+      "retrieved_files": [
+        "src/flask/cli.py",
+        "tests/test_cli.py",
+        "tests/test_testing.py",
+        "examples/tutorial/flaskr/__init__.py",
+        "tests/test_appctx.py",
+        "examples/celery/src/task_app/__init__.py",
+        "tests/test_apps/helloworld/wsgi.py",
+        "tests/test_basic.py",
+        "tests/test_blueprints.py",
+        "src/flask/sansio/app.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 23.004800001217518
+    },
+    {
+      "id": "flask-047",
+      "question": "What calls `Blueprint.register`?",
+      "category": "caller",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/sansio/blueprints.py",
+        "src/flask/sansio/app.py",
+        "tests/test_blueprints.py",
+        "tests/test_async.py",
+        "tests/test_apps/blueprintapp/__init__.py",
+        "tests/test_cli.py",
+        "src/flask/sansio/scaffold.py",
+        "tests/test_templating.py",
+        "src/flask/wrappers.py",
+        "src/flask/blueprints.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 24.04739999474259
+    },
+    {
+      "id": "flask-048",
+      "question": "What calls `full_dispatch_request`?",
+      "category": "caller",
+      "difficulty": "easy",
+      "retrieved_files": [
+        "tests/type_check/typing_route.py",
+        "src/flask/views.py",
+        "src/flask/app.py",
+        "src/flask/ctx.py",
+        "tests/test_basic.py",
+        "src/flask/__init__.py",
+        "tests/test_views.py",
+        "src/flask/debughelpers.py",
+        "tests/test_async.py",
+        "src/flask/helpers.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 3,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.3333333333333333
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 3,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.3333333333333333
+      },
+      "latency_ms": 22.60759999626316
+    },
+    {
+      "id": "flask-049",
+      "question": "What calls `create_url_adapter`?",
+      "category": "caller",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/app.py",
+        "tests/test_helpers.py",
+        "src/flask/helpers.py",
+        "src/flask/sansio/app.py",
+        "src/flask/ctx.py",
+        "tests/test_converters.py",
+        "src/flask/sansio/blueprints.py",
+        "src/flask/views.py",
+        "src/flask/sansio/scaffold.py",
+        "tests/test_blueprints.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 24.976199994853232
+    },
+    {
+      "id": "flask-050",
+      "question": "What uses `_default_template_ctx_processor`?",
+      "category": "caller",
+      "difficulty": "easy",
+      "retrieved_files": [
+        "src/flask/sansio/scaffold.py",
+        "src/flask/templating.py",
+        "src/flask/sansio/blueprints.py",
+        "src/flask/helpers.py",
+        "src/flask/app.py",
+        "tests/test_templating.py",
+        "src/flask/sansio/app.py",
+        "tests/conftest.py",
+        "examples/celery/src/task_app/__init__.py",
+        "src/flask/debughelpers.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 22.979699999268632
+    },
+    {
+      "id": "flask-051",
+      "question": "Which files import `flask.sessions`?",
+      "category": "dependency",
+      "difficulty": "hard",
+      "retrieved_files": [
+        "src/flask/sessions.py",
+        "src/flask/testing.py",
+        "tests/test_session_interface.py",
+        "tests/test_cli.py",
+        "tests/test_helpers.py",
+        "src/flask/helpers.py",
+        "tests/test_apps/cliapp/app.py",
+        "src/flask/cli.py",
+        "src/flask/__init__.py",
+        "tests/test_apps/cliapp/inner1/__init__.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "latency_ms": 27.511399996001273
+    },
+    {
+      "id": "flask-052",
+      "question": "Which files import `flask.signals`?",
+      "category": "dependency",
+      "difficulty": "hard",
+      "retrieved_files": [
+        "src/flask/signals.py",
+        "src/flask/helpers.py",
+        "src/flask/app.py",
+        "tests/test_helpers.py",
+        "tests/test_cli.py",
+        "src/flask/__init__.py",
+        "src/flask/cli.py",
+        "tests/test_apps/cliapp/app.py",
+        "tests/test_instance_config.py",
+        "tests/test_apps/cliapp/inner1/inner2/flask.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "latency_ms": 30.068100000789855
+    },
+    {
+      "id": "flask-053",
+      "question": "Which files import `flask.templating`?",
+      "category": "dependency",
+      "difficulty": "hard",
+      "retrieved_files": [
+        "tests/test_apps/blueprintapp/apps/frontend/__init__.py",
+        "tests/test_apps/blueprintapp/apps/admin/__init__.py",
+        "tests/test_helpers.py",
+        "tests/type_check/typing_route.py",
+        "examples/javascript/js_example/views.py",
+        "src/flask/sansio/scaffold.py",
+        "tests/test_templating.py",
+        "src/flask/sansio/app.py",
+        "tests/test_apps/cliapp/inner1/__init__.py",
+        "tests/test_cli.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 6,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.16666666666666666
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 6,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.16666666666666666
+      },
+      "latency_ms": 24.46619999682298
+    },
+    {
+      "id": "flask-054",
+      "question": "Which files import `flask.json.provider`?",
+      "category": "dependency",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/json/provider.py",
+        "src/flask/sansio/app.py",
+        "src/flask/json/__init__.py",
+        "tests/test_helpers.py",
+        "tests/type_check/typing_route.py",
+        "tests/test_cli.py",
+        "src/flask/__init__.py",
+        "tests/test_apps/cliapp/inner1/inner2/flask.py",
+        "tests/test_apps/cliapp/importerrorapp.py",
+        "tests/test_json.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "latency_ms": 23.360999999567866
+    },
+    {
+      "id": "flask-055",
+      "question": "Which files import `flask.debughelpers`?",
+      "category": "dependency",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "tests/test_apps/blueprintapp/__init__.py",
+        "src/flask/helpers.py",
+        "tests/test_cli.py",
+        "tests/test_helpers.py",
+        "src/flask/cli.py",
+        "tests/test_instance_config.py",
+        "tests/test_apps/blueprintapp/apps/admin/__init__.py",
+        "tests/test_apps/blueprintapp/apps/frontend/__init__.py",
+        "tests/test_apps/cliapp/inner1/__init__.py",
+        "src/flask/sansio/app.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 14,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.07142857142857142
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 14,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.07142857142857142
+      },
+      "latency_ms": 22.9542999950354
+    },
+    {
+      "id": "flask-056",
+      "question": "Which files import `flask.config`?",
+      "category": "dependency",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "tests/test_cli.py",
+        "tests/test_config.py",
+        "tests/test_apps/cliapp/app.py",
+        "tests/test_helpers.py",
+        "examples/tutorial/flaskr/__init__.py",
+        "tests/test_apps/blueprintapp/__init__.py",
+        "tests/test_apps/cliapp/inner1/inner2/flask.py",
+        "tests/test_apps/cliapp/inner1/__init__.py",
+        "tests/test_apps/cliapp/importerrorapp.py",
+        "tests/test_instance_config.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 16,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.0625
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 16,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.0625
+      },
+      "latency_ms": 22.369700003764592
+    },
+    {
+      "id": "flask-057",
+      "question": "Which files import `flask.testing`?",
+      "category": "dependency",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "tests/test_apps/cliapp/app.py",
+        "tests/test_apps/cliapp/importerrorapp.py",
+        "tests/test_helpers.py",
+        "tests/test_cli.py",
+        "tests/test_testing.py",
+        "tests/test_config.py",
+        "tests/test_instance_config.py",
+        "examples/tutorial/tests/test_factory.py",
+        "examples/tutorial/flaskr/__init__.py",
+        "tests/conftest.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 16,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.0625
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 16,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.0625
+      },
+      "latency_ms": 22.61259999795584
+    },
+    {
+      "id": "flask-058",
+      "question": "Which files import the `flask.sansio.scaffold` module?",
+      "category": "dependency",
+      "difficulty": "hard",
+      "retrieved_files": [
+        "src/flask/sansio/scaffold.py",
+        "src/flask/blueprints.py",
+        "src/flask/debughelpers.py",
+        "src/flask/sansio/app.py",
+        "tests/test_cli.py",
+        "tests/test_helpers.py",
+        "src/flask/sansio/blueprints.py",
+        "src/flask/json/provider.py",
+        "src/flask/templating.py",
+        "tests/test_instance_config.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "latency_ms": 23.65760000247974
+    },
+    {
+      "id": "flask-059",
+      "question": "Which files import `flask.ctx`?",
+      "category": "dependency",
+      "difficulty": "hard",
+      "retrieved_files": [
+        "tests/test_cli.py",
+        "src/flask/cli.py",
+        "src/flask/helpers.py",
+        "tests/test_apps/cliapp/inner1/__init__.py",
+        "tests/test_apps/cliapp/inner1/inner2/flask.py",
+        "tests/test_apps/cliapp/importerrorapp.py",
+        "tests/test_apps/cliapp/app.py",
+        "tests/test_helpers.py",
+        "src/flask/testing.py",
+        "tests/test_instance_config.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 11,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.09090909090909091
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 11,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.09090909090909091
+      },
+      "latency_ms": 23.484000004827976
+    },
+    {
+      "id": "flask-060",
+      "question": "Which other Flask modules does `flask/sessions.py` import?",
+      "category": "dependency",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/sessions.py",
+        "tests/test_apps/cliapp/app.py",
+        "tests/test_apps/cliapp/inner1/__init__.py",
+        "tests/test_session_interface.py",
+        "src/flask/testing.py",
+        "tests/test_apps/cliapp/inner1/inner2/flask.py",
+        "tests/test_helpers.py",
+        "tests/test_cli.py",
+        "tests/test_apps/subdomaintestmodule/__init__.py",
+        "tests/test_apps/blueprintapp/__init__.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 15,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.06666666666666667
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 15,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.06666666666666667
+      },
+      "latency_ms": 22.845999999844935
+    },
+    {
+      "id": "flask-061",
+      "question": "Which other Flask modules does `flask/views.py` depend on?",
+      "category": "dependency",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "examples/javascript/js_example/__init__.py",
+        "tests/test_apps/blueprintapp/apps/frontend/__init__.py",
+        "tests/test_apps/subdomaintestmodule/__init__.py",
+        "tests/test_views.py",
+        "tests/test_apps/cliapp/inner1/__init__.py",
+        "tests/test_apps/blueprintapp/apps/admin/__init__.py",
+        "src/flask/cli.py",
+        "tests/test_apps/cliapp/inner1/inner2/flask.py",
+        "tests/test_apps/cliapp/app.py",
+        "src/flask/sansio/app.py"
+      ],
+      "primary": {
+        "first_relevant_rank": null,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": null,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.0
+      },
+      "latency_ms": 26.028100000985432
+    },
+    {
+      "id": "flask-062",
+      "question": "Which other Flask modules does `flask/helpers.py` import?",
+      "category": "dependency",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "tests/test_apps/cliapp/app.py",
+        "tests/test_apps/cliapp/inner1/inner2/flask.py",
+        "src/flask/__init__.py",
+        "tests/test_apps/cliapp/inner1/__init__.py",
+        "tests/test_helpers.py",
+        "tests/test_apps/cliapp/importerrorapp.py",
+        "src/flask/cli.py",
+        "tests/test_cli.py",
+        "src/flask/sansio/app.py",
+        "tests/test_apps/subdomaintestmodule/__init__.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 18,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.05555555555555555
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 18,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.05555555555555555
+      },
+      "latency_ms": 32.11499999451917
+    },
+    {
+      "id": "flask-063",
+      "question": "How is an incoming WSGI request dispatched to a view function?",
+      "category": "flow",
+      "difficulty": "hard",
+      "retrieved_files": [
+        "src/flask/views.py",
+        "src/flask/app.py",
+        "tests/type_check/typing_route.py",
+        "tests/test_basic.py",
+        "tests/test_views.py",
+        "src/flask/sansio/scaffold.py",
+        "src/flask/sansio/app.py",
+        "tests/test_async.py",
+        "tests/test_logging.py",
+        "tests/test_helpers.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "latency_ms": 22.831900001619942
+    },
+    {
+      "id": "flask-064",
+      "question": "How is the user's session loaded at the start of a request and saved at the end?",
+      "category": "flow",
+      "difficulty": "hard",
+      "retrieved_files": [
+        "src/flask/sansio/scaffold.py",
+        "src/flask/ctx.py",
+        "tests/test_session_interface.py",
+        "src/flask/sessions.py",
+        "src/flask/testing.py",
+        "src/flask/app.py",
+        "src/flask/sansio/blueprints.py",
+        "tests/test_basic.py",
+        "examples/tutorial/flaskr/auth.py",
+        "tests/test_reqctx.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 4,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.25
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "latency_ms": 23.81469999818364
+    },
+    {
+      "id": "flask-065",
+      "question": "How does the `@app.route` decorator register a URL rule?",
+      "category": "flow",
+      "difficulty": "hard",
+      "retrieved_files": [
+        "src/flask/sansio/scaffold.py",
+        "src/flask/sansio/blueprints.py",
+        "src/flask/app.py",
+        "src/flask/helpers.py",
+        "tests/test_blueprints.py",
+        "tests/test_helpers.py",
+        "src/flask/cli.py",
+        "src/flask/views.py",
+        "src/flask/sansio/app.py",
+        "tests/test_basic.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 9,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.1111111111111111
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 23.761900003592018
+    },
+    {
+      "id": "flask-066",
+      "question": "How does a blueprint get registered on an app and its routes added?",
+      "category": "flow",
+      "difficulty": "hard",
+      "retrieved_files": [
+        "src/flask/sansio/blueprints.py",
+        "src/flask/sansio/app.py",
+        "tests/test_async.py",
+        "tests/test_apps/blueprintapp/__init__.py",
+        "tests/test_blueprints.py",
+        "examples/tutorial/flaskr/__init__.py",
+        "src/flask/sansio/scaffold.py",
+        "tests/test_cli.py",
+        "tests/test_templating.py",
+        "src/flask/wrappers.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 29.499600001145154
+    },
+    {
+      "id": "flask-067",
+      "question": "How does Flask convert a view's return value into a response object?",
+      "category": "flow",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/helpers.py",
+        "tests/test_basic.py",
+        "tests/test_views.py",
+        "src/flask/app.py",
+        "src/flask/json/__init__.py",
+        "src/flask/json/provider.py",
+        "src/flask/wrappers.py",
+        "src/flask/views.py",
+        "tests/test_helpers.py",
+        "examples/javascript/js_example/views.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 4,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.25
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 4,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.25
+      },
+      "latency_ms": 28.529000002890825
+    },
+    {
+      "id": "flask-068",
+      "question": "How are before_request and after_request callbacks executed?",
+      "category": "flow",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/app.py",
+        "src/flask/sansio/scaffold.py",
+        "tests/test_basic.py",
+        "tests/test_signals.py",
+        "src/flask/sansio/blueprints.py",
+        "tests/test_async.py",
+        "tests/test_blueprints.py",
+        "src/flask/ctx.py",
+        "src/flask/helpers.py",
+        "tests/type_check/typing_app_decorators.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 23.03659999597585
+    },
+    {
+      "id": "flask-069",
+      "question": "What happens when a view raises an unhandled exception?",
+      "category": "flow",
+      "difficulty": "hard",
+      "retrieved_files": [
+        "src/flask/app.py",
+        "src/flask/wrappers.py",
+        "tests/test_basic.py",
+        "src/flask/sansio/app.py",
+        "tests/test_appctx.py",
+        "tests/test_views.py",
+        "src/flask/views.py",
+        "tests/test_async.py",
+        "tests/test_user_error_handler.py",
+        "src/flask/sansio/scaffold.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 22.790600000007544
+    },
+    {
+      "id": "flask-070",
+      "question": "How does the `flask run` command start the development server?",
+      "category": "flow",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/app.py",
+        "tests/test_appctx.py",
+        "tests/test_basic.py",
+        "tests/test_cli.py",
+        "tests/conftest.py",
+        "src/flask/cli.py",
+        "src/flask/sansio/app.py",
+        "tests/test_apps/cliapp/app.py",
+        "tests/test_testing.py",
+        "examples/tutorial/flaskr/__init__.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 6,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.16666666666666666
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 6,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.16666666666666666
+      },
+      "latency_ms": 26.8897999994806
+    },
+    {
+      "id": "flask-071",
+      "question": "How does the Flask command line find the application to load?",
+      "category": "flow",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "src/flask/cli.py",
+        "tests/test_cli.py",
+        "src/flask/sansio/app.py",
+        "tests/test_apps/cliapp/inner1/__init__.py",
+        "src/flask/app.py",
+        "tests/test_apps/cliapp/app.py",
+        "tests/test_apps/cliapp/inner1/inner2/flask.py",
+        "tests/test_apps/cliapp/multiapp.py",
+        "src/flask/testing.py",
+        "tests/conftest.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 1,
+        "hit_at_1": true,
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
+      },
+      "latency_ms": 25.944699998944998
+    },
+    {
+      "id": "flask-072",
+      "question": "How does the test client send a request to the application?",
+      "category": "flow",
+      "difficulty": "medium",
+      "retrieved_files": [
+        "tests/test_reqctx.py",
+        "tests/test_basic.py",
+        "tests/test_helpers.py",
+        "src/flask/app.py",
+        "tests/conftest.py",
+        "tests/test_blueprints.py",
+        "examples/tutorial/tests/test_blog.py",
+        "tests/test_user_error_handler.py",
+        "tests/test_testing.py",
+        "tests/test_views.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 18,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.05555555555555555
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 18,
+        "hit_at_1": false,
+        "hit_at_k": false,
+        "reciprocal_rank": 0.05555555555555555
+      },
+      "latency_ms": 26.726899995992426
+    },
+    {
+      "id": "flask-073",
+      "question": "How does `url_for` build a URL for an endpoint?",
+      "category": "flow",
+      "difficulty": "hard",
+      "retrieved_files": [
+        "src/flask/sansio/app.py",
+        "src/flask/helpers.py",
+        "src/flask/app.py",
+        "src/flask/sansio/scaffold.py",
+        "src/flask/sansio/blueprints.py",
+        "tests/test_helpers.py",
+        "tests/test_basic.py",
+        "src/flask/wrappers.py",
+        "tests/test_blueprints.py",
+        "tests/test_testing.py"
+      ],
+      "primary": {
+        "first_relevant_rank": 3,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.3333333333333333
+      },
+      "primary_plus_supporting": {
+        "first_relevant_rank": 2,
+        "hit_at_1": false,
+        "hit_at_k": true,
+        "reciprocal_rank": 0.5
+      },
+      "latency_ms": 23.83150000241585
+    }
+  ]
+}
