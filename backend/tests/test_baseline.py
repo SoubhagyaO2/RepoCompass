@@ -1,37 +1,15 @@
 """Baseline tests use a fake embedder (hashed bag of words) so they need no model download."""
 
-import math
-import re
 from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
+from fakes import FakeEmbedder
 
 from app.ingestion.discovery import discover_files
 from app.models.repository import IngestedRepository, RepoRef
 from app.retrieval.baseline import FixedChunkBaseline, collection_name
 from app.retrieval.vector_store import VectorStore
-
-DIM = 256
-
-
-class FakeEmbedder:
-    model_name = "fake-bow"
-    device = "cpu"
-    dimension = DIM
-
-    def _embed(self, text: str) -> list[float]:
-        vec = [0.0] * DIM
-        for word in re.findall(r"[a-z]+", text.lower()):
-            vec[sum(ord(c) * 31**i for i, c in enumerate(word)) % DIM] += 1.0
-        norm = math.sqrt(sum(v * v for v in vec)) or 1.0
-        return [v / norm for v in vec]
-
-    def embed_documents(self, texts: list[str], show_progress: bool = False) -> list[list[float]]:
-        return [self._embed(t) for t in texts]
-
-    def embed_query(self, text: str) -> list[float]:
-        return self._embed(text)
 
 
 @pytest.fixture

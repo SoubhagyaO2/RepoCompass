@@ -30,6 +30,13 @@ class SentenceTransformerEmbedder:
         self.model_name = model_name
         self.device = str(self._model.device)
         self.dimension = int(self._model.get_embedding_dimension() or 0)
+        # Input beyond this many tokens is silently cut off before embedding.
+        self.max_seq_length = int(self._model.max_seq_length or 0)
+
+    def count_tokens(self, texts: list[str]) -> list[int]:
+        """Token count of each text, without truncation (to see what the model cannot read)."""
+        encoded = self._model.tokenizer(texts, truncation=False, verbose=False)
+        return [len(ids) for ids in encoded["input_ids"]]
 
     def embed_documents(self, texts: list[str], show_progress: bool = False) -> list[list[float]]:
         vectors = self._model.encode(
