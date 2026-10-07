@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from app.evaluation.dataset import load_dataset
-from app.evaluation.run_baseline import RETRIEVAL_DEPTH, TOP_K
+from app.evaluation.experiment import RETRIEVAL_DEPTH, TOP_K, format_comparison, format_report
 
 EVAL_DIR = Path(__file__).resolve().parents[2] / "evaluation"
 RESULTS = sorted((EVAL_DIR / "results").glob("*.json"))
@@ -34,3 +34,11 @@ def test_saved_results_match_the_frozen_dataset_and_locked_scoring(path: Path) -
     assert result["scoring"] == "file_level"
     for scope in ("primary", "primary_plus_supporting"):
         assert result["results"][scope]["overall"]["n"] == len(ds.questions)
+
+
+@pytest.mark.skipif(not RESULTS, reason="no saved results yet")
+def test_saved_results_can_be_formatted() -> None:
+    reports = [(p.stem[:12], json.loads(p.read_text(encoding="utf-8"))) for p in RESULTS]
+    for _, report in reports:
+        assert "OVERALL" in format_report(report)
+    assert "OVERALL" in format_comparison(reports)

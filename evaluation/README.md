@@ -176,3 +176,67 @@ MRR 0.082 on this dataset (computed exactly from the number of primary files per
   questions are dependency questions.
 - The index contains all 83 Python files in the repository (including tests, docs and examples),
   while only `src/flask/` files can score. This is deliberate: the baseline is the naive approach.
+
+### BM25 on fixed and AST chunks (Milestone 7)
+
+Same frozen dataset, scoring, breakdowns and latency protocol as the baseline.
+[`results/flask_fixed_chunk_bm25.json`](results/flask_fixed_chunk_bm25.json) and
+[`results/flask_ast_chunk_bm25.json`](results/flask_ast_chunk_bm25.json), 2026-10-07; reproduce with
+`python -m app.evaluation.run_bm25`.
+
+**Configuration, fixed before the run and not tuned on the benchmark:** BM25 with the textbook
+defaults k1 = 1.5, b = 0.75; lowercase tokens, identifiers indexed whole *and* split on `_` and
+camelCase, no stemming; question-word stopwords removed from queries only; **chunk content only is
+indexed** (no file path or symbol name) for both chunkings, so they differ in chunk boundaries and
+nothing else. Fixed chunks are 1,000/200 as in the baseline (792 chunks); AST chunks are the
+Milestone 3 chunks (1,027 chunks).
+
+Primary scope (the headline), Top-1 / Top-5 / MRR:
+
+| | n | Fixed + embeddings | Fixed + BM25 | AST + BM25 |
+|---|---|---|---|---|
+| **Overall** | 73 | 32.9% / 80.8% / 0.541 | **41.1% / 84.9% / 0.598** | 31.5% / 83.6% / 0.543 |
+| definition | 16 | 31.2% / **93.8%** / 0.595 | 37.5% / 75.0% / 0.534 | 31.2% / 81.2% / 0.515 |
+| caller | 13 | 53.8% / 100% / 0.756 | **76.9%** / 100% / **0.885** | 53.8% / 100% / 0.718 |
+| dependency | 12 | 0.0% / 33.3% / 0.215 | **16.7% / 58.3% / 0.392** | 8.3% / 50.0% / 0.331 |
+| concept | 21 | 38.1% / 90.5% / 0.565 | 38.1% / **100%** / 0.602 | **42.9% / 100% / 0.675** |
+| flow | 11 | 36.4% / 72.7% / 0.515 | 36.4% / **81.8% / 0.571** | 9.1% / 72.7% / 0.359 |
+| easy | 20 | **45.0% / 95.0% / 0.667** | 45.0% / 85.0% / 0.619 | 35.0% / 90.0% / 0.567 |
+| medium | 38 | 31.6% / 73.7% / 0.506 | **39.5% / 84.2% / 0.570** | 31.6% / 78.9% / 0.544 |
+| hard | 15 | 20.0% / 80.0% / 0.458 | 40.0% / 86.7% / **0.642** | 26.7% / 86.7% / 0.509 |
+| median query latency | | 23.9 ms | 0.37 ms | 0.36 ms |
+| indexing time | | 71.6 s | 0.11 s | 0.26 s |
+
+Paired comparison of the overall results (`python -m app.evaluation.compare A.json B.json`; per
+question, B vs A; exact sign test; 95% bootstrap interval for the MRR difference):
+
+| B vs A | B better / worse / equal | Top-1 | Top-5 | MRR | sign test p |
+|---|---|---|---|---|---|
+| fixed+BM25 vs fixed+embeddings | 28 / 18 / 27 | +8.2% | +4.1% | +0.058 (-0.021 to +0.135) | 0.184 |
+| AST+BM25 vs fixed+BM25 (chunking) | 15 / 25 / 33 | -9.6% | -1.4% | -0.055 (-0.119 to +0.010) | 0.154 |
+| AST+BM25 vs fixed+embeddings | 26 / 21 / 26 | -1.4% | +2.7% | +0.003 (-0.071 to +0.077) | 0.560 |
+
+**How to read these numbers**
+
+- **No overall difference is statistically distinguishable from noise.** Every interval includes
+  zero and every sign test has p > 0.15. BM25 looks better than embeddings on this sample
+  (+8 points Top-1), but 73 questions cannot confirm it; the same goes for AST chunks looking
+  worse than fixed chunks. Do not claim an overall winner from this table.
+- **Per-category patterns are suggestive, not established** (11-21 questions each). BM25 is
+  better on `caller`, `dependency` and `concept` questions (exact identifiers and rare words), and
+  embeddings are better on `definition` Top-5 (94% vs 75%): BM25 ranked `render_template`,
+  `jsonify`, `url_for` and `FlaskClient` below 5 files because tests and examples *use* those names
+  constantly, and BM25 cannot tell "defines" from "uses".
+- **Test/example files still crowd the results.** Files outside `src/flask/` are ranked #1 for 19
+  of 73 questions with fixed+BM25, 27 with AST+BM25 and 21 with the embedding baseline; they never
+  score.
+- **Why AST chunks did not help under BM25 is untested.** One hypothesis: AST chunks vary from a
+  few lines to thousands of characters, and BM25's length normalisation favours short, keyword-dense
+  chunks such as small test functions over the long function that actually implements the answer.
+  Confirming it would mean varying `b` or the chunk sizes, which is tuning on the benchmark; it
+  needs a separate dev set or a new dataset.
+- **The chunking effect is only measured under BM25.** AST chunks + embeddings has not been run
+  (it is part of the Milestone 19 ablation), so we cannot yet say whether AST chunking helps
+  embeddings.
+- The latency and indexing columns compare an in-memory keyword index with a neural model on CPU;
+  BM25 is about 65 times faster per query and indexes in a fraction of a second.
