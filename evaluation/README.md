@@ -240,3 +240,88 @@ question, B vs A; exact sign test; 95% bootstrap interval for the MRR difference
   embeddings.
 - The latency and indexing columns compare an in-memory keyword index with a neural model on CPU;
   BM25 is about 65 times faster per query and indexes in a fraction of a second.
+
+### Hybrid retrieval and the AST + embeddings control (Milestone 8)
+
+Reproduce with `python -m app.evaluation.run_hybrid` (about 4 minutes on CPU; builds all indexes
+fresh). `python -m app.evaluation.run_hybrid --report-only` re-prints the tables and paired
+comparisons below from the saved files without re-running anything. Results:
+[`flask_ast_chunk_embeddings.json`](results/flask_ast_chunk_embeddings.json) (control),
+[`flask_fixed_chunk_hybrid.json`](results/flask_fixed_chunk_hybrid.json) (H1) and
+[`flask_ast_chunk_hybrid.json`](results/flask_ast_chunk_hybrid.json) (H2), 2026-10-07.
+
+**Method, fixed before any hybrid result existed and not tuned on the benchmark:** reciprocal rank
+fusion with equal weights and `k = 60` (the value from the original RRF paper). Each component
+retrieves 50 chunks, which are deduplicated to unique files (first occurrence) *before* fusing, so a
+file with many similar chunks gets one vote per component. A file's score is
+`sum over components of 1 / (60 + its rank in that component)`; ties are broken by best individual
+rank, then path. Components are BM25 (the Milestone 7 configuration) and `bge-small` embeddings (the
+Milestone 6 configuration) over the same chunking, each indexing raw chunk content only. Six paired
+comparisons were fixed in advance (listed below). AST + embeddings is the control that lets the AST
+hybrid be interpreted.
+
+Overall, primary scope, Top-1 / Top-5 / MRR (73 questions):
+
+| Chunking | Embeddings | BM25 | Hybrid (RRF) |
+|---|---|---|---|
+| **Fixed** | 32.9% / 80.8% / 0.541 | 41.1% / 84.9% / 0.598 | 39.7% / **87.7%** / 0.614 |
+| **AST** | 43.8% / 79.5% / 0.583 | 31.5% / 83.6% / 0.543 | **43.8% / 87.7% / 0.626** |
+
+MRR by category:
+
+| | Fixed: emb | BM25 | **Hybrid** | AST: emb | BM25 | **Hybrid** |
+|---|---|---|---|---|---|---|
+| definition (16) | 0.595 | 0.534 | **0.611** | 0.825 | 0.515 | **0.738** |
+| caller (13) | 0.756 | 0.885 | **0.872** | 0.635 | 0.718 | **0.718** |
+| dependency (12) | 0.215 | 0.392 | **0.334** | 0.071 | 0.331 | **0.274** |
+| concept (21) | 0.565 | 0.602 | **0.630** | 0.683 | 0.675 | **0.742** |
+| flow (11) | 0.515 | 0.571 | **0.587** | 0.539 | 0.359 | **0.519** |
+
+Median query latency: hybrid about 21 ms (almost all of it embedding the question); indexing
+about 68 s (fixed) and 51 s (AST), almost all of it computing embeddings.
+
+Pre-registered paired comparisons (B vs A; exact sign test on per-question rank wins/losses;
+95% paired-bootstrap interval for the MRR difference; uncorrected, so the Bonferroni threshold
+for six comparisons is p < 0.0083):
+
+| B vs A | B better / worse / equal | Top-1 | Top-5 | MRR (95% CI) | sign test p |
+|---|---|---|---|---|---|
+| 1. H1 (fixed hybrid) vs fixed+embeddings | 29 / 7 / 37 | +6.8% | +6.8% | **+0.073 (+0.030 to +0.119)** | **0.0003** |
+| 2. H1 vs fixed+BM25 | 25 / 14 / 34 | -1.4% | +2.7% | +0.016 (-0.046 to +0.077) | 0.108 |
+| 3. H2 (AST hybrid) vs AST+embeddings | 25 / 13 / 35 | +0.0% | +8.2% | +0.043 (-0.015 to +0.103) | 0.073 |
+| 4. H2 vs AST+BM25 | 21 / 12 / 40 | +12.3% | +4.1% | +0.083 (+0.034 to +0.137) | 0.163 |
+| 5. AST+embeddings vs fixed+embeddings | 26 / 25 / 22 | +11.0% | -1.4% | +0.043 (-0.046 to +0.130) | 1.000 |
+| 6. H2 vs H1 | 21 / 22 / 30 | +4.1% | +0.0% | +0.013 (-0.056 to +0.080) | 1.000 |
+
+**How to read these numbers**
+
+- **Hybrid is the best configuration overall, but its advantage over the better single method is
+  not established.** Both hybrids reach 87.7% Top-5 (the best single method is 84.9%) and the
+  highest MRR in their row. Only comparison 1 is clearly real (p = 0.0003, survives the correction):
+  fixed-chunk hybrid beats the fixed-chunk embedding baseline. Against the stronger component the
+  gains (+0.016 and +0.043 MRR) have intervals that include zero. Comparison 4's interval excludes
+  zero but its sign test does not (p = 0.16); treat it as suggestive.
+- **Fusion partly, not fully, fixes each retriever's weakness.** On fixed chunks it recovers the
+  definition Top-5 that BM25 lost (75.0% to 93.8%, matching embeddings). Across the ten
+  category x chunking cells, hybrid MRR is above both components in 4, equal to the best in 1 and
+  below the better component in 5 (for example AST definition: 0.738 hybrid vs 0.825 embeddings).
+  Fusion without weights tends to land near the better component rather than beyond it.
+- **Dependency questions are still unsolved.** Hybrid misses Top-5 on 5 (fixed) and 6 (AST) of the
+  12, and those are 5-6 of its 9 total Top-5 misses; Top-1 is 8%. Structural questions need
+  structure, which is the job of the code graph (Milestones 10-11).
+- **Test and example files still crowd the top.** The #1 result lies outside `src/flask/` for 16
+  (fixed hybrid) and 20 (AST hybrid) of 73 questions, down from 19-27 for the single methods but
+  far from gone.
+- **AST chunking helps embeddings and hurts BM25 here, and the two roughly cancel in the hybrid.**
+  The control (comparison 5) shows AST + embeddings at 43.8% Top-1 vs 32.9% for fixed chunks, driven
+  by definition questions (Top-1 31% to 69%, 6 questions) and concept questions, but with Top-5 on
+  dependency questions collapsing (33% to 8%); overall it is not significant (p = 1.0, MRR interval
+  -0.046 to +0.130). Under BM25 AST chunks were worse (Milestone 7). In the hybrid the two effects
+  net to nothing (comparison 6: p = 1.0, MRR +0.013). This reading is consistent with the data but
+  was not tested directly.
+- **A confound for the AST embeddings:** the embedding model reads at most 512 tokens, and 42 of
+  the 1,027 AST chunks are longer (0 of 792 fixed chunks), so their tails are silently cut off.
+  Whether that matters was not tested.
+- Six comparisons on one repository with 73 questions: a result that does not hold on a second
+  repository (planned) or a held-out question set should not be trusted. Tuning any parameter
+  (RRF `k`, BM25 `b`, chunk size) on these 73 questions would need a separate dev set.
