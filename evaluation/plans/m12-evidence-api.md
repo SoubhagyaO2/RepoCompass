@@ -270,3 +270,36 @@ Pinned Flask commit `d73fa1cdcbd8b1465c151db8924ba58b1dd14e35`; dataset fingerpr
 `6e78d06ad988b637eb3f77f047232238667e0cf9b325abd971f1eab3c024a311`. Planned modules:
 `app/evidence/{schema,builder,__main__}.py`, `app/api/evidence.py`, tests under
 `tests/test_evidence_*.py`, results in `evaluation/results/evidence_api_flask.json`.
+
+## Addendum (2026-10-08, after the implementation and its unit tests, before any validation run)
+
+Two deviations from the frozen plan, found while implementing. Neither changes the schema, the
+rules or the pass/fail checks apart from what is stated here.
+
+**Deviation 1: the saved M8 results contain no RRF scores.** Section 10 check 1 says evidence RRF
+scores must equal "the saved scores". The saved M8 result files hold only the ranked file lists
+(`retrieved_files`, top 10) per question, no scores. The check is therefore: (a) the evidence file
+order equals the saved M8 AST-hybrid ranking (top 10) for all 73 questions, and (b) evidence RRF
+scores, lines and order equal those of the unmodified `HybridRetriever.search` run on the same
+index (a unit test also checks this on a synthetic repository).
+
+**Deviation 2: "byte-identical" is not achievable for embedding raw scores, and exact embedding
+ties are ordered by the vector store.** Found by a unit test: two identical searches in one process
+returned embedding scores differing by about 3e-8 (float32 noise in Qdrant's local mode) for some
+queries; BM25 and RRF scores and all ranks were identical. Separately, chunks with identical or
+bag-of-words-identical text get exactly equal embedding scores, and their order is the vector
+store's internal (insertion) order, which an incremental update does not reproduce; this will also
+happen with real embeddings for chunks with identical text. Section 7 already says the API does
+not claim embedding ties are stable across stores; it is now stated as the determinism contract:
+
+- For a fixed index state, repeated requests return identical `evidence` except that
+  `scores.embedding.score` may differ by up to 1.5e-6 (noise plus the 6-decimal rounding).
+- Which of several exactly-tied chunks a component returns first, and hence the order of files
+  that tie, is the store's order. The retrieval layer is not changed in this milestone (changing
+  tie-breaking is a retrieval change and would be evaluated separately; backlog).
+- The validation run therefore **measures** how often it matters on the 73 questions instead of
+  asserting it never does: repeated in-process and fresh-process responses are compared with
+  `compare_evidence` (tolerance as above), and the number of questions with any exactly tied
+  embedding scores in their top 10 is reported.
+- The incremental-update equivalence test (check 8) uses an embedder without accidental ties so
+  that it tests the evidence logic and not the store's tie order.
