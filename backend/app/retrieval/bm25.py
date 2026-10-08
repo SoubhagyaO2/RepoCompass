@@ -100,3 +100,68 @@ class BM25Index:
                     tf + self.k1 * norm
                 )
         return heapq.nlargest(k, scores.items(), key=lambda item: (item[1], -item[0]))
+
+
+class LiveBM25Index:
+    """BM25 that supports adding and removing documents in place (for incremental indexing).
+
+    Scoring, tokenizer and tie-breaking are those of `BM25Index`: given the same documents in the
+    same order, `search` returns identical scores and an identical ranking. Collection statistics
+    are derived from counters at query time, so an update costs only the changed documents.
+    Ties are broken by the `order` key supplied when a document is added (lower first), which
+    callers set to the document's position in the corpus a static index would have used.
+    """
+
+    def __init__(self, k1: float = K1, b: float = B) -> None:
+        self.k1 = k1
+        self.b = b
+        self._lengths: dict[str, int] = {}
+        self._terms: dict[str, Counter[str]] = {}  # doc id -> term frequencies
+        self._order: dict[str, tuple[object, ...]] = {}
+        self._postings: dict[str, dict[str, int]] = {}  # term -> {doc id: tf}
+        self._total_length = 0
+
+    def __len__(self) -> int:
+        return len(self._lengths)
+
+    def __contains__(self, doc_id: str) -> bool:
+        return doc_id in self._lengths
+
+    def add(self, doc_id: str, text: str, order: tuple[object, ...]) -> None:
+        if doc_id in self._lengths:
+            raise ValueError(f"document {doc_id!r} is already indexed")
+        tokens = tokenize(text)
+        counts = Counter(tokens)
+        self._lengths[doc_id] = len(tokens)
+        self._terms[doc_id] = counts
+        self._order[doc_id] = order
+        self._total_length += len(tokens)
+        for term, tf in counts.items():
+            self._postings.setdefault(term, {})[doc_id] = tf
+
+    def remove(self, doc_id: str) -> None:
+        self._total_length -= self._lengths.pop(doc_id)
+        del self._order[doc_id]
+        for term in self._terms.pop(doc_id):
+            postings = self._postings[term]
+            del postings[doc_id]
+            if not postings:
+                del self._postings[term]
+
+    def search(self, query: str, k: int) -> list[tuple[str, float]]:
+        """Up to k (document id, score) pairs, best first; only matching documents appear."""
+        n_docs = len(self._lengths)
+        avg_len = self._total_length / n_docs if n_docs else 0.0
+        scores: dict[str, float] = {}
+        for term in tokenize_query(query):
+            postings = self._postings.get(term)
+            if postings is None:
+                continue
+            idf = math.log(1 + (n_docs - len(postings) + 0.5) / (len(postings) + 0.5))
+            for doc_id, tf in postings.items():
+                norm = 1 - self.b + self.b * self._lengths[doc_id] / avg_len
+                scores[doc_id] = scores.get(doc_id, 0.0) + idf * tf * (self.k1 + 1) / (
+                    tf + self.k1 * norm
+                )
+        ranked = sorted(scores.items(), key=lambda item: (-item[1], self._order[item[0]]))
+        return ranked[: max(k, 0)]

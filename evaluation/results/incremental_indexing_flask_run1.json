@@ -1,0 +1,762 @@
+{
+  "plan": "evaluation/plans/m11-incremental-indexing.md",
+  "repository": "pallets/flask",
+  "commit": "d73fa1cdcbd8b1465c151db8924ba58b1dd14e35",
+  "dataset_fingerprint": "6e78d06ad988b637eb3f77f047232238667e0cf9b325abd971f1eab3c024a311",
+  "embedding_model": "BAAI/bge-small-en-v1.5",
+  "device": "cpu",
+  "repetitions": 3,
+  "environment": {
+    "python": "3.13.3",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "sentence_transformers": "6.1.0",
+    "torch": "2.14.1",
+    "qdrant_client": "1.19.1",
+    "networkx": "3.7",
+    "repocompass_commit": "7cbce65e4a85dea0ad50d6a8dc7d547422b0201f",
+    "repocompass_tree_dirty": true
+  },
+  "timestamp": "2026-10-08T15:36:51+0530",
+  "cold_build": {
+    "files": 83,
+    "chunks": {
+      "fixed": 792,
+      "ast": 1027
+    },
+    "seconds": {
+      "scan": 0.042,
+      "parse_chunk": 0.547,
+      "store_read": 0.0,
+      "embed": 129.38,
+      "store_write": 5.88,
+      "persist": 0.093,
+      "store_delete": 0.0,
+      "bm25": 0.231,
+      "graph": 0.062,
+      "total": 136.24
+    },
+    "views": {
+      "fixed": {
+        "new_chunks": 792,
+        "embedded_chunks": 792,
+        "reused_chunks": 0,
+        "model_texts": 792,
+        "points_upserted": 792,
+        "points_deleted": 0
+      },
+      "ast": {
+        "new_chunks": 1027,
+        "embedded_chunks": 1027,
+        "reused_chunks": 0,
+        "model_texts": 1021,
+        "points_upserted": 1027,
+        "points_deleted": 0
+      }
+    }
+  },
+  "m8_rankings_at_start": {
+    "fixed": {
+      "questions": 73,
+      "mismatches": []
+    },
+    "ast": {
+      "questions": 73,
+      "mismatches": []
+    },
+    "identical": true
+  },
+  "scenarios": [
+    {
+      "id": "noop",
+      "description": "nothing changed",
+      "files": {
+        "added": 0,
+        "modified": 0,
+        "deleted": 0,
+        "unchanged": 83
+      },
+      "views": {
+        "fixed": {
+          "new_chunks": 0,
+          "embedded_chunks": 0,
+          "reused_chunks": 0,
+          "model_texts": 0,
+          "points_upserted": 0,
+          "points_deleted": 0
+        },
+        "ast": {
+          "new_chunks": 0,
+          "embedded_chunks": 0,
+          "reused_chunks": 0,
+          "model_texts": 0,
+          "points_upserted": 0,
+          "points_deleted": 0
+        }
+      },
+      "graph_edges_added": 0,
+      "graph_edges_removed": 0,
+      "seconds_median": 0.0372,
+      "seconds_min": 0.0276,
+      "seconds_max": 0.0472,
+      "speedup_vs_cold_build": 3659.5,
+      "breakdown_median_run": {
+        "scan": 0.0372,
+        "total": 0.0372
+      },
+      "verification": {
+        "identical_to_full_rebuild": true,
+        "parts": {
+          "files": true,
+          "chunks": true,
+          "points": true,
+          "bm25": true,
+          "graph_nodes": true,
+          "graph_edges": true
+        },
+        "vectors_checked": 60,
+        "min_cosine_to_fresh_embedding": 0.9999999999996834,
+        "vectors_ok": true
+      },
+      "graph_edge_check": null,
+      "restored_to_base": true
+    },
+    {
+      "id": "touch",
+      "description": "app.py rewritten with identical bytes (new mtime)",
+      "files": {
+        "added": 0,
+        "modified": 0,
+        "deleted": 0,
+        "unchanged": 83
+      },
+      "views": {
+        "fixed": {
+          "new_chunks": 0,
+          "embedded_chunks": 0,
+          "reused_chunks": 0,
+          "model_texts": 0,
+          "points_upserted": 0,
+          "points_deleted": 0
+        },
+        "ast": {
+          "new_chunks": 0,
+          "embedded_chunks": 0,
+          "reused_chunks": 0,
+          "model_texts": 0,
+          "points_upserted": 0,
+          "points_deleted": 0
+        }
+      },
+      "graph_edges_added": 0,
+      "graph_edges_removed": 0,
+      "seconds_median": 0.0528,
+      "seconds_min": 0.0405,
+      "seconds_max": 0.0604,
+      "speedup_vs_cold_build": 2582.1,
+      "breakdown_median_run": {
+        "scan": 0.0527,
+        "total": 0.0528
+      },
+      "verification": {
+        "identical_to_full_rebuild": true,
+        "parts": {
+          "files": true,
+          "chunks": true,
+          "points": true,
+          "bm25": true,
+          "graph_nodes": true,
+          "graph_edges": true
+        },
+        "vectors_checked": 186,
+        "min_cosine_to_fresh_embedding": 0.9999999999996045,
+        "vectors_ok": true
+      },
+      "graph_edge_check": null,
+      "restored_to_base": true
+    },
+    {
+      "id": "edit_end",
+      "description": "one comment line appended to app.py",
+      "files": {
+        "added": 0,
+        "modified": 1,
+        "deleted": 0,
+        "unchanged": 82
+      },
+      "views": {
+        "fixed": {
+          "new_chunks": 84,
+          "embedded_chunks": 1,
+          "reused_chunks": 83,
+          "model_texts": 1,
+          "points_upserted": 84,
+          "points_deleted": 0
+        },
+        "ast": {
+          "new_chunks": 43,
+          "embedded_chunks": 1,
+          "reused_chunks": 42,
+          "model_texts": 1,
+          "points_upserted": 43,
+          "points_deleted": 0
+        }
+      },
+      "graph_edges_added": 0,
+      "graph_edges_removed": 0,
+      "seconds_median": 0.6561,
+      "seconds_min": 0.6501,
+      "seconds_max": 0.6576,
+      "speedup_vs_cold_build": 207.7,
+      "breakdown_median_run": {
+        "scan": 0.0436,
+        "parse_chunk": 0.018,
+        "store_read": 0.004,
+        "embed": 0.0755,
+        "store_write": 0.45,
+        "persist": 0.007,
+        "store_delete": 0.0,
+        "bm25": 0.0231,
+        "graph": 0.0335,
+        "total": 0.6561
+      },
+      "verification": {
+        "identical_to_full_rebuild": true,
+        "parts": {
+          "files": true,
+          "chunks": true,
+          "points": true,
+          "bm25": true,
+          "graph_nodes": true,
+          "graph_edges": true
+        },
+        "vectors_checked": 187,
+        "min_cosine_to_fresh_embedding": 0.9999999999996045,
+        "vectors_ok": true
+      },
+      "graph_edge_check": null,
+      "restored_to_base": true
+    },
+    {
+      "id": "edit_start",
+      "description": "one comment line inserted at the top of app.py",
+      "files": {
+        "added": 0,
+        "modified": 1,
+        "deleted": 0,
+        "unchanged": 82
+      },
+      "views": {
+        "fixed": {
+          "new_chunks": 84,
+          "embedded_chunks": 84,
+          "reused_chunks": 0,
+          "model_texts": 84,
+          "points_upserted": 84,
+          "points_deleted": 0
+        },
+        "ast": {
+          "new_chunks": 42,
+          "embedded_chunks": 1,
+          "reused_chunks": 41,
+          "model_texts": 1,
+          "points_upserted": 42,
+          "points_deleted": 41
+        }
+      },
+      "graph_edges_added": 0,
+      "graph_edges_removed": 0,
+      "seconds_median": 7.36,
+      "seconds_min": 7.1459,
+      "seconds_max": 7.4187,
+      "speedup_vs_cold_build": 18.5,
+      "breakdown_median_run": {
+        "scan": 0.0443,
+        "parse_chunk": 0.0181,
+        "store_read": 0.0017,
+        "embed": 6.6691,
+        "store_write": 0.4347,
+        "persist": 0.0067,
+        "store_delete": 0.1177,
+        "bm25": 0.0261,
+        "graph": 0.0407,
+        "total": 7.36
+      },
+      "verification": {
+        "identical_to_full_rebuild": true,
+        "parts": {
+          "files": true,
+          "chunks": true,
+          "points": true,
+          "bm25": true,
+          "graph_nodes": true,
+          "graph_edges": true
+        },
+        "vectors_checked": 186,
+        "min_cosine_to_fresh_embedding": 0.9999999999996045,
+        "vectors_ok": true
+      },
+      "graph_edge_check": null,
+      "restored_to_base": true
+    },
+    {
+      "id": "edit_function",
+      "description": "one comment line inside Flask.dispatch_request",
+      "files": {
+        "added": 0,
+        "modified": 1,
+        "deleted": 0,
+        "unchanged": 82
+      },
+      "views": {
+        "fixed": {
+          "new_chunks": 84,
+          "embedded_chunks": 34,
+          "reused_chunks": 50,
+          "model_texts": 34,
+          "points_upserted": 84,
+          "points_deleted": 0
+        },
+        "ast": {
+          "new_chunks": 42,
+          "embedded_chunks": 1,
+          "reused_chunks": 41,
+          "model_texts": 1,
+          "points_upserted": 42,
+          "points_deleted": 16
+        }
+      },
+      "graph_edges_added": 0,
+      "graph_edges_removed": 0,
+      "seconds_median": 3.2441,
+      "seconds_min": 3.1312,
+      "seconds_max": 3.2495,
+      "speedup_vs_cold_build": 42.0,
+      "breakdown_median_run": {
+        "scan": 0.0478,
+        "parse_chunk": 0.0179,
+        "store_read": 0.0035,
+        "embed": 2.5,
+        "store_write": 0.5462,
+        "persist": 0.0065,
+        "store_delete": 0.0633,
+        "bm25": 0.0234,
+        "graph": 0.0344,
+        "total": 3.2441
+      },
+      "verification": {
+        "identical_to_full_rebuild": true,
+        "parts": {
+          "files": true,
+          "chunks": true,
+          "points": true,
+          "bm25": true,
+          "graph_nodes": true,
+          "graph_edges": true
+        },
+        "vectors_checked": 186,
+        "min_cosine_to_fresh_embedding": 0.9999999999996045,
+        "vectors_ok": true
+      },
+      "graph_edge_check": null,
+      "restored_to_base": true
+    },
+    {
+      "id": "edit_5_files",
+      "description": "one comment appended to each of 5 library files",
+      "files": {
+        "added": 0,
+        "modified": 5,
+        "deleted": 0,
+        "unchanged": 78
+      },
+      "views": {
+        "fixed": {
+          "new_chunks": 140,
+          "embedded_chunks": 5,
+          "reused_chunks": 135,
+          "model_texts": 5,
+          "points_upserted": 140,
+          "points_deleted": 0
+        },
+        "ast": {
+          "new_chunks": 151,
+          "embedded_chunks": 5,
+          "reused_chunks": 146,
+          "model_texts": 2,
+          "points_upserted": 151,
+          "points_deleted": 0
+        }
+      },
+      "graph_edges_added": 0,
+      "graph_edges_removed": 0,
+      "seconds_median": 1.5072,
+      "seconds_min": 1.4786,
+      "seconds_max": 1.7184,
+      "speedup_vs_cold_build": 90.4,
+      "breakdown_median_run": {
+        "scan": 0.1039,
+        "parse_chunk": 0.0424,
+        "store_read": 0.0093,
+        "embed": 0.2546,
+        "store_write": 1.0019,
+        "persist": 0.0124,
+        "store_delete": 0.0,
+        "bm25": 0.042,
+        "graph": 0.0369,
+        "total": 1.5072
+      },
+      "verification": {
+        "identical_to_full_rebuild": true,
+        "parts": {
+          "files": true,
+          "chunks": true,
+          "points": true,
+          "bm25": true,
+          "graph_nodes": true,
+          "graph_edges": true
+        },
+        "vectors_checked": 351,
+        "min_cosine_to_fresh_embedding": 0.9999999999996416,
+        "vectors_ok": true
+      },
+      "graph_edge_check": null,
+      "restored_to_base": true
+    },
+    {
+      "id": "add_file",
+      "description": "a new module with a class and two functions",
+      "files": {
+        "added": 1,
+        "modified": 0,
+        "deleted": 0,
+        "unchanged": 83
+      },
+      "views": {
+        "fixed": {
+          "new_chunks": 1,
+          "embedded_chunks": 1,
+          "reused_chunks": 0,
+          "model_texts": 1,
+          "points_upserted": 1,
+          "points_deleted": 0
+        },
+        "ast": {
+          "new_chunks": 5,
+          "embedded_chunks": 5,
+          "reused_chunks": 0,
+          "model_texts": 5,
+          "points_upserted": 5,
+          "points_deleted": 0
+        }
+      },
+      "graph_edges_added": 7,
+      "graph_edges_removed": 0,
+      "seconds_median": 0.1952,
+      "seconds_min": 0.1788,
+      "seconds_max": 0.2073,
+      "speedup_vs_cold_build": 698.0,
+      "breakdown_median_run": {
+        "scan": 0.0409,
+        "parse_chunk": 0.0005,
+        "store_read": 0.0,
+        "embed": 0.0767,
+        "store_write": 0.0225,
+        "persist": 0.0052,
+        "store_delete": 0.0,
+        "bm25": 0.0004,
+        "graph": 0.0488,
+        "total": 0.1952
+      },
+      "verification": {
+        "identical_to_full_rebuild": true,
+        "parts": {
+          "files": true,
+          "chunks": true,
+          "points": true,
+          "bm25": true,
+          "graph_nodes": true,
+          "graph_edges": true
+        },
+        "vectors_checked": 66,
+        "min_cosine_to_fresh_embedding": 0.9999999999995899,
+        "vectors_ok": true
+      },
+      "graph_edge_check": null,
+      "restored_to_base": true
+    },
+    {
+      "id": "delete_file",
+      "description": "signals.py deleted (five modules import it)",
+      "files": {
+        "added": 0,
+        "modified": 0,
+        "deleted": 1,
+        "unchanged": 82
+      },
+      "views": {
+        "fixed": {
+          "new_chunks": 0,
+          "embedded_chunks": 0,
+          "reused_chunks": 0,
+          "model_texts": 0,
+          "points_upserted": 0,
+          "points_deleted": 1
+        },
+        "ast": {
+          "new_chunks": 0,
+          "embedded_chunks": 0,
+          "reused_chunks": 0,
+          "model_texts": 0,
+          "points_upserted": 0,
+          "points_deleted": 1
+        }
+      },
+      "graph_edges_added": 0,
+      "graph_edges_removed": 5,
+      "seconds_median": 0.0919,
+      "seconds_min": 0.0791,
+      "seconds_max": 0.0942,
+      "speedup_vs_cold_build": 1482.2,
+      "breakdown_median_run": {
+        "scan": 0.0313,
+        "parse_chunk": 0.0,
+        "store_read": 0.0,
+        "embed": 0.0,
+        "store_write": 0.0,
+        "persist": 0.0034,
+        "store_delete": 0.012,
+        "bm25": 0.0001,
+        "graph": 0.045,
+        "total": 0.0919
+      },
+      "verification": {
+        "identical_to_full_rebuild": true,
+        "parts": {
+          "files": true,
+          "chunks": true,
+          "points": true,
+          "bm25": true,
+          "graph_nodes": true,
+          "graph_edges": true
+        },
+        "vectors_checked": 60,
+        "min_cosine_to_fresh_embedding": 0.9999999999996878,
+        "vectors_ok": true
+      },
+      "graph_edge_check": null,
+      "restored_to_base": true
+    },
+    {
+      "id": "rename_file",
+      "description": "logging.py moved to logging_renamed.py, bytes unchanged",
+      "files": {
+        "added": 1,
+        "modified": 0,
+        "deleted": 1,
+        "unchanged": 82
+      },
+      "views": {
+        "fixed": {
+          "new_chunks": 3,
+          "embedded_chunks": 0,
+          "reused_chunks": 3,
+          "model_texts": 0,
+          "points_upserted": 3,
+          "points_deleted": 3
+        },
+        "ast": {
+          "new_chunks": 5,
+          "embedded_chunks": 0,
+          "reused_chunks": 5,
+          "model_texts": 0,
+          "points_upserted": 5,
+          "points_deleted": 5
+        }
+      },
+      "graph_edges_added": 6,
+      "graph_edges_removed": 11,
+      "seconds_median": 0.1374,
+      "seconds_min": 0.1319,
+      "seconds_max": 0.1441,
+      "speedup_vs_cold_build": 991.2,
+      "breakdown_median_run": {
+        "scan": 0.0389,
+        "parse_chunk": 0.0011,
+        "store_read": 0.0004,
+        "embed": 0.0,
+        "store_write": 0.028,
+        "persist": 0.0056,
+        "store_delete": 0.0211,
+        "bm25": 0.0014,
+        "graph": 0.0408,
+        "total": 0.1374
+      },
+      "verification": {
+        "identical_to_full_rebuild": true,
+        "parts": {
+          "files": true,
+          "chunks": true,
+          "points": true,
+          "bm25": true,
+          "graph_nodes": true,
+          "graph_edges": true
+        },
+        "vectors_checked": 68,
+        "min_cosine_to_fresh_embedding": 0.9999999999996898,
+        "vectors_ok": true
+      },
+      "graph_edge_check": null,
+      "restored_to_base": true
+    },
+    {
+      "id": "graph_rename_symbol",
+      "description": "Flask.ensure_sync renamed: unchanged callers lose their edge",
+      "files": {
+        "added": 0,
+        "modified": 1,
+        "deleted": 0,
+        "unchanged": 82
+      },
+      "views": {
+        "fixed": {
+          "new_chunks": 84,
+          "embedded_chunks": 30,
+          "reused_chunks": 54,
+          "model_texts": 30,
+          "points_upserted": 84,
+          "points_deleted": 0
+        },
+        "ast": {
+          "new_chunks": 42,
+          "embedded_chunks": 1,
+          "reused_chunks": 41,
+          "model_texts": 1,
+          "points_upserted": 42,
+          "points_deleted": 0
+        }
+      },
+      "graph_edges_added": 2,
+      "graph_edges_removed": 14,
+      "seconds_median": 2.8239,
+      "seconds_min": 2.7858,
+      "seconds_max": 2.9332,
+      "speedup_vs_cold_build": 48.2,
+      "breakdown_median_run": {
+        "scan": 0.0473,
+        "parse_chunk": 0.0179,
+        "store_read": 0.0039,
+        "embed": 2.24,
+        "store_write": 0.4398,
+        "persist": 0.0071,
+        "store_delete": 0.0,
+        "bm25": 0.0245,
+        "graph": 0.0419,
+        "total": 2.8239
+      },
+      "verification": {
+        "identical_to_full_rebuild": true,
+        "parts": {
+          "files": true,
+          "chunks": true,
+          "points": true,
+          "bm25": true,
+          "graph_nodes": true,
+          "graph_edges": true
+        },
+        "vectors_checked": 186,
+        "min_cosine_to_fresh_embedding": 0.9999999999996045,
+        "vectors_ok": true
+      },
+      "graph_edge_check": {
+        "edge": [
+          "src/flask/views.py::View.as_view",
+          "src/flask/app.py::Flask.ensure_sync"
+        ],
+        "present_before": true,
+        "present_after": false
+      },
+      "restored_to_base": true
+    },
+    {
+      "id": "graph_ambiguity",
+      "description": "a second class defines make_shell_context: cli.py's edge becomes ambiguous",
+      "files": {
+        "added": 1,
+        "modified": 0,
+        "deleted": 0,
+        "unchanged": 83
+      },
+      "views": {
+        "fixed": {
+          "new_chunks": 1,
+          "embedded_chunks": 1,
+          "reused_chunks": 0,
+          "model_texts": 1,
+          "points_upserted": 1,
+          "points_deleted": 0
+        },
+        "ast": {
+          "new_chunks": 2,
+          "embedded_chunks": 2,
+          "reused_chunks": 0,
+          "model_texts": 2,
+          "points_upserted": 2,
+          "points_deleted": 0
+        }
+      },
+      "graph_edges_added": 2,
+      "graph_edges_removed": 1,
+      "seconds_median": 0.1475,
+      "seconds_min": 0.1452,
+      "seconds_max": 0.1556,
+      "speedup_vs_cold_build": 924.0,
+      "breakdown_median_run": {
+        "scan": 0.0376,
+        "parse_chunk": 0.0005,
+        "store_read": 0.0,
+        "embed": 0.0499,
+        "store_write": 0.0151,
+        "persist": 0.0045,
+        "store_delete": 0.0,
+        "bm25": 0.0001,
+        "graph": 0.0395,
+        "total": 0.1475
+      },
+      "verification": {
+        "identical_to_full_rebuild": true,
+        "parts": {
+          "files": true,
+          "chunks": true,
+          "points": true,
+          "bm25": true,
+          "graph_nodes": true,
+          "graph_edges": true
+        },
+        "vectors_checked": 63,
+        "min_cosine_to_fresh_embedding": 0.9999999999996054,
+        "vectors_ok": true
+      },
+      "graph_edge_check": {
+        "edge": [
+          "src/flask/cli.py::shell_command",
+          "src/flask/app.py::Flask.make_shell_context"
+        ],
+        "present_before": true,
+        "present_after": false
+      },
+      "restored_to_base": true
+    }
+  ],
+  "m8_rankings_at_end": {
+    "fixed": {
+      "questions": 73,
+      "mismatches": []
+    },
+    "ast": {
+      "questions": 73,
+      "mismatches": []
+    },
+    "identical": true
+  },
+  "all_criteria_hold": true
+}

@@ -56,3 +56,30 @@ def get_embedder(settings: Settings) -> Embedder:
     return SentenceTransformerEmbedder(
         settings.embedding_model, query_prefix=settings.embedding_query_prefix
     )
+
+
+class HashingEmbedder:
+    """A cheap deterministic stand-in embedder (hashed bag of words, no model download).
+
+    For tests and for reference builds whose checks do not depend on the embedding model.
+    """
+
+    model_name = "hashing-bow"
+    device = "cpu"
+    dimension = 256
+
+    def _embed(self, text: str) -> list[float]:
+        import math
+        import re
+
+        vec = [0.0] * self.dimension
+        for word in re.findall(r"[a-z]+", text.lower()):
+            vec[sum(ord(c) * 31**i for i, c in enumerate(word)) % self.dimension] += 1.0
+        norm = math.sqrt(sum(v * v for v in vec)) or 1.0
+        return [v / norm for v in vec]
+
+    def embed_documents(self, texts: list[str], show_progress: bool = False) -> list[list[float]]:
+        return [self._embed(t) for t in texts]
+
+    def embed_query(self, text: str) -> list[float]:
+        return self._embed(text)
