@@ -1,0 +1,75 @@
+{
+  "name": "flask-graph-facts-v1",
+  "repository": "pallets/flask",
+  "commit": "d73fa1cdcbd8b1465c151db8924ba58b1dd14e35",
+  "description": "Hand-verified relationships used to validate the code graph (Milestone 10A). Written BEFORE the graph builder existed, from reading the source at the pinned commit, so the graph cannot be fitted to them. Node ids: a file is its repo-relative path; a symbol is '<path>::<qualified name>'.",
+  "kinds": {
+    "calls": "the source symbol contains a call expression whose target is the target symbol",
+    "imports": "the source file contains an import statement that resolves to the target file",
+    "inherits": "the source class lists the target class as a direct base class",
+    "defines": "the file or class directly defines the target symbol"
+  },
+  "expectations": {
+    "present": "the graph must contain this edge",
+    "absent": "the graph must NOT contain this edge (precision check)",
+    "known_gap": "the relationship is real in the code but is outside what the graph models by design (documented limitation); the graph is expected NOT to contain it"
+  },
+  "facts": [
+    {"id": "g-001", "kind": "calls", "expect": "present", "source": "src/flask/app.py::Flask.full_dispatch_request", "target": "src/flask/app.py::Flask.preprocess_request", "evidence": "app.py:1017 self.preprocess_request(ctx)"},
+    {"id": "g-002", "kind": "calls", "expect": "present", "source": "src/flask/app.py::Flask.full_dispatch_request", "target": "src/flask/app.py::Flask.dispatch_request", "evidence": "app.py:1019"},
+    {"id": "g-003", "kind": "calls", "expect": "present", "source": "src/flask/app.py::Flask.full_dispatch_request", "target": "src/flask/app.py::Flask.handle_user_exception", "evidence": "app.py:1021"},
+    {"id": "g-004", "kind": "calls", "expect": "present", "source": "src/flask/app.py::Flask.full_dispatch_request", "target": "src/flask/app.py::Flask.finalize_request", "evidence": "app.py:1022"},
+    {"id": "g-005", "kind": "calls", "expect": "present", "source": "src/flask/app.py::Flask.finalize_request", "target": "src/flask/app.py::Flask.make_response", "evidence": "app.py:1042 self.make_response(rv)"},
+    {"id": "g-006", "kind": "calls", "expect": "present", "source": "src/flask/app.py::Flask.finalize_request", "target": "src/flask/app.py::Flask.process_response", "evidence": "app.py:1044 (also a benchmark caller answer)"},
+    {"id": "g-007", "kind": "calls", "expect": "present", "source": "src/flask/app.py::Flask.dispatch_request", "target": "src/flask/app.py::Flask.raise_routing_exception", "evidence": "app.py:982"},
+    {"id": "g-008", "kind": "calls", "expect": "present", "source": "src/flask/app.py::Flask.dispatch_request", "target": "src/flask/app.py::Flask.make_default_options_response", "evidence": "app.py:990"},
+    {"id": "g-009", "kind": "calls", "expect": "present", "source": "src/flask/app.py::Flask.dispatch_request", "target": "src/flask/app.py::Flask.ensure_sync", "evidence": "app.py:993 self.ensure_sync(...)"},
+    {"id": "g-010", "kind": "calls", "expect": "present", "source": "src/flask/app.py::Flask.handle_exception", "target": "src/flask/app.py::Flask.finalize_request", "evidence": "app.py:951"},
+    {"id": "g-011", "kind": "calls", "expect": "present", "source": "src/flask/app.py::Flask.handle_http_exception", "target": "src/flask/sansio/app.py::App._find_error_handler", "evidence": "app.py:863 self._find_error_handler(...); defined on the base class App, so this needs base-class resolution"},
+    {"id": "g-012", "kind": "calls", "expect": "present", "source": "src/flask/app.py::Flask.handle_user_exception", "target": "src/flask/app.py::Flask.handle_http_exception", "evidence": "app.py:891"},
+    {"id": "g-013", "kind": "calls", "expect": "present", "source": "src/flask/ctx.py::AppContext.pop", "target": "src/flask/app.py::Flask.do_teardown_request", "evidence": "ctx.py:490 self.app.do_teardown_request(...); receiver is an attribute, not self"},
+    {"id": "g-014", "kind": "calls", "expect": "present", "source": "src/flask/ctx.py::AppContext.pop", "target": "src/flask/app.py::Flask.do_teardown_appcontext", "evidence": "ctx.py:496"},
+    {"id": "g-015", "kind": "calls", "expect": "present", "source": "src/flask/ctx.py::AppContext.push", "target": "src/flask/ctx.py::AppContext._get_session", "evidence": "ctx.py:439 self._get_session()"},
+    {"id": "g-016", "kind": "calls", "expect": "present", "source": "src/flask/ctx.py::AppContext.push", "target": "src/flask/ctx.py::AppContext.match_request", "evidence": "ctx.py:444 (also a benchmark caller answer)"},
+    {"id": "g-017", "kind": "calls", "expect": "present", "source": "src/flask/cli.py::ScriptInfo.load_app", "target": "src/flask/cli.py::locate_app", "evidence": "cli.py:349 plain call of an overloaded module function"},
+    {"id": "g-018", "kind": "calls", "expect": "present", "source": "src/flask/cli.py::locate_app", "target": "src/flask/cli.py::find_best_app", "evidence": "cli.py:262 (also a benchmark caller answer)"},
+    {"id": "g-019", "kind": "calls", "expect": "present", "source": "src/flask/cli.py::run_command", "target": "src/flask/helpers.py::get_debug_flag", "evidence": "cli.py:973; imported with 'from .helpers import get_debug_flag'"},
+    {"id": "g-020", "kind": "calls", "expect": "present", "source": "src/flask/app.py::Flask.__init__", "target": "src/flask/sansio/app.py::App.__init__", "evidence": "app.py:324 super().__init__(...)"},
+    {"id": "g-021", "kind": "calls", "expect": "present", "source": "src/flask/app.py::Flask.__init__", "target": "src/flask/cli.py::AppGroup", "evidence": "app.py:341 cli.AppGroup(); 'cli' is a module imported with 'from . import cli'"},
+    {"id": "g-022", "kind": "calls", "expect": "present", "source": "src/flask/templating.py::_render", "target": "src/flask/app.py::Flask.update_template_context", "evidence": "templating.py:125 app.update_template_context(...)"},
+    {"id": "g-023", "kind": "calls", "expect": "present", "source": "src/flask/sansio/scaffold.py::Scaffold.__init__", "target": "src/flask/helpers.py::get_root_path", "evidence": "sansio/scaffold.py:96 (also a benchmark caller answer)"},
+    {"id": "g-024", "kind": "calls", "expect": "present", "source": "src/flask/sansio/app.py::App.add_url_rule", "target": "src/flask/sansio/scaffold.py::_endpoint_from_view_func", "evidence": "sansio/app.py:614 (also a benchmark caller answer)"},
+
+    {"id": "g-030", "kind": "calls", "expect": "absent", "source": "src/flask/app.py::Flask.wsgi_app", "target": "src/flask/app.py::Flask.process_response", "evidence": "wsgi_app only reaches it indirectly via full_dispatch_request -> finalize_request"},
+    {"id": "g-031", "kind": "calls", "expect": "absent", "source": "src/flask/app.py::Flask.dispatch_request", "target": "src/flask/app.py::Flask.process_response", "evidence": "indirect only"},
+    {"id": "g-032", "kind": "calls", "expect": "absent", "source": "src/flask/ctx.py::AppContext.pop", "target": "src/flask/app.py::Flask.dispatch_request", "evidence": "no such call"},
+    {"id": "g-033", "kind": "calls", "expect": "absent", "source": "src/flask/helpers.py::url_for", "target": "src/flask/app.py::Flask.make_response", "evidence": "helpers.url_for calls current_app.url_for, not make_response"},
+    {"id": "g-034", "kind": "calls", "expect": "absent", "source": "src/flask/app.py::Flask.wsgi_app", "target": "src/flask/app.py::Flask.handle_http_exception", "evidence": "indirect only"},
+    {"id": "g-035", "kind": "calls", "expect": "absent", "source": "src/flask/app.py::Flask.finalize_request", "target": "src/flask/app.py::Flask.preprocess_request", "evidence": "the reverse call direction exists (full_dispatch_request), this one does not"},
+
+    {"id": "g-040", "kind": "calls", "expect": "known_gap", "source": "src/flask/testing.py::FlaskClient.session_transaction", "target": "src/flask/sessions.py::SecureCookieSessionInterface.open_session", "evidence": "testing.py:165 app.session_interface.open_session(...): the method name is defined on two classes (SessionInterface, SecureCookieSessionInterface), so a name-based resolver cannot choose and must skip it"},
+    {"id": "g-041", "kind": "calls", "expect": "known_gap", "source": "src/flask/templating.py::_render", "target": "src/flask/app.py::Flask.ensure_sync", "evidence": "templating.py:127 _async_wrapper=app.ensure_sync passes the method as a value without calling it; the graph models call expressions only"},
+
+    {"id": "g-050", "kind": "imports", "expect": "present", "source": "src/flask/cli.py", "target": "src/flask/helpers.py", "evidence": "cli.py:24 from .helpers import get_debug_flag"},
+    {"id": "g-051", "kind": "imports", "expect": "present", "source": "src/flask/app.py", "target": "src/flask/sansio/app.py", "evidence": "app.py:45 from .sansio.app import App"},
+    {"id": "g-052", "kind": "imports", "expect": "present", "source": "src/flask/blueprints.py", "target": "src/flask/sansio/blueprints.py", "evidence": "blueprints.py:10"},
+    {"id": "g-053", "kind": "imports", "expect": "present", "source": "src/flask/json/tag.py", "target": "src/flask/json/__init__.py", "evidence": "imports from the flask.json package"},
+    {"id": "g-054", "kind": "imports", "expect": "present", "source": "src/flask/ctx.py", "target": "src/flask/signals.py", "evidence": "ctx.py imports the app context signals"},
+    {"id": "g-055", "kind": "imports", "expect": "present", "source": "src/flask/app.py", "target": "src/flask/cli.py", "evidence": "app.py:32 from . import cli (a submodule imported by name)"},
+    {"id": "g-056", "kind": "imports", "expect": "absent", "source": "src/flask/helpers.py", "target": "src/flask/app.py", "evidence": "helpers.py does not import app"},
+    {"id": "g-057", "kind": "imports", "expect": "absent", "source": "src/flask/views.py", "target": "src/flask/ctx.py", "evidence": "views.py imports only globals and typing from the package"},
+    {"id": "g-058", "kind": "imports", "expect": "absent", "source": "src/flask/wrappers.py", "target": "src/flask/app.py", "evidence": "wrappers.py does not import app"},
+
+    {"id": "g-060", "kind": "inherits", "expect": "present", "source": "src/flask/app.py::Flask", "target": "src/flask/sansio/app.py::App", "evidence": "app.py:110 class Flask(App)"},
+    {"id": "g-061", "kind": "inherits", "expect": "present", "source": "src/flask/blueprints.py::Blueprint", "target": "src/flask/sansio/blueprints.py::Blueprint", "evidence": "blueprints.py:18 class Blueprint(SansioBlueprint); the base is imported under an alias"},
+    {"id": "g-062", "kind": "inherits", "expect": "present", "source": "src/flask/sansio/app.py::App", "target": "src/flask/sansio/scaffold.py::Scaffold", "evidence": "sansio/app.py:59"},
+    {"id": "g-063", "kind": "inherits", "expect": "present", "source": "src/flask/sansio/blueprints.py::Blueprint", "target": "src/flask/sansio/scaffold.py::Scaffold", "evidence": "sansio/blueprints.py:119"},
+    {"id": "g-064", "kind": "inherits", "expect": "present", "source": "src/flask/sessions.py::SecureCookieSessionInterface", "target": "src/flask/sessions.py::SessionInterface", "evidence": "sessions.py:284"},
+    {"id": "g-065", "kind": "inherits", "expect": "present", "source": "src/flask/views.py::MethodView", "target": "src/flask/views.py::View", "evidence": "views.py:138"},
+    {"id": "g-066", "kind": "inherits", "expect": "absent", "source": "src/flask/app.py::Flask", "target": "src/flask/sansio/scaffold.py::Scaffold", "evidence": "Flask reaches Scaffold only through App; only direct bases are edges"},
+
+    {"id": "g-070", "kind": "defines", "expect": "present", "source": "src/flask/app.py", "target": "src/flask/app.py::Flask", "evidence": "app.py:110"},
+    {"id": "g-071", "kind": "defines", "expect": "present", "source": "src/flask/app.py::Flask", "target": "src/flask/app.py::Flask.wsgi_app", "evidence": "app.py:1569"},
+    {"id": "g-072", "kind": "defines", "expect": "absent", "source": "src/flask/app.py::Flask", "target": "src/flask/sansio/app.py::App._find_error_handler", "evidence": "defined on the base class, not on Flask"}
+  ]
+}
