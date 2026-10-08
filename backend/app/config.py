@@ -31,6 +31,17 @@ class Settings(BaseSettings):
     baseline_chunk_size: int = 1000
     baseline_chunk_overlap: int = 200
 
+    # The live index served by the Evidence API (Milestones 11-12).
+    live_repository: str | None = None
+    live_root: Path | None = None
+
+    def live_state_dir(self, repository: str) -> Path:
+        return self.data_dir / "live_state" / repository
+
+    @property
+    def live_qdrant_path(self) -> Path:
+        return self.data_dir / "qdrant_live"
+
     @property
     def qdrant_path(self) -> Path:
         return self.data_dir / "qdrant"

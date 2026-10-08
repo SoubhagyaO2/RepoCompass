@@ -14,6 +14,7 @@ the benchmark was run and is not tuned on it.
 """
 
 from collections.abc import Callable
+from dataclasses import dataclass
 
 from app.models.search import SearchHit
 
@@ -48,6 +49,25 @@ def reciprocal_rank_fusion(rankings: list[list[str]], k: int = RRF_K) -> list[tu
     return sorted(scores.items(), key=lambda item: (-item[1], best_rank[item[0]], item[0]))
 
 
+@dataclass(frozen=True)
+class ComponentMatch:
+    """How one component saw a file: its rank among that component's unique files and the
+    component's best chunk for the file (whose `score` is the component's own raw score)."""
+
+    rank: int
+    hit: SearchHit
+
+
+@dataclass(frozen=True)
+class FusedFile:
+    """One file of the fused ranking, with everything that produced its position."""
+
+    path: str
+    score: float  # the RRF score
+    hit: SearchHit  # the displayed chunk (score = that component's raw score)
+    matches: tuple[ComponentMatch | None, ...]  # per component, None = not retrieved by it
+
+
 class HybridRetriever:
     """RRF over component retrievers. Returns one SearchHit per unique file, best first."""
 
@@ -57,21 +77,37 @@ class HybridRetriever:
 
     def search(self, query: str, depth: int) -> list[SearchHit]:
         """`depth` is the number of chunks each component retrieves before deduplication."""
+        return [
+            f.hit.model_copy(update={"score": f.score}) for f in self.search_detailed(query, depth)
+        ]
+
+    def search_detailed(self, query: str, depth: int) -> list[FusedFile]:
+        """The same ranking as `search`, with each component's rank and best chunk per file."""
         results = [component(query, depth) for component in self._components]
         rankings = [unique_ranked_files(hits) for hits in results]
 
-        # For display, represent each file by its chunk from the component that ranks it best
-        # (the earlier component wins a tie).
-        representative: dict[str, tuple[int, SearchHit]] = {}
+        # Each component's best chunk (first occurrence) and rank for every file it retrieved.
+        matches: list[dict[str, ComponentMatch]] = []
         for hits, ranking in zip(results, rankings, strict=True):
-            by_file = {}
+            by_file: dict[str, SearchHit] = {}
             for hit in hits:
                 by_file.setdefault(hit.file_path, hit)
-            for rank, path in enumerate(ranking, 1):
-                if path not in representative or rank < representative[path][0]:
-                    representative[path] = (rank, by_file[path])
+            matches.append({p: ComponentMatch(r, by_file[p]) for r, p in enumerate(ranking, 1)})
+
+        # For display, represent each file by its chunk from the component that ranks it best
+        # (the earlier component wins a tie).
+        representative: dict[str, ComponentMatch] = {}
+        for component_matches in matches:
+            for path, match in component_matches.items():
+                if path not in representative or match.rank < representative[path].rank:
+                    representative[path] = match
 
         return [
-            representative[path][1].model_copy(update={"score": score})
+            FusedFile(
+                path=path,
+                score=score,
+                hit=representative[path].hit,
+                matches=tuple(m.get(path) for m in matches),
+            )
             for path, score in reciprocal_rank_fusion(rankings, self._k)
         ]
