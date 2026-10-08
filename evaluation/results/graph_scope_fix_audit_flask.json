@@ -1,0 +1,1273 @@
+{
+ "description": "Effect of scoping function-local imports to their function (M10 follow-up). Verdicts are single-reviewer judgements from reading the cited line.",
+ "commit": "d73fa1cdcbd8b1465c151db8924ba58b1dd14e35",
+ "function_local_imports": 52,
+ "edges": {
+  "before": 2231,
+  "after": 2283
+ },
+ "calls_resolved_by_rule": {
+  "before": {
+   "import": 214,
+   "unique-name": 709,
+   "local": 93,
+   "import-module": 300,
+   "super": 4,
+   "self": 128,
+   "class-attr": 4
+  },
+  "after": {
+   "import": 214,
+   "unique-name": 782,
+   "local": 93,
+   "import-module": 300,
+   "super": 4,
+   "self": 128,
+   "class-attr": 4
+  }
+ },
+ "calls_external": {
+  "before": 640,
+  "after": 478
+ },
+ "removed_edges": [
+  {
+   "kind": "calls",
+   "source": "src/flask/app.py::Flask.test_client",
+   "target": "src/flask/testing.py::FlaskCliRunner",
+   "lines": [
+    812
+   ],
+   "rules": [
+    "import"
+   ],
+   "cited_file": "src/flask/app.py",
+   "cited_line_text": "return cls(  # type: ignore"
+  }
+ ],
+ "added_edges": [
+  {
+   "kind": "calls",
+   "source": "src/flask/app.py::Flask.test_client",
+   "target": "src/flask/testing.py::FlaskClient",
+   "lines": [
+    812
+   ],
+   "rules": [
+    "import"
+   ],
+   "cited_file": "src/flask/app.py",
+   "cited_line_text": "return cls(  # type: ignore"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_blueprints.py::test_add_template_filter_with_name_and_template",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    502
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_blueprints.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_blueprints.py::test_add_template_filter_with_template",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    468
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_blueprints.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_blueprints.py::test_add_template_test_with_name_and_template",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    662
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_blueprints.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_blueprints.py::test_add_template_test_with_template",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    628
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_blueprints.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_blueprints.py::test_app_request_processing",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    817
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_blueprints.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_blueprints.py::test_app_url_processors",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    848,
+    852
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_blueprints.py",
+   "cited_line_text": "@app.route(\"/<lang_code>/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_blueprints.py::test_default_static_max_age",
+   "target": "src/flask/app.py::Flask.test_request_context",
+   "lines": [
+    231
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_blueprints.py",
+   "cited_line_text": "with app.test_request_context(), blueprint.send_static_file(\"index.html\") as rv:"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_blueprints.py::test_template_filter_after_route_with_template",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    444
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_blueprints.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_blueprints.py::test_template_filter_with_name_and_template",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    485
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_blueprints.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_blueprints.py::test_template_filter_with_template",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    435
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_blueprints.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_blueprints.py::test_template_global",
+   "target": "src/flask/app.py::Flask.app_context",
+   "lines": [
+    751
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_blueprints.py",
+   "cited_line_text": "with app.app_context():"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_blueprints.py::test_template_test_after_route_with_template",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    604
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_blueprints.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_blueprints.py::test_template_test_with_name_and_template",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    645
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_blueprints.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_blueprints.py::test_template_test_with_template",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    595
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_blueprints.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_add_template_filter",
+   "target": "src/flask/sansio/app.py::App.add_template_filter",
+   "lines": [
+    161
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "app.add_template_filter(my_reverse)"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_add_template_filter_with_name",
+   "target": "src/flask/sansio/app.py::App.add_template_filter",
+   "lines": [
+    181
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "app.add_template_filter(my_reverse, \"strrev\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_add_template_filter_with_name_and_template",
+   "target": "src/flask/sansio/app.py::App.add_template_filter",
+   "lines": [
+    231
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "app.add_template_filter(my_reverse, \"super_reverse\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_add_template_filter_with_name_and_template",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    233
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_add_template_filter_with_template",
+   "target": "src/flask/sansio/app.py::App.add_template_filter",
+   "lines": [
+    204
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "app.add_template_filter(super_reverse)"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_add_template_filter_with_template",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    206
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_add_template_global",
+   "target": "src/flask/sansio/app.py::App.template_global",
+   "lines": [
+    360,
+    371,
+    382,
+    393
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.template_global()"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_add_template_test",
+   "target": "src/flask/sansio/app.py::App.add_template_test",
+   "lines": [
+    279
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "app.add_template_test(boolean)"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_add_template_test_with_name",
+   "target": "src/flask/sansio/app.py::App.add_template_test",
+   "lines": [
+    299
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "app.add_template_test(is_boolean, \"boolean\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_add_template_test_with_name_and_template",
+   "target": "src/flask/sansio/app.py::App.add_template_test",
+   "lines": [
+    349
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "app.add_template_test(is_boolean, \"boolean\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_add_template_test_with_name_and_template",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    351
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_add_template_test_with_template",
+   "target": "src/flask/sansio/app.py::App.add_template_test",
+   "lines": [
+    322
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "app.add_template_test(boolean)"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_add_template_test_with_template",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    324
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_context_processing",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.context_processor",
+   "lines": [
+    12
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.context_processor"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_context_processing",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    16
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_custom_template_loader",
+   "target": "src/flask/app.py::Flask.test_client",
+   "lines": [
+    418
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "c = app.test_client()"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_custom_template_loader",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    414
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_escaping",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    74
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_iterable_loader",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.context_processor",
+   "lines": [
+    424
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.context_processor"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_iterable_loader",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    428
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_no_escaping",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    94
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_original_win",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    25
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_request_less_rendering",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.context_processor",
+   "lines": [
+    45
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.context_processor"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_simple_stream",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    34
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_standard_context",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    54
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_template_filter",
+   "target": "src/flask/sansio/app.py::App.template_filter",
+   "lines": [
+    124,
+    132,
+    140,
+    148
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.template_filter()"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_template_filter_with_name",
+   "target": "src/flask/sansio/app.py::App.template_filter",
+   "lines": [
+    168
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.template_filter(\"strrev\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_template_filter_with_name_and_template",
+   "target": "src/flask/sansio/app.py::App.template_filter",
+   "lines": [
+    215
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.template_filter(\"super_reverse\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_template_filter_with_name_and_template",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    219
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_template_filter_with_template",
+   "target": "src/flask/sansio/app.py::App.template_filter",
+   "lines": [
+    188
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.template_filter()"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_template_filter_with_template",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    192
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_template_test",
+   "target": "src/flask/sansio/app.py::App.template_test",
+   "lines": [
+    242,
+    250,
+    258,
+    266
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.template_test()"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_template_test_with_name",
+   "target": "src/flask/sansio/app.py::App.template_test",
+   "lines": [
+    286
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.template_test(\"boolean\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_template_test_with_name_and_template",
+   "target": "src/flask/sansio/app.py::App.template_test",
+   "lines": [
+    333
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.template_test(\"boolean\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_template_test_with_name_and_template",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    337
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_template_test_with_template",
+   "target": "src/flask/sansio/app.py::App.template_test",
+   "lines": [
+    306
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.template_test()"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_template_test_with_template",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    310
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_templating.py::test_templates_auto_reload_debug_run",
+   "target": "src/flask/app.py::Flask.run",
+   "lines": [
+    481,
+    484
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_templating.py",
+   "cited_line_text": "app.run()"
+  }
+ ],
+ "edges_with_more_cited_lines": [
+  {
+   "kind": "calls",
+   "source": "tests/test_blueprints.py::test_blueprint_app_error_handling",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    86,
+    92
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_blueprints.py",
+   "cited_line_text": "@app.route(\"/forbidden\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_blueprints.py::test_blueprint_specific_error_handling",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.errorhandler",
+   "lines": [
+    12,
+    20,
+    36
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_blueprints.py",
+   "cited_line_text": "@frontend.errorhandler(403)"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_blueprints.py::test_context_processing",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    690,
+    694
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_blueprints.py",
+   "cited_line_text": "@answer_bp.route(\"/bp\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_blueprints.py::test_dotted_names_from_app",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    255,
+    259
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_blueprints.py",
+   "cited_line_text": "@app.route(\"/\")"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_blueprints.py::test_nested_callback_order",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.before_request",
+   "lines": [
+    915,
+    923,
+    935,
+    943,
+    955,
+    963
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_blueprints.py",
+   "cited_line_text": "@app.before_request"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_blueprints.py::test_nested_callback_order",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.context_processor",
+   "lines": [
+    931,
+    951,
+    971
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_blueprints.py",
+   "cited_line_text": "@app.context_processor"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_blueprints.py::test_nested_callback_order",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.teardown_request",
+   "lines": [
+    919,
+    927,
+    939,
+    947,
+    959,
+    967
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_blueprints.py",
+   "cited_line_text": "@app.teardown_request"
+  },
+  {
+   "kind": "calls",
+   "source": "tests/test_blueprints.py::test_route_decorator_custom_endpoint",
+   "target": "src/flask/sansio/scaffold.py::Scaffold.route",
+   "lines": [
+    286,
+    290,
+    294,
+    298,
+    304
+   ],
+   "rules": [
+    "unique-name"
+   ],
+   "cited_file": "tests/test_blueprints.py",
+   "cited_line_text": "@bp.route(\"/foo\")"
+  }
+ ],
+ "fresh_sample": {
+  "population": 64,
+  "seed": 1,
+  "edges": [
+   {
+    "kind": "calls",
+    "source": "src/flask/cli.py::ScriptInfo.__init__",
+    "target": "src/flask/helpers.py::get_load_dotenv",
+    "lines": [
+     322
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/cli.py",
+    "cited_line_text": "self.load_dotenv_defaults = get_load_dotenv(load_dotenv_defaults)"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/sansio/app.py::App.template_filter",
+    "target": "src/flask/sansio/scaffold.py::setupmethod",
+    "lines": [
+     669
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/sansio/app.py",
+    "cited_line_text": "@setupmethod"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/sansio/blueprints.py::Blueprint.register_blueprint",
+    "target": "src/flask/sansio/scaffold.py::setupmethod",
+    "lines": [
+     255
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/sansio/blueprints.py",
+    "cited_line_text": "@setupmethod"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/sansio/blueprints.py::Blueprint.before_app_request",
+    "target": "src/flask/sansio/scaffold.py::setupmethod",
+    "lines": [
+     613
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/sansio/blueprints.py",
+    "cited_line_text": "@setupmethod"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/sansio/blueprints.py::Blueprint.app_template_test",
+    "target": "src/flask/sansio/scaffold.py::setupmethod",
+    "lines": [
+     503
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/sansio/blueprints.py",
+    "cited_line_text": "@setupmethod"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/app.py::Flask.do_teardown_appcontext",
+    "target": "src/flask/helpers.py::_CollectErrors",
+    "lines": [
+     1473
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/app.py",
+    "cited_line_text": "collect_errors = _CollectErrors()"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/blueprints.py::Blueprint.send_static_file",
+    "target": "src/flask/helpers.py::send_from_directory",
+    "lines": [
+     100
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/blueprints.py",
+    "cited_line_text": "return send_from_directory("
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/app.py::Flask.run",
+    "target": "src/flask/cli.py::load_dotenv",
+    "lines": [
+     711
+    ],
+    "rules": [
+     "import-module"
+    ],
+    "cited_file": "src/flask/app.py",
+    "cited_line_text": "cli.load_dotenv()"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/sansio/app.py::App.logger",
+    "target": "src/flask/logging.py::create_logger",
+    "lines": [
+     464
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/sansio/app.py",
+    "cited_line_text": "return create_logger(self)"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/templating.py::DispatchingJinjaLoader._get_source_explained",
+    "target": "src/flask/debughelpers.py::explain_template_loading_attempts",
+    "lines": [
+     82
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/templating.py",
+    "cited_line_text": "explain_template_loading_attempts(self.app, template, attempts)"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/sansio/app.py::App.auto_find_instance_path",
+    "target": "src/flask/sansio/scaffold.py::find_package",
+    "lines": [
+     515
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/sansio/app.py",
+    "cited_line_text": "prefix, package_path = find_package(self.import_name)"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/sansio/app.py::App.inject_url_defaults",
+    "target": "src/flask/helpers.py::_split_blueprint_path",
+    "lines": [
+     973
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/sansio/app.py",
+    "cited_line_text": "names, reversed(_split_blueprint_path(endpoint.rpartition(\".\")[0]))"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/sansio/blueprints.py::Blueprint.add_app_template_test",
+    "target": "src/flask/sansio/scaffold.py::setupmethod",
+    "lines": [
+     531
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/sansio/blueprints.py",
+    "cited_line_text": "@setupmethod"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/sansio/app.py::App.add_template_global",
+    "target": "src/flask/sansio/scaffold.py::setupmethod",
+    "lines": [
+     809
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/sansio/app.py",
+    "cited_line_text": "@setupmethod"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/app.py::Flask.test_client",
+    "target": "src/flask/testing.py::FlaskClient",
+    "lines": [
+     812
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/app.py",
+    "cited_line_text": "return cls(  # type: ignore"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/app.py::Flask.raise_routing_exception",
+    "target": "src/flask/debughelpers.py::FormDataRoutingRedirect",
+    "lines": [
+     589
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/app.py",
+    "cited_line_text": "raise FormDataRoutingRedirect(request)"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/sansio/blueprints.py::Blueprint.teardown_app_request",
+    "target": "src/flask/sansio/scaffold.py::setupmethod",
+    "lines": [
+     633
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/sansio/blueprints.py",
+    "cited_line_text": "@setupmethod"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/app.py::Flask",
+    "target": "src/flask/sessions.py::SecureCookieSessionInterface",
+    "lines": [
+     253
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/app.py",
+    "cited_line_text": "session_interface: SessionInterface = SecureCookieSessionInterface()"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/sansio/blueprints.py::Blueprint.app_url_value_preprocessor",
+    "target": "src/flask/sansio/scaffold.py::setupmethod",
+    "lines": [
+     672
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/sansio/blueprints.py",
+    "cited_line_text": "@setupmethod"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/sansio/app.py::App.add_url_rule",
+    "target": "src/flask/sansio/scaffold.py::setupmethod",
+    "lines": [
+     604
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/sansio/app.py",
+    "cited_line_text": "@setupmethod"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/sansio/app.py::App.template_test",
+    "target": "src/flask/sansio/scaffold.py::setupmethod",
+    "lines": [
+     719
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/sansio/app.py",
+    "cited_line_text": "@setupmethod"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/__main__.py",
+    "target": "src/flask/cli.py::main",
+    "lines": [
+     3
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/__main__.py",
+    "cited_line_text": "main()"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/sansio/blueprints.py::Blueprint.record_once",
+    "target": "src/flask/sansio/scaffold.py::setupmethod",
+    "lines": [
+     232
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/sansio/blueprints.py",
+    "cited_line_text": "@setupmethod"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/wrappers.py::Request.blueprints",
+    "target": "src/flask/helpers.py::_split_blueprint_path",
+    "lines": [
+     195
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/wrappers.py",
+    "cited_line_text": "return _split_blueprint_path(name)"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/app.py::Flask.test_request_context",
+    "target": "src/flask/testing.py::EnvironBuilder",
+    "lines": [
+     1560
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/app.py",
+    "cited_line_text": "builder = EnvironBuilder(self, *args, **kwargs)"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/sansio/app.py::App.template_global",
+    "target": "src/flask/sansio/scaffold.py::setupmethod",
+    "lines": [
+     778
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/sansio/app.py",
+    "cited_line_text": "@setupmethod"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/testing.py::FlaskCliRunner.invoke",
+    "target": "src/flask/cli.py::ScriptInfo",
+    "lines": [
+     296
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/testing.py",
+    "cited_line_text": "kwargs[\"obj\"] = ScriptInfo(create_app=lambda: self.app)"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/ctx.py::AppContext.pop",
+    "target": "src/flask/helpers.py::_CollectErrors",
+    "lines": [
+     486
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/ctx.py",
+    "cited_line_text": "collect_errors = _CollectErrors()"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/sansio/blueprints.py::Blueprint.app_template_filter",
+    "target": "src/flask/sansio/scaffold.py::setupmethod",
+    "lines": [
+     449
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/sansio/blueprints.py",
+    "cited_line_text": "@setupmethod"
+   },
+   {
+    "kind": "calls",
+    "source": "src/flask/sansio/app.py::App.teardown_appcontext",
+    "target": "src/flask/sansio/scaffold.py::setupmethod",
+    "lines": [
+     826
+    ],
+    "rules": [
+     "import"
+    ],
+    "cited_file": "src/flask/sansio/app.py",
+    "cited_line_text": "@setupmethod"
+   }
+  ]
+ }
+}

@@ -41,7 +41,7 @@ from app.retrieval.hybrid import HybridRetriever, SearchFn
 from app.retrieval.vector_store import VectorStore
 
 VIEWS = ("fixed", "ast")
-FORMAT_VERSION = 1
+FORMAT_VERSION = 2  # 2: imports carry their scope (stored parses of version 1 lack it)
 POINT_NAMESPACE = uuid.UUID("6f2c8a40-7d1e-4b8e-9a53-2c5d4f0e1a77")
 
 

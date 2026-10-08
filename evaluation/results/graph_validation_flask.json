@@ -65,23 +65,23 @@
     "edges_by_type": {
       "defines": 902,
       "imports": 176,
-      "calls": 1127,
+      "calls": 1179,
       "inherits": 26
     },
     "calls_total": 4128,
     "calls_resolved_by_rule": {
       "import": 214,
-      "unique-name": 709,
+      "unique-name": 782,
       "local": 93,
       "import-module": 300,
       "super": 4,
       "self": 128,
       "class-attr": 4
     },
-    "calls_ambiguous": 194,
-    "calls_unresolved": 1113,
-    "calls_external": 640,
-    "calls_builtin_name": 729,
-    "build_seconds": 0.013523199999781355
+    "calls_ambiguous": 244,
+    "calls_unresolved": 1114,
+    "calls_external": 478,
+    "calls_builtin_name": 767,
+    "build_seconds": 0.017178899997816188
   }
 }

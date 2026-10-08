@@ -41,6 +41,9 @@ class Import(BaseModel):
     alias: str | None = None
     level: int = 0  # number of leading dots in a relative import
     line: int  # 1-based
+    # Qualified name of the function or class whose body holds the import; None = module level
+    # (including inside module-level `if`/`try`). Function-local imports bind only there.
+    scope: str | None = None
 
 
 class ParsedFile(BaseModel):

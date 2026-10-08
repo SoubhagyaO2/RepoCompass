@@ -163,3 +163,27 @@ guess among alternatives, now also covers:
 correct (93%; 23 or 77% if the typing-only stub counts as wrong), the 2 errors being
 `loader.get_source(...)` on a Jinja loader; and 30 of the 235 edges from all other rules, 30
 correct. V1 is still identical and V2 still 51 of 51. `calls` edges went from 1,223 to 1,127.
+
+## Addendum (2026-10-08): follow-up deviation 2, function-local imports are scoped
+
+**Found by** the M12 hand-checked spot checks, not by any benchmark: `Flask.test_client` was linked
+to `FlaskCliRunner` because two functions of `app.py` each contain `from .testing import X as cls`
+and the builder kept one binding map per file, so the later import overwrote the earlier one. The
+same file-wide map had a second effect with the same cause: a test-local `from blueprintapp import
+app` marked `app` as an external name for every other test in the file.
+
+**The change (nothing else in the resolution rules was touched).** An import carries the qualified
+name of the function or class whose body holds it (`Import.scope`, `None` = module level,
+including module-level `if`/`try`). A call is resolved with the caller's own local imports first
+(they shadow), then the module's. Local imports no longer leak into other functions. Import
+*edges* between files are unchanged (a file still imports what any of its functions imports).
+No retrieval experiment used the graph's call rules after this point; the M10B result (graph
+expansion hurts) was computed on the earlier graph and is not recomputed (the call-edge change is
++53/-1 of 2,231 edges, in two test files and one method).
+
+**Re-validation** (`results/graph_validation_flask.json`; the pre-fix file is kept as
+`..._before_scope_fix.json`): V1 import edges identical to Python's `ast` (95 and 95), V2 51 of 51
+hand-verified facts hold, unchanged. **Audit** (`results/graph_scope_fix_audit_flask.json`, single
+reviewer reading each cited line): every changed edge was reviewed (1 removed, 53 added, 8 gained
+extra cited lines), plus a fresh seeded sample of 30 of the 64 `import`/`import-module` call edges
+in `src/flask`.
