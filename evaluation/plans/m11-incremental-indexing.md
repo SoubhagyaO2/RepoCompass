@@ -98,3 +98,21 @@ update. Model loading is excluded, as in all earlier latency numbers.
 Pinned Flask commit `d73fa1cdcbd8b1465c151db8924ba58b1dd14e35`; dataset fingerprint
 `6e78d06ad988b637eb3f77f047232238667e0cf9b325abd971f1eab3c024a311`. Planned entry point:
 `python -m app.evaluation.run_incremental`.
+
+## Addendum (2026-10-08, after run 1, before run 2): deviation 1, skip unchanged points
+
+**Run 1** (results kept in `evaluation/results/incremental_indexing_flask_run1.json`) satisfied
+every correctness criterion in all 11 scenarios. Its cost breakdown, however, showed that for small
+edits the dominant cost was not embedding but **rewriting vector-store points**: `edit_end` spent
+0.45 of 0.66 s on writes (127 points rewritten, 2 vectors new) and `edit_5_files` 1.0 of 1.5 s.
+The implementation upserted every chunk of a changed file even when a chunk was identical to the
+one already stored.
+
+**The change.** A new chunk that is identical (every field: id, text, lines, position) to the chunk
+already indexed under the same id is no longer rewritten, and its vector is not even read. This
+affects only which points are written; the resulting index is the same, and the correctness
+criteria are checked again unchanged. The plan's ordering rule is unchanged.
+
+**Reporting.** Both runs are reported. Run 2 repeats the full protocol on the changed
+implementation; the scenarios, repetitions and criteria are identical. No other change was made
+between the runs.
