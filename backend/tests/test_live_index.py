@@ -179,6 +179,9 @@ def test_editing_one_function_reembeds_only_that_function(
 
     assert (stats.added, stats.modified, stats.deleted) == (0, 1, 0)
     assert stats.views["ast"].model_texts == 1  # just the one changed function
+    ast = stats.views["ast"]
+    assert ast.points_upserted == 1  # and only that point is written ...
+    assert ast.points_skipped == ast.new_chunks - 1  # ... the identical ones are left alone
     assert stats.views["ast"].reused_chunks == stats.views["ast"].new_chunks - 1
     assert stats.views["ast"].model_texts < stats.views["fixed"].new_chunks
     assert (

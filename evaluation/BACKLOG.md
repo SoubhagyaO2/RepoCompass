@@ -58,3 +58,12 @@ All untested; design and tune on a dev set, never on the frozen benchmark:
   graph to raise caller recall (the graph alone reaches recall 0.66 on the caller questions).
 - **A second repository and independently derived structural questions** (for example ground truth
   from a different tool) to test whether graph answers generalise beyond the circular case.
+
+## From Milestone 11 (incremental indexing)
+
+- **Targeted graph re-resolution:** the graph is re-assembled globally on every update (about 40 ms
+  on Flask); for repositories 100x larger, re-resolve only names affected by the changed files.
+- **A command-line entry point for the live index** (build, update, status); at the moment it is
+  driven by the experiment runner and tests.
+- **Edit-stable fixed windows** (content-defined boundaries) if the fixed chunking is kept.
+- **Measure on a larger repository** (second repo) to see where the global parts start to matter.

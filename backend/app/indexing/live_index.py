@@ -104,6 +104,7 @@ class ViewStats(BaseModel):
     reused_chunks: int = 0  # of those, chunks whose vector was found in the store
     model_texts: int = 0  # distinct texts actually sent to the model
     points_upserted: int = 0
+    points_skipped: int = 0  # new chunks identical to the stored chunk: nothing to write
     points_deleted: int = 0
 
 
@@ -305,27 +306,35 @@ class LiveIndex:
         new_records = {path: self._make_record(path) for path in change.changed}
         lap("parse_chunk", t)
 
+        # Chunks identical (every field) to the one already stored under the same id need no
+        # write at all; only the others get a point, so only they need a vector.
+        new_chunks = {v: [c for r in new_records.values() for c in r.chunks[v]] for v in VIEWS}
+        to_write = {v: [c for c in new_chunks[v] if self.chunks[v].get(c.id) != c] for v in VIEWS}
+        for view in VIEWS:
+            vs = stats.views[view]
+            vs.new_chunks = len(new_chunks[view])
+            vs.points_skipped = vs.new_chunks - len(to_write[view])
+
         # Vectors first, while every old point is still in the store (reuse reads them).
         vectors: dict[str, dict[str, list[float]]] = {}
         for view in VIEWS:
-            vectors[view] = self._vectors_for(
-                view, [c for r in new_records.values() for c in r.chunks[view]],
-                stats.views[view], seconds,
-            )  # fmt: skip
+            vectors[view] = self._vectors_for(view, to_write[view], stats.views[view], seconds)
+            stats.views[view].reused_chunks = (
+                stats.views[view].new_chunks - stats.views[view].embedded_chunks
+            )
 
         old_ids = {v: self._chunk_ids_of(change.modified + change.deleted, v) for v in VIEWS}
 
-        for view in VIEWS:  # 1. new points
-            new_chunks = [c for r in new_records.values() for c in r.chunks[view]]
+        for view in VIEWS:  # 1. new and changed points
             t = time.perf_counter()
             self.store.upsert_points(
                 self.collection(view),
-                [point_id(c.id) for c in new_chunks],
-                [vectors[view][c.id] for c in new_chunks],
-                [c.model_dump() for c in new_chunks],
+                [point_id(c.id) for c in to_write[view]],
+                [vectors[view][c.id] for c in to_write[view]],
+                [c.model_dump() for c in to_write[view]],
             )
             lap("store_write", t)
-            stats.views[view].points_upserted = len(new_chunks)
+            stats.views[view].points_upserted = len(to_write[view])
 
         t = time.perf_counter()  # 2. per-file records
         (self.state_dir / "files").mkdir(parents=True, exist_ok=True)
@@ -336,7 +345,7 @@ class LiveIndex:
         lap("persist", t)
 
         for view in VIEWS:  # 3. stale points
-            fresh = {c.id for r in new_records.values() for c in r.chunks[view]}
+            fresh = {c.id for c in new_chunks[view]}
             stale = sorted(old_ids[view] - fresh)
             t = time.perf_counter()
             self.store.delete_points(self.collection(view), [point_id(i) for i in stale])
@@ -375,8 +384,7 @@ class LiveIndex:
     def _vectors_for(
         self, view: str, new_chunks: list[IndexedChunk], vs: ViewStats, seconds: dict[str, float]
     ) -> dict[str, list[float]]:
-        """chunk id -> vector for the new chunks, embedding only texts not already in the store."""
-        vs.new_chunks = len(new_chunks)
+        """chunk id -> vector for the given chunks, embedding only texts new to the store."""
         source: dict[str, str] = {}  # content hash -> an existing chunk id with that text
         for c in new_chunks:
             existing = self.sha_ids[view].get(c.content_sha)
@@ -404,7 +412,6 @@ class LiveIndex:
 
         vs.model_texts = len(to_embed)
         vs.embedded_chunks = sum(1 for c in new_chunks if c.content_sha in to_embed)
-        vs.reused_chunks = vs.new_chunks - vs.embedded_chunks
         return {c.id: by_sha[c.content_sha] for c in new_chunks}
 
     def _remove_orphan_records(self) -> None:
