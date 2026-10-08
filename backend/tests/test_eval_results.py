@@ -9,7 +9,8 @@ from app.evaluation.dataset import load_dataset
 from app.evaluation.experiment import RETRIEVAL_DEPTH, TOP_K, format_comparison, format_report
 
 EVAL_DIR = Path(__file__).resolve().parents[2] / "evaluation"
-RESULTS = sorted((EVAL_DIR / "results").glob("*.json"))
+# Benchmark runs only (flask_*.json); graph_*.json are validation artefacts with another schema.
+RESULTS = sorted((EVAL_DIR / "results").glob("flask_*.json"))
 
 
 def test_scoring_parameters_are_locked() -> None:

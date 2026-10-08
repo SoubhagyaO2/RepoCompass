@@ -11,7 +11,7 @@ from typing import Literal
 import tree_sitter_python
 from tree_sitter import Language, Node, Parser
 
-from app.models.symbols import Import, ParsedFile, Symbol, SymbolKind
+from app.models.symbols import Call, Import, ParsedFile, Symbol, SymbolKind
 
 PY_LANGUAGE = Language(tree_sitter_python.language())
 _parser = Parser(PY_LANGUAGE)
@@ -38,12 +38,14 @@ def parse_python_source(source: bytes, path: str) -> ParsedFile:
     """Parse Python source bytes. Never raises on syntax errors; see `has_errors`."""
     tree = _parser.parse(source)
     root = tree.root_node
+    symbols, owners = _collect_symbols(root, source, path)
     return ParsedFile(
         path=path,
         language="Python",
-        symbols=_collect_symbols(root, source, path),
+        symbols=symbols,
         imports=_collect_imports(root),
         has_errors=root.has_error,
+        calls=_collect_calls(root, owners),
     )
 
 
@@ -54,8 +56,13 @@ def parse_python_file(repo_root: Path, rel_path: str) -> ParsedFile:
 # --- symbols -------------------------------------------------------------------------
 
 
-def _collect_symbols(root: Node, source: bytes, path: str) -> list[Symbol]:
+def _collect_symbols(
+    root: Node, source: bytes, path: str
+) -> tuple[list[Symbol], dict[tuple[int, int], str]]:
+    """Returns the symbols and a map from each symbol's outer node (start, end byte) to its
+    qualified name, which `_collect_calls` uses to attribute calls to their enclosing symbol."""
     symbols: list[Symbol] = []
+    owners: dict[tuple[int, int], str] = {}
 
     def visit(node: Node, class_scope: list[str]) -> None:
         for child in node.named_children:
@@ -65,12 +72,13 @@ def _collect_symbols(root: Node, source: bytes, path: str) -> list[Symbol]:
                 definition = child.child_by_field_name("definition") or child
 
             if definition.type == "function_definition":
-                symbols.append(
-                    _make_symbol(outer, definition, "function", class_scope, source, path)
-                )
+                symbol = _make_symbol(outer, definition, "function", class_scope, source, path)
+                symbols.append(symbol)
+                owners[(outer.start_byte, outer.end_byte)] = symbol.qualified_name
             elif definition.type == "class_definition":
                 symbol = _make_symbol(outer, definition, "class", class_scope, source, path)
                 symbols.append(symbol)
+                owners[(outer.start_byte, outer.end_byte)] = symbol.qualified_name
                 body = definition.child_by_field_name("body")
                 if body is not None:
                     visit(body, [*class_scope, symbol.name])
@@ -78,7 +86,7 @@ def _collect_symbols(root: Node, source: bytes, path: str) -> list[Symbol]:
                 visit(child, class_scope)
 
     visit(root, [])
-    return symbols
+    return symbols, owners
 
 
 def _make_symbol(
@@ -102,7 +110,82 @@ def _make_symbol(
         end_line=outer.end_point.row + 1,
         content=source[outer.start_byte : outer.end_byte].decode("utf-8", errors="replace"),
         parent=parent,
+        bases=_base_names(definition) if kind == "class" else [],
     )
+
+
+def _base_names(class_node: Node) -> list[str]:
+    """Base-class expressions as written; keyword arguments (metaclass=...) are skipped."""
+    supers = class_node.child_by_field_name("superclasses")
+    if supers is None:
+        return []
+    return [_text(c) for c in supers.named_children if c.type in ("identifier", "attribute")]
+
+
+# --- calls ---------------------------------------------------------------------------
+
+_DEFINITION_NODES = {"function_definition", "class_definition", "decorated_definition"}
+_MAX_RECEIVER = 120
+
+
+def _collect_calls(root: Node, owners: dict[tuple[int, int], str]) -> list[Call]:
+    """Every call expression and decorator application, attributed to the symbol it sits in.
+
+    Calls inside a nested function that is not itself a symbol belong to the enclosing symbol;
+    calls in module-level code have caller None.
+    """
+    calls: list[Call] = []
+    stack: list[tuple[Node, str | None]] = [(root, None)]
+    while stack:
+        node, owner = stack.pop()
+        if node.type in _DEFINITION_NODES:
+            owner = owners.get((node.start_byte, node.end_byte), owner)
+
+        if node.type == "call":
+            function = node.child_by_field_name("function")
+            parent = node.parent
+            kind = "decorator" if parent is not None and parent.type == "decorator" else "call"
+            call = _call_target(function, owner, node.start_point.row + 1, kind)
+            if call is not None:
+                calls.append(call)
+        elif node.type == "decorator" and node.named_children:
+            expression = node.named_children[0]
+            if expression.type in (
+                "identifier",
+                "attribute",
+            ):  # a bare @decorator, not @decorator()
+                call = _call_target(expression, owner, node.start_point.row + 1, "decorator")
+                if call is not None:
+                    calls.append(call)
+
+        for child in reversed(node.children):
+            stack.append((child, owner))
+    return calls
+
+
+def _call_target(
+    function: Node | None, owner: str | None, line: int, kind: Literal["call", "decorator"]
+) -> Call | None:
+    if function is None:
+        return None
+    if function.type == "identifier":
+        return Call(caller=owner, name=_text(function), receiver=None, line=line, kind=kind)
+    if function.type == "attribute":
+        attribute = function.child_by_field_name("attribute")
+        receiver = function.child_by_field_name("object")
+        if attribute is None or receiver is None:
+            return None
+        receiver_text = _text(receiver)
+        if receiver.type == "call" and receiver_text.startswith("super("):
+            receiver_text = "super()"
+        return Call(
+            caller=owner,
+            name=_text(attribute),
+            receiver=receiver_text[:_MAX_RECEIVER],
+            line=line,
+            kind=kind,
+        )
+    return None  # calls of subscripts, call results, lambdas ...: no static name
 
 
 # --- imports -------------------------------------------------------------------------

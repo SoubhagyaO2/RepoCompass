@@ -134,3 +134,32 @@ questions.
   pinned Flask commit `d73fa1cdcbd8b1465c151db8924ba58b1dd14e35`.
 - Planned entry points: `python -m app.graph.validate` (M10A) and
   `python -m app.evaluation.run_graph` (M10B).
+
+## Addendum (2026-10-08, before any M10B result): deviation 1, rule 4 precision fix
+
+**What happened.** After the builder passed V1 (import edges identical to Python's `ast`) and V2
+(51 of 51 facts), I audited the weakest rule, `unique-name`, which the facts barely exercise, by
+sampling 30 of its 76 edges inside `src/flask` and reading the code line behind each. Only 16
+were correct (53%; 37% if the typing-only `ProxyMixin._get_current_object` stub is counted as
+wrong). Of the 14 wrong edges, 10 were builtin container methods (`kwargs.setdefault(...)` linked
+to the repo's only `setdefault`), 2 were calls into external libraries (`click.command`,
+werkzeug's `EnvironBuilder.from_environ`), 1 was self-recursion by name, and 1 (`ep.load()`)
+cannot be fixed without type inference. These false edges would have made files such as `ctx.py`
+neighbours of nearly every file and polluted graph expansion for reasons unrelated to the idea
+being tested.
+
+**The change** (no benchmark data was used; no M10B result existed). The rule's principle, never
+guess among alternatives, now also covers:
+
+1. a receiver bound by an import that leaves the repository is external, never name-matched;
+2. a receiver that is a statically known class but lacks the method is unresolved, never
+   name-matched;
+3. name matching is used only for receivers of unknown type, and not for method names that exist
+   on builtin types (`dict`, `list`, `set`, `str`, `bytes`, ...) nor when it would link a method
+   to itself.
+
+**Re-audit on fresh samples** (single reviewer, judged by reading the call line;
+`evaluation/results/graph_audit_flask.json`): 30 of the 48 remaining `unique-name` edges, 28
+correct (93%; 23 or 77% if the typing-only stub counts as wrong), the 2 errors being
+`loader.get_source(...)` on a Jinja loader; and 30 of the 235 edges from all other rules, 30
+correct. V1 is still identical and V2 still 51 of 51. `calls` edges went from 1,223 to 1,127.
