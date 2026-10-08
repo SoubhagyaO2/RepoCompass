@@ -41,3 +41,20 @@ Ideas for why, all untested; run them on a dev set, never on the frozen benchmar
 - **Candidate depth** (20 files was fixed in advance; 10 or 50 are untested).
 - **Truncation:** 133 of R2's 1,460 scored pairs exceed the reranker's 512 tokens.
 - **Interpolate** the reranker score with the first-stage rank instead of replacing the order.
+
+## Added after Milestone 10 (graph expansion hurt non-structural questions)
+
+All untested; design and tune on a dev set, never on the frozen benchmark:
+
+- **Intent-gated graph use:** route "what calls / imports / depends on X" questions to the graph
+  (callers, importers) and leave the rest to the hybrid. Needs a question classifier and questions
+  whose ground truth was **not** derived from the same parser as the graph.
+- **Direction-aware expansion** (callers only vs callees only vs importers only) instead of the
+  undirected union.
+- **Scale the vote to the score range** (normalise the graph vote against the spread of the
+  hybrid's scores) and **dilute hubs** (divide an anchor's vote by its degree).
+- **Fewer or smarter anchors** than the top 3, and filtering neighbours by file category (tests).
+- **Callbacks as references:** add non-call references (`_async_wrapper=app.ensure_sync`) to the
+  graph to raise caller recall (the graph alone reaches recall 0.66 on the caller questions).
+- **A second repository and independently derived structural questions** (for example ground truth
+  from a different tool) to test whether graph answers generalise beyond the circular case.

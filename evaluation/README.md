@@ -451,3 +451,96 @@ values (callbacks), `getattr`/string access, and method names defined by several
 modelled, so recall against a text search of identifiers will be below 100%. The `unique-name` rule
 can still be wrong when a receiver of unknown type has a method whose name is defined once in the
 repository (for example a Jinja `loader.get_source`).
+
+### Graph-enhanced retrieval (Milestone 10B)
+
+The method, comparisons and statistics were frozen in
+[`plans/m10-code-graph.md`](plans/m10-code-graph.md) (commit `3a36441`) before any graph code
+existed; the graph itself was built and validated separately (Milestone 10A, `bd69b87`). Reproduce
+with `python -m app.evaluation.run_graph` (about 1 minute; needs the Milestone 8 indexes);
+`--report-only` re-prints everything below. Results:
+[`flask_fixed_chunk_hybrid_graph.json`](results/flask_fixed_chunk_hybrid_graph.json) (G1),
+[`flask_ast_chunk_hybrid_graph.json`](results/flask_ast_chunk_hybrid_graph.json) (G2) and
+[`graph_vs_benchmark_flask.json`](results/graph_vs_benchmark_flask.json), 2026-10-08.
+
+**Method (pre-registered, not tuned):** the first stage is the Milestone 8 hybrid, verified
+question by question. The top 3 files are anchors. Every file connected to an anchor by imports or
+calls, in either direction, gets a vote of `1 / (60 + anchor rank)` once per (anchor, neighbour)
+pair; a file's score is its hybrid RRF score (0 if the hybrid did not return it) plus its votes.
+The graph covers the whole repository, tests included. Every expansion is saved with its evidence
+(`expansion_traces`: full example edges `{source, relationship, target, evidence}` for pairs whose
+neighbour reaches the final top 10, relation counts for the rest).
+
+Overall, primary scope, Top-1 / Top-5 / MRR:
+
+| | Hybrid (M8) | Hybrid + graph |
+|---|---|---|
+| Fixed, all 73 | 39.7% / 87.7% / 0.614 | 31.5% / 84.9% / 0.522 |
+| Fixed, excluding dependency (61) | 45.9% / 93.4% / 0.669 | 26.2% / 83.6% / 0.485 |
+| AST, all 73 | 43.8% / 87.7% / 0.626 | 24.7% / 83.6% / 0.494 |
+| AST, excluding dependency (61) | 50.8% / 95.1% / 0.696 | 18.0% / 85.2% / 0.459 |
+
+MRR by category (hybrid -> hybrid + graph):
+
+| | Fixed | AST |
+|---|---|---|
+| definition (16) | 0.611 -> 0.657 | 0.738 -> 0.610 |
+| caller (13) | 0.872 -> 0.571 | 0.718 -> 0.511 |
+| **dependency (12)** | **0.334 -> 0.707** | **0.274 -> 0.671** |
+| concept (21) | 0.630 -> 0.364 | 0.742 -> 0.346 |
+| flow (11) | 0.587 -> 0.364 | 0.519 -> 0.395 |
+
+Dependency Top-1 went from 8.3% to 58.3% in both systems, and Top-5 from 58.3% to 91.7% (fixed) and
+from 50.0% to 75.0% (AST).
+
+Pre-registered paired comparisons (B vs A; MRR difference with 95% bootstrap interval; sign test,
+Bonferroni threshold for three comparisons p < 0.0167):
+
+| B vs A | questions | B better / worse / equal | Top-1 | Top-5 | MRR (95% CI) | sign test p |
+|---|---|---|---|---|---|---|
+| 1. G1 vs H1 | all 73 | 25 / 41 / 7 | -8.2% | -2.7% | -0.092 (-0.213 to +0.029) | 0.064 |
+| | excl. dependency | 15 / 39 / 7 | -19.7% | -9.8% | **-0.184 (-0.305 to -0.060)** | **0.001** |
+| 2. G2 vs H2 | all 73 | 24 / 39 / 10 | -19.2% | -4.1% | -0.132 (-0.249 to -0.011) | 0.077 |
+| | excl. dependency | 15 / 37 / 9 | -32.8% | -9.8% | **-0.236 (-0.352 to -0.118)** | **0.003** |
+| 3. G2 vs G1 | all 73 | 23 / 24 / 26 | -6.8% | -1.4% | -0.027 (-0.103 to +0.046) | 1.000 |
+| | excl. dependency | 21 / 19 / 21 | -8.2% | +1.6% | -0.026 (-0.104 to +0.051) | 0.875 |
+
+Pre-registered descriptive statistics (first primary file, rank before vs after): G1 moved up for
+25 questions, down for 41, unchanged for 7; G2 up 24, down 39, unchanged 10. By category the
+pattern is stark: dependency up 10 / down 2 (G1) and up 9 / down 2 (G2), but concept up 4 / down 17
+(G1) and caller up 2 / down 9. Expansion "brought in" a primary file the hybrid had ranked outside
+its top 20 for 0 (G1) and 1 (G2) questions, and "pushed out" a top-5 primary file for 10 and 9.
+There are 56 (G1) and 48 (G2) expanded (anchor, neighbour) pairs per question; 55% and 50% of the
+neighbours are test or example files. Expansion costs about 1 ms (end-to-end median 26 ms vs 21 ms
+for the hybrid); building the graph takes 0.6 s including parsing.
+
+What the graph answers by itself (descriptive, computed once after the graph was frozen):
+**dependency 12 of 12 exact** (precision 1.00, recall 1.00) and **callers 8 of 13 exact** (mean
+precision 0.69, mean recall 0.66).
+
+**How to read these numbers**
+
+- **As designed, graph expansion did not improve retrieval, and it significantly hurt the
+  questions that are not about structure.** By the pre-registered rule (improvement only if the MRR
+  interval excludes zero) there is no improvement. Excluding dependency, MRR fell by 0.18 (fixed)
+  and 0.24 (AST), and both sign tests pass the correction. Over all 73 questions the dependency
+  gain offsets part of the loss, which is why the overall comparison is not significant for G1.
+- **The dependency result is circular and shows only that the mechanism works.** The benchmark's
+  answers were derived with the same parser as the graph's import edges, so the graph answering
+  12 of 12 exactly is by construction, not evidence that it generalises. The caller questions are
+  the partly independent test: the graph alone gets 8 of 13 exactly (precision 0.69, recall 0.66;
+  it cannot see methods passed as callbacks).
+- **Why it hurt (exploratory, post hoc; the plan did not include this):** the hybrid's scores are
+  tightly packed (mean RRF score 0.032 at rank 1, 0.030 at rank 5, 0.024 at rank 10) while one graph
+  vote is 0.016, larger than the whole gap between ranks 1 and 10. So connectivity overrides
+  relevance instead of breaking ties. Hub files win: `app.py` becomes the #1 result for 21 of 73
+  questions under G1 (up from 13) and 23 under G2 (up from 12), and as an anchor it contributes
+  1,643 of the 4,086 expansion pairs. Test files are not the cause: files outside `src/flask/`
+  at #1 actually fell (16 to 13, 20 to 8). Expansion mostly reorders: only 8 (G1) and 16 (G2) of the
+  365 top-5 slots hold a file retrieval had not returned.
+- **The conclusion is about this design, not about graphs.** Always-on, undirected, equal-weight
+  expansion is the wrong way to use a graph that is correct for structural questions. Gating the
+  graph on question intent (use it for "what calls / imports / depends on", not for "where is the
+  session cookie saved") is the obvious next experiment, but it is suggested by these results, so
+  it must be designed and tuned on a dev set, never on this benchmark, and its dependency gains can
+  only be believed on questions whose answers were not derived from the same parser.
