@@ -1,0 +1,87 @@
+{
+  "repository": "pallets/flask",
+  "commit": "d73fa1cdcbd8b1465c151db8924ba58b1dd14e35",
+  "facts_file": "flask-graph-facts-v1",
+  "v1_import_edges_vs_ast": {
+    "scope": "src/flask/",
+    "edges_in_graph": 95,
+    "edges_from_ast": 95,
+    "identical": true,
+    "only_in_graph": [],
+    "only_in_ast": []
+  },
+  "v2_facts": {
+    "total": 51,
+    "passed": 51,
+    "failed": 0,
+    "by_kind_and_expectation": {
+      "calls/present": {
+        "ok": 24,
+        "failed": 0
+      },
+      "calls/absent": {
+        "ok": 6,
+        "failed": 0
+      },
+      "calls/known_gap": {
+        "ok": 2,
+        "failed": 0
+      },
+      "imports/present": {
+        "ok": 6,
+        "failed": 0
+      },
+      "imports/absent": {
+        "ok": 3,
+        "failed": 0
+      },
+      "inherits/present": {
+        "ok": 6,
+        "failed": 0
+      },
+      "inherits/absent": {
+        "ok": 1,
+        "failed": 0
+      },
+      "defines/present": {
+        "ok": 2,
+        "failed": 0
+      },
+      "defines/absent": {
+        "ok": 1,
+        "failed": 0
+      }
+    },
+    "failures": []
+  },
+  "v3_stats": {
+    "files": 83,
+    "nodes_by_type": {
+      "file": 83,
+      "function": 519,
+      "class": 70,
+      "method": 313
+    },
+    "edges_by_type": {
+      "defines": 902,
+      "imports": 176,
+      "calls": 1127,
+      "inherits": 26
+    },
+    "calls_total": 4128,
+    "calls_resolved_by_rule": {
+      "import": 214,
+      "unique-name": 709,
+      "local": 93,
+      "import-module": 300,
+      "super": 4,
+      "self": 128,
+      "class-attr": 4
+    },
+    "calls_ambiguous": 194,
+    "calls_unresolved": 1113,
+    "calls_external": 640,
+    "calls_builtin_name": 729,
+    "build_seconds": 0.013523199999781355
+  }
+}

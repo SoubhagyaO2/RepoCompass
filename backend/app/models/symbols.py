@@ -20,6 +20,17 @@ class Symbol(BaseModel):
     end_line: int  # 1-based, inclusive
     content: str  # original source text, byte-for-byte
     parent: str | None = None  # qualified name of the enclosing class, if any
+    bases: list[str] = []  # classes only: the base-class expressions as written
+
+
+class Call(BaseModel):
+    """One call expression (or decorator application), attributed to its enclosing symbol."""
+
+    caller: str | None  # qualified name of the enclosing symbol; None = module-level code
+    name: str  # the name being called: "ensure_sync" for self.ensure_sync(...)
+    receiver: str | None  # the object it is called on as written ("self", "app"); None if plain
+    line: int  # 1-based
+    kind: Literal["call", "decorator"] = "call"
 
 
 class Import(BaseModel):
@@ -38,3 +49,4 @@ class ParsedFile(BaseModel):
     symbols: list[Symbol]
     imports: list[Import]
     has_errors: bool  # True if the parser had to recover from syntax errors
+    calls: list[Call] = []

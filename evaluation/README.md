@@ -405,3 +405,49 @@ of which the cross-encoder is about 1,050 and 1,138 ms (20 pairs at roughly 45-5
   512-token limit (62 questions affected) and are truncated; none do for fixed chunks (R1).
 - Only one reranker, one candidate depth and one chunk per file were tried, none tuned, so this
   says that *this* off-the-shelf reranker did not help here, not that reranking cannot.
+
+### Code graph: construction and validation (Milestone 10A)
+
+Not a benchmark run: the graph is built and validated without using the benchmark questions. The
+plan ([`plans/m10-code-graph.md`](plans/m10-code-graph.md), committed before any graph code) fixes
+the node and edge types, the call-resolution rules and the validation. Reproduce with
+`python -m app.graph.validate` (writes
+[`results/graph_validation_flask.json`](results/graph_validation_flask.json)); inspect a graph with
+`python -m app.graph <github-url> --callers <symbol> | --importers <file> | --neighbors <file>`.
+
+**The Flask graph** (NetworkX `MultiDiGraph`, all 83 Python files including tests; graph assembly
+takes about 0.01 s on top of roughly 0.2 s of parsing):
+
+| | |
+|---|---|
+| nodes | 83 files, 70 classes, 519 functions, 313 methods |
+| edges | 902 `defines`, 176 `imports`, 26 `inherits`, 1,127 `calls` (every edge keeps its file, lines and resolution rule) |
+| call expressions | 4,128 found; 1,452 resolved (`unique-name` 709, `import-module` 300, `import` 214, `self` 128, `local` 93, `super` 4, `class-attr` 4) |
+| skipped | 640 external receivers, 729 builtin-type method names, 194 ambiguous, 1,113 unresolved |
+
+**Validation**
+
+- **V1, independent parser:** the import edges inside `src/flask` equal the same relation computed
+  with Python's own `ast` module: **identical** (95 edges each).
+- **V2, hand-verified facts** ([`graph_facts/flask.json`](graph_facts/flask.json), written from
+  reading the source *before* the builder existed): **51 of 51 hold**: 38 expected-present edges
+  exist, 11 expected-absent edges (a precision check) do not, and the 2 documented known gaps are
+  absent as predicted.
+- **Precision audit of the weakest rule** (single reviewer reading the call line,
+  [`results/graph_audit_flask.json`](results/graph_audit_flask.json)): see the deviation below.
+
+**Deviation 1 (recorded in the plan).** The first version of the name-matching rule
+(`unique-name`) was only 53% precise on a sample of 30 edges (16 correct): 10 of the 14 errors
+were builtin container methods (`kwargs.setdefault(...)` linked to the repository's only
+`setdefault`), 2 were calls into external libraries, 1 was self-recursion and 1 needs type
+inference. It was fixed *before any retrieval result existed and without benchmark data*: external
+receivers and known classes are never name-matched, and builtin-type method names and
+self-recursion are excluded. On a **fresh** sample the rule is 93% precise (28 of 30; 77% if a
+typing-only stub class is counted as wrong), and a sample of 30 edges from all other rules was 30
+of 30. V1 and V2 were unchanged.
+
+**Known limitations (by design):** dynamic dispatch to subclass overrides, methods passed as
+values (callbacks), `getattr`/string access, and method names defined by several classes are not
+modelled, so recall against a text search of identifiers will be below 100%. The `unique-name` rule
+can still be wrong when a receiver of unknown type has a method whose name is defined once in the
+repository (for example a Jinja `loader.get_source`).

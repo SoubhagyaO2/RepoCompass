@@ -1,0 +1,42 @@
+{
+  "description": "Manual precision audit of resolved call edges whose source is inside src/flask, single reviewer (Claude), judged by reading the call line in the source at the pinned commit. Not a benchmark measurement; it motivated deviation 1 of the M10 plan.",
+  "commit": "d73fa1cdcbd8b1465c151db8924ba58b1dd14e35",
+  "audits": [
+    {
+      "name": "unique-name, BEFORE the fix",
+      "seed": 0,
+      "population": 76,
+      "sampled": 30,
+      "correct_lenient": 16,
+      "correct_strict": 11,
+      "note": "strict also counts the typing-only ProxyMixin._get_current_object stub (5 edges) as wrong",
+      "wrong_breakdown": {
+        "builtin container methods (setdefault, copy)": 10,
+        "external library receiver": 2,
+        "self-recursion by name": 1,
+        "unknown receiver type (ep.load)": 1
+      }
+    },
+    {
+      "name": "unique-name, AFTER the fix (fresh sample)",
+      "seed": 1,
+      "population": 48,
+      "sampled": 30,
+      "correct_lenient": 28,
+      "correct_strict": 23,
+      "wrong_breakdown": {
+        "unknown receiver type (loader.get_source on a Jinja loader)": 2
+      },
+      "note": "strict counts the 5 ProxyMixin stub edges as wrong"
+    },
+    {
+      "name": "all other rules, AFTER the fix",
+      "seed": 2,
+      "population": 235,
+      "sampled": 30,
+      "correct_lenient": 30,
+      "correct_strict": 30,
+      "wrong_breakdown": {}
+    }
+  ]
+}
