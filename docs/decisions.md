@@ -33,3 +33,7 @@ as a gain, and keeping the code and the result makes the decision auditable.
 | Evidence layer: one auditable item per retrieved file (file, hash, lines, symbol, scores, graph facts) over the AST hybrid | File order identical to the saved M8 ranking for 73/73 questions; 0 invariant violations over 730 items; fresh-process output identical; 9/10 hand checks fully confirmed (M12) | **In the project** (`app/evidence`, `GET /v1/evidence`). It is the only way M13 may see the repository |
 | Graph as annotation only | M10B: graph-driven reranking hurts. Schema states that relationships are structural, not relevance | Kept; never used for ordering |
 | Determinism contract | Embedding scores vary by ~3e-8 in Qdrant local mode; exactly tied chunks follow store order (27/73 questions have such ties) | Documented; embedding tie-breaking is a separate retrieval change (backlog) |
+
+Note on M10B: the always-on graph expansion result in the table above was computed on the graph
+**before** the function-local import scoping fix (M10 follow-up, 2026-10-08) and has not been re-run
+on the corrected graph.

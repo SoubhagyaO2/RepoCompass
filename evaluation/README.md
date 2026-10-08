@@ -689,8 +689,10 @@ imports first, then the module's; nothing else in the rules changed.
   correct-looking additions says little about precision elsewhere.
 - **Fresh sample** (seed 1, 30 of the 64 `import`/`import-module` edges in `src/flask`): 30 of 30
   correct. Single reviewer; the sample is dominated by `@setupmethod` decorator edges.
-- **Not recomputed:** the M10B retrieval result. It used the earlier graph; the call-edge change
-  is 54 of 2,231 edges, in two test files and one method.
+- **Not recomputed:** the M10B retrieval result predates this correction. It was computed on the
+  earlier graph and has not been re-run on the corrected one; nothing here claims the correction
+  leaves it unchanged. (The call-edge change is 54 of 2,231 edges, in two test files and one
+  method, but the effect on the M10B numbers has not been measured.)
 
 The regression tests (`tests/test_graph_builder.py`) cover: two functions with the same alias and
 different targets, no leak into other functions, a local import shadowing the module-level one only

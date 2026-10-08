@@ -1,0 +1,22 @@
+{
+  "description": "M13 set B: questions about things that are not in the pinned Flask checkout. Written before any M13 code or run. Each topic was checked by a case-insensitive search of the Python files of the pinned checkout (zero matches for graphql, websocket, postgres, oauth, smtp, jwt, kafka, grpc, django, docker, migrat, rate limit, machine learning; SQLAlchemy occurs only as a docs link in docs/conf.py).",
+  "repository": "pallets/flask",
+  "commit": "d73fa1cdcbd8b1465c151db8924ba58b1dd14e35",
+  "questions": [
+    {"id": "unans-01", "question": "How does Flask implement GraphQL subscriptions?"},
+    {"id": "unans-02", "question": "Where is the Django ORM model for users defined?"},
+    {"id": "unans-03", "question": "How does Flask handle WebSocket connections natively?"},
+    {"id": "unans-04", "question": "Which function trains the machine learning model in this repository?"},
+    {"id": "unans-05", "question": "How does Flask manage PostgreSQL connection pooling?"},
+    {"id": "unans-06", "question": "Where is the Kafka consumer implemented?"},
+    {"id": "unans-07", "question": "How does Flask implement OAuth2 token refresh?"},
+    {"id": "unans-08", "question": "Which module renders the built-in admin dashboard UI?"},
+    {"id": "unans-09", "question": "How does Flask send emails over SMTP?"},
+    {"id": "unans-10", "question": "How are gRPC services registered in a Flask application?"},
+    {"id": "unans-11", "question": "Where is the SQLAlchemy session created for each request?"},
+    {"id": "unans-12", "question": "How does Flask rate limit API clients?"},
+    {"id": "unans-13", "question": "Which class implements JWT authentication?"},
+    {"id": "unans-14", "question": "How are database migrations applied?"},
+    {"id": "unans-15", "question": "Where is the Docker deployment for production configured?"}
+  ]
+}
