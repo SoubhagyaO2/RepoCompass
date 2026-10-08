@@ -1,0 +1,499 @@
+{
+ "$defs": {
+  "ComponentScore": {
+   "properties": {
+    "rank": {
+     "title": "Rank",
+     "type": "integer"
+    },
+    "score": {
+     "title": "Score",
+     "type": "number"
+    },
+    "line_start": {
+     "title": "Line Start",
+     "type": "integer"
+    },
+    "line_end": {
+     "title": "Line End",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "rank",
+    "score",
+    "line_start",
+    "line_end"
+   ],
+   "title": "ComponentScore",
+   "type": "object"
+  },
+  "EvidenceItem": {
+   "properties": {
+    "rank": {
+     "title": "Rank",
+     "type": "integer"
+    },
+    "file": {
+     "title": "File",
+     "type": "string"
+    },
+    "file_sha256": {
+     "title": "File Sha256",
+     "type": "string"
+    },
+    "category": {
+     "title": "Category",
+     "type": "string"
+    },
+    "line_start": {
+     "title": "Line Start",
+     "type": "integer"
+    },
+    "line_end": {
+     "title": "Line End",
+     "type": "integer"
+    },
+    "symbol": {
+     "anyOf": [
+      {
+       "$ref": "#/$defs/SymbolInfo"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "symbol_status": {
+     "enum": [
+      "exact",
+      "module_level",
+      "unparsed"
+     ],
+     "title": "Symbol Status",
+     "type": "string"
+    },
+    "scores": {
+     "$ref": "#/$defs/Scores"
+    },
+    "graph": {
+     "anyOf": [
+      {
+       "$ref": "#/$defs/GraphEvidence"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "text": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "title": "Text"
+    }
+   },
+   "required": [
+    "rank",
+    "file",
+    "file_sha256",
+    "category",
+    "line_start",
+    "line_end",
+    "symbol",
+    "symbol_status",
+    "scores",
+    "graph",
+    "text"
+   ],
+   "title": "EvidenceItem",
+   "type": "object"
+  },
+  "GraphDegree": {
+   "properties": {
+    "calls": {
+     "default": 0,
+     "title": "Calls",
+     "type": "integer"
+    },
+    "called_by": {
+     "default": 0,
+     "title": "Called By",
+     "type": "integer"
+    },
+    "inherits": {
+     "default": 0,
+     "title": "Inherits",
+     "type": "integer"
+    },
+    "imports": {
+     "default": 0,
+     "title": "Imports",
+     "type": "integer"
+    },
+    "imported_by": {
+     "default": 0,
+     "title": "Imported By",
+     "type": "integer"
+    },
+    "defines": {
+     "default": 0,
+     "title": "Defines",
+     "type": "integer"
+    }
+   },
+   "title": "GraphDegree",
+   "type": "object"
+  },
+  "GraphEvidence": {
+   "properties": {
+    "node": {
+     "title": "Node",
+     "type": "string"
+    },
+    "degree": {
+     "$ref": "#/$defs/GraphDegree"
+    },
+    "relationships": {
+     "items": {
+      "$ref": "#/$defs/GraphRelationship"
+     },
+     "title": "Relationships",
+     "type": "array"
+    },
+    "truncated": {
+     "title": "Truncated",
+     "type": "boolean"
+    },
+    "links_to_other_results": {
+     "items": {
+      "$ref": "#/$defs/GraphLink"
+     },
+     "title": "Links To Other Results",
+     "type": "array"
+    }
+   },
+   "required": [
+    "node",
+    "degree",
+    "relationships",
+    "truncated",
+    "links_to_other_results"
+   ],
+   "title": "GraphEvidence",
+   "type": "object"
+  },
+  "GraphLink": {
+   "description": "A relationship to the symbol or file of another item of the same response.",
+   "properties": {
+    "relationship": {
+     "enum": [
+      "calls",
+      "called_by",
+      "inherits",
+      "imports",
+      "imported_by",
+      "defines"
+     ],
+     "title": "Relationship",
+     "type": "string"
+    },
+    "other_rank": {
+     "title": "Other Rank",
+     "type": "integer"
+    },
+    "line": {
+     "anyOf": [
+      {
+       "type": "integer"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "title": "Line"
+    },
+    "rule": {
+     "title": "Rule",
+     "type": "string"
+    }
+   },
+   "required": [
+    "relationship",
+    "other_rank",
+    "line",
+    "rule"
+   ],
+   "title": "GraphLink",
+   "type": "object"
+  },
+  "GraphRelationship": {
+   "properties": {
+    "relationship": {
+     "enum": [
+      "calls",
+      "called_by",
+      "inherits",
+      "imports",
+      "imported_by",
+      "defines"
+     ],
+     "title": "Relationship",
+     "type": "string"
+    },
+    "other": {
+     "title": "Other",
+     "type": "string"
+    },
+    "other_file": {
+     "title": "Other File",
+     "type": "string"
+    },
+    "line": {
+     "anyOf": [
+      {
+       "type": "integer"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "title": "Line"
+    },
+    "rule": {
+     "title": "Rule",
+     "type": "string"
+    }
+   },
+   "required": [
+    "relationship",
+    "other",
+    "other_file",
+    "line",
+    "rule"
+   ],
+   "title": "GraphRelationship",
+   "type": "object"
+  },
+  "IndexInfo": {
+   "properties": {
+    "repository": {
+     "title": "Repository",
+     "type": "string"
+    },
+    "revision": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "title": "Revision"
+    },
+    "view": {
+     "title": "View",
+     "type": "string"
+    },
+    "files": {
+     "title": "Files",
+     "type": "integer"
+    },
+    "chunks": {
+     "title": "Chunks",
+     "type": "integer"
+    },
+    "config_sha256": {
+     "title": "Config Sha256",
+     "type": "string"
+    },
+    "manifest_sha256": {
+     "title": "Manifest Sha256",
+     "type": "string"
+    }
+   },
+   "required": [
+    "repository",
+    "revision",
+    "view",
+    "files",
+    "chunks",
+    "config_sha256",
+    "manifest_sha256"
+   ],
+   "title": "IndexInfo",
+   "type": "object"
+  },
+  "RetrievalInfo": {
+   "properties": {
+    "method": {
+     "title": "Method",
+     "type": "string"
+    },
+    "rrf_k": {
+     "title": "Rrf K",
+     "type": "integer"
+    },
+    "depth": {
+     "title": "Depth",
+     "type": "integer"
+    },
+    "components": {
+     "items": {
+      "type": "string"
+     },
+     "title": "Components",
+     "type": "array"
+    }
+   },
+   "required": [
+    "method",
+    "rrf_k",
+    "depth",
+    "components"
+   ],
+   "title": "RetrievalInfo",
+   "type": "object"
+  },
+  "Scores": {
+   "properties": {
+    "rrf": {
+     "title": "Rrf",
+     "type": "number"
+    },
+    "bm25": {
+     "anyOf": [
+      {
+       "$ref": "#/$defs/ComponentScore"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "embedding": {
+     "anyOf": [
+      {
+       "$ref": "#/$defs/ComponentScore"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    }
+   },
+   "required": [
+    "rrf",
+    "bm25",
+    "embedding"
+   ],
+   "title": "Scores",
+   "type": "object"
+  },
+  "SymbolInfo": {
+   "properties": {
+    "qualified_name": {
+     "title": "Qualified Name",
+     "type": "string"
+    },
+    "name": {
+     "title": "Name",
+     "type": "string"
+    },
+    "kind": {
+     "enum": [
+      "function",
+      "method",
+      "class"
+     ],
+     "title": "Kind",
+     "type": "string"
+    },
+    "node_id": {
+     "title": "Node Id",
+     "type": "string"
+    },
+    "line_start": {
+     "title": "Line Start",
+     "type": "integer"
+    },
+    "line_end": {
+     "title": "Line End",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "qualified_name",
+    "name",
+    "kind",
+    "node_id",
+    "line_start",
+    "line_end"
+   ],
+   "title": "SymbolInfo",
+   "type": "object"
+  }
+ },
+ "properties": {
+  "schema_version": {
+   "default": 1,
+   "title": "Schema Version",
+   "type": "integer"
+  },
+  "query": {
+   "title": "Query",
+   "type": "string"
+  },
+  "index": {
+   "$ref": "#/$defs/IndexInfo"
+  },
+  "retrieval": {
+   "$ref": "#/$defs/RetrievalInfo"
+  },
+  "notes": {
+   "additionalProperties": {
+    "type": "string"
+   },
+   "default": {
+    "scores": "rrf is the fused ranking score. bm25 and embedding scores are raw values of different kinds: they are not comparable with each other, nor across queries.",
+    "graph": "Graph annotations describe structural relationships only. Their presence is not evidence that the related symbol is relevant to the query. Edges with rule 'unique-name' are name matches (audited precision 93%).",
+    "lines": "1-based, inclusive, counted in the file version identified by file_sha256."
+   },
+   "title": "Notes",
+   "type": "object"
+  },
+  "evidence": {
+   "items": {
+    "$ref": "#/$defs/EvidenceItem"
+   },
+   "title": "Evidence",
+   "type": "array"
+  },
+  "timing_ms": {
+   "anyOf": [
+    {
+     "type": "number"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Timing Ms"
+  }
+ },
+ "required": [
+  "query",
+  "index",
+  "retrieval",
+  "evidence"
+ ],
+ "title": "EvidenceResponse",
+ "type": "object"
+}

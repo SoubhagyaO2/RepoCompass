@@ -1,0 +1,43 @@
+{
+  "port": 64436,
+  "checks": {
+    "index_status": {
+      "http": 200,
+      "files": 83,
+      "chunks": 1027
+    },
+    "evidence_order_equals_saved_m8": {
+      "questions": 5,
+      "ok": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "http_latency_ms": [
+      62.2,
+      114.9,
+      54.1,
+      37.6,
+      45.3
+    ],
+    "include_text": {
+      "http": 200,
+      "items": 3,
+      "all_have_text": true
+    },
+    "bad_requests": {
+      "empty_q": 422,
+      "blank_q": 422,
+      "missing_q": 422,
+      "top_k_0": 422,
+      "top_k_51": 422,
+      "too_long": 422
+    },
+    "health": 200
+  },
+  "startup_seconds": 19.4,
+  "passes": true
+}

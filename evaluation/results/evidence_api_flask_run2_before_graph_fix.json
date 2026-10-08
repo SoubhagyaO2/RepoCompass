@@ -1,0 +1,1014 @@
+{
+  "plan": "evaluation/plans/m12-evidence-api.md",
+  "repository": "pallets/flask",
+  "commit": "d73fa1cdcbd8b1465c151db8924ba58b1dd14e35",
+  "dataset_fingerprint": "6e78d06ad988b637eb3f77f047232238667e0cf9b325abd971f1eab3c024a311",
+  "top_k": 10,
+  "environment": {
+    "python": "3.13.3",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "sentence_transformers": "6.1.0",
+    "qdrant_client": "1.19.1",
+    "networkx": "3.7",
+    "repocompass_commit": "fa83499328c748d9c59473ad8e34eeab28cae56b",
+    "repocompass_tree_dirty": true
+  },
+  "timestamp": "2026-10-08T19:30:04+0530",
+  "index_build_seconds": 179.7,
+  "latency_ms_top10_no_text": {
+    "median": 27.5,
+    "max": 39.5,
+    "n": 30
+  },
+  "spot_checks": [
+    {
+      "query": "save_session",
+      "items": [
+        {
+          "rank": 1,
+          "file": "src/flask/sessions.py",
+          "lines": [
+            263,
+            270
+          ],
+          "symbol": "SessionInterface.save_session",
+          "symbol_status": "exact",
+          "source_at_line_start": "def save_session(",
+          "graph_edges": []
+        },
+        {
+          "rank": 2,
+          "file": "tests/test_session_interface.py",
+          "lines": [
+            6,
+            28
+          ],
+          "symbol": "test_open_session_with_endpoint",
+          "symbol_status": "exact",
+          "source_at_line_start": "def test_open_session_with_endpoint():",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/app.py::Flask",
+              "rule": "import-module",
+              "cited_file": "tests/test_session_interface.py",
+              "cited_line": 20,
+              "source_at_cited_line": "app = flask.Flask(__name__)"
+            },
+            {
+              "relationship": "calls",
+              "other": "src/flask/app.py::Flask.test_client",
+              "rule": "unique-name",
+              "cited_file": "tests/test_session_interface.py",
+              "cited_line": 27,
+              "source_at_cited_line": "response = app.test_client().get(\"/\")"
+            },
+            {
+              "relationship": "calls",
+              "other": "src/flask/ctx.py::AppContext.match_request",
+              "rule": "unique-name",
+              "cited_file": "tests/test_session_interface.py",
+              "cited_line": 17,
+              "source_at_cited_line": "app_ctx.match_request()"
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "file": "src/flask/testing.py",
+          "lines": [
+            135,
+            183
+          ],
+          "symbol": "FlaskClient.session_transaction",
+          "symbol_status": "exact",
+          "source_at_line_start": "@contextmanager",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/app.py::Flask.test_request_context",
+              "rule": "unique-name",
+              "cited_file": "src/flask/testing.py",
+              "cited_line": 161,
+              "source_at_cited_line": "ctx = app.test_request_context(*args, **kwargs)"
+            },
+            {
+              "relationship": "calls",
+              "other": "src/flask/sessions.py::SessionInterface.is_null_session",
+              "rule": "unique-name",
+              "cited_file": "src/flask/testing.py",
+              "cited_line": 173,
+              "source_at_cited_line": "if app.session_interface.is_null_session(sess):"
+            },
+            {
+              "relationship": "called_by",
+              "other": "tests/test_signals.py::test_flash_signal",
+              "rule": "unique-name",
+              "cited_file": "tests/test_signals.py",
+              "cited_line": 153,
+              "source_at_cited_line": "with client.session_transaction():"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "query": "Blueprint register",
+      "items": [
+        {
+          "rank": 1,
+          "file": "src/flask/sansio/blueprints.py",
+          "lines": [
+            255,
+            271
+          ],
+          "symbol": "Blueprint.register_blueprint",
+          "symbol_status": "exact",
+          "source_at_line_start": "@setupmethod",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/sansio/scaffold.py::setupmethod",
+              "rule": "import",
+              "cited_file": "src/flask/sansio/blueprints.py",
+              "cited_line": 255,
+              "source_at_cited_line": "@setupmethod"
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "file": "src/flask/sansio/app.py",
+          "lines": [
+            569,
+            595
+          ],
+          "symbol": "App.register_blueprint",
+          "symbol_status": "exact",
+          "source_at_line_start": "@setupmethod",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/sansio/scaffold.py::setupmethod",
+              "rule": "import",
+              "cited_file": "src/flask/sansio/app.py",
+              "cited_line": 569,
+              "source_at_cited_line": "@setupmethod"
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "file": "tests/test_blueprints.py",
+          "lines": [
+            1063,
+            1077
+          ],
+          "symbol": "test_unique_blueprint_names",
+          "symbol_status": "exact",
+          "source_at_line_start": "def test_unique_blueprint_names(app, client) -> None:",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/blueprints.py::Blueprint",
+              "rule": "import-module",
+              "cited_file": "tests/test_blueprints.py",
+              "cited_line": 1064,
+              "source_at_cited_line": "bp = flask.Blueprint(\"bp\", __name__)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "query": "dispatch_request",
+      "items": [
+        {
+          "rank": 1,
+          "file": "tests/type_check/typing_route.py",
+          "lines": [
+            105,
+            106
+          ],
+          "symbol": "RenderTemplateView.dispatch_request",
+          "symbol_status": "exact",
+          "source_at_line_start": "def dispatch_request(self: RenderTemplateView) -> str:",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/templating.py::render_template",
+              "rule": "import",
+              "cited_file": "tests/type_check/typing_route.py",
+              "cited_line": 106,
+              "source_at_cited_line": "return render_template(self.template_name)"
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "file": "tests/test_async.py",
+          "lines": [
+            25,
+            27
+          ],
+          "symbol": "AsyncView.dispatch_request",
+          "symbol_status": "exact",
+          "source_at_line_start": "async def dispatch_request(self):",
+          "graph_edges": []
+        },
+        {
+          "rank": 3,
+          "file": "src/flask/views.py",
+          "lines": [
+            78,
+            83
+          ],
+          "symbol": "View.dispatch_request",
+          "symbol_status": "exact",
+          "source_at_line_start": "def dispatch_request(self) -> ft.ResponseReturnValue:",
+          "graph_edges": []
+        }
+      ]
+    },
+    {
+      "query": "url_for",
+      "items": [
+        {
+          "rank": 1,
+          "file": "tests/test_helpers.py",
+          "lines": [
+            123,
+            133
+          ],
+          "symbol": "TestUrlFor.test_url_for_with_alternating_schemes",
+          "symbol_status": "exact",
+          "source_at_line_start": "def test_url_for_with_alternating_schemes(self, app, req_ctx):",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/helpers.py::url_for",
+              "rule": "import-module",
+              "cited_file": "tests/test_helpers.py",
+              "cited_line": 128,
+              "source_at_cited_line": "assert flask.url_for(\"index\", _external=True) == \"http://localhost/\""
+            },
+            {
+              "relationship": "calls",
+              "other": "src/flask/sansio/scaffold.py::Scaffold.route",
+              "rule": "unique-name",
+              "cited_file": "tests/test_helpers.py",
+              "cited_line": 124,
+              "source_at_cited_line": "@app.route(\"/\")"
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "file": "src/flask/helpers.py",
+          "lines": [
+            200,
+            251
+          ],
+          "symbol": "url_for",
+          "symbol_status": "exact",
+          "source_at_line_start": "def url_for(",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/app.py::Flask.url_for",
+              "rule": "unique-name",
+              "cited_file": "src/flask/helpers.py",
+              "cited_line": 244,
+              "source_at_cited_line": "return current_app.url_for("
+            },
+            {
+              "relationship": "called_by",
+              "other": "examples/tutorial/flaskr/auth.py::login",
+              "rule": "import",
+              "cited_file": "examples/tutorial/flaskr/auth.py",
+              "cited_line": 105,
+              "source_at_cited_line": "return redirect(url_for(\"index\"))"
+            },
+            {
+              "relationship": "called_by",
+              "other": "examples/tutorial/flaskr/auth.py::login_required",
+              "rule": "import",
+              "cited_file": "examples/tutorial/flaskr/auth.py",
+              "cited_line": 25,
+              "source_at_cited_line": "return redirect(url_for(\"auth.login\"))"
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "file": "tests/test_basic.py",
+          "lines": [
+            1361,
+            1370
+          ],
+          "symbol": "test_url_generation",
+          "symbol_status": "exact",
+          "source_at_line_start": "def test_url_generation(app, req_ctx):",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/helpers.py::url_for",
+              "rule": "import-module",
+              "cited_file": "tests/test_basic.py",
+              "cited_line": 1366,
+              "source_at_cited_line": "assert flask.url_for(\"hello\", name=\"test x\") == \"/hello/test%20x\""
+            },
+            {
+              "relationship": "calls",
+              "other": "src/flask/sansio/scaffold.py::Scaffold.route",
+              "rule": "unique-name",
+              "cited_file": "tests/test_basic.py",
+              "cited_line": 1362,
+              "source_at_cited_line": "@app.route(\"/hello/<name>\", methods=[\"POST\"])"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "query": "make_response",
+      "items": [
+        {
+          "rank": 1,
+          "file": "tests/test_basic.py",
+          "lines": [
+            1287,
+            1306
+          ],
+          "symbol": "test_make_response",
+          "symbol_status": "exact",
+          "source_at_line_start": "def test_make_response(app, req_ctx):",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/helpers.py::make_response",
+              "rule": "import-module",
+              "cited_file": "tests/test_basic.py",
+              "cited_line": 1288,
+              "source_at_cited_line": "rv = flask.make_response()"
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "file": "tests/test_helpers.py",
+          "lines": [
+            342,
+            352
+          ],
+          "symbol": "TestHelpers.test_make_response",
+          "symbol_status": "exact",
+          "source_at_line_start": "def test_make_response(self):",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/app.py::Flask",
+              "rule": "import-module",
+              "cited_file": "tests/test_helpers.py",
+              "cited_line": 343,
+              "source_at_cited_line": "app = flask.Flask(__name__)"
+            },
+            {
+              "relationship": "calls",
+              "other": "src/flask/app.py::Flask.make_response",
+              "rule": "unique-name",
+              "cited_file": "tests/test_helpers.py",
+              "cited_line": 345,
+              "source_at_cited_line": "rv = flask.helpers.make_response()"
+            },
+            {
+              "relationship": "calls",
+              "other": "src/flask/app.py::Flask.test_request_context",
+              "rule": "unique-name",
+              "cited_file": "tests/test_helpers.py",
+              "cited_line": 344,
+              "source_at_cited_line": "with app.test_request_context():"
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "file": "src/flask/helpers.py",
+          "lines": [
+            151,
+            197
+          ],
+          "symbol": "make_response",
+          "symbol_status": "exact",
+          "source_at_line_start": "def make_response(*args: t.Any) -> Response:",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/app.py::Flask.make_response",
+              "rule": "unique-name",
+              "cited_file": "src/flask/helpers.py",
+              "cited_line": 197,
+              "source_at_cited_line": "return current_app.make_response(args)"
+            },
+            {
+              "relationship": "called_by",
+              "other": "tests/test_basic.py::test_jsonify_mimetype",
+              "rule": "import-module",
+              "cited_file": "tests/test_basic.py",
+              "cited_line": 1342,
+              "source_at_cited_line": "rv = flask.make_response(flask.jsonify(msg), 200)"
+            },
+            {
+              "relationship": "called_by",
+              "other": "tests/test_basic.py::test_make_response",
+              "rule": "import-module",
+              "cited_file": "tests/test_basic.py",
+              "cited_line": 1288,
+              "source_at_cited_line": "rv = flask.make_response()"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "query": "teardown_appcontext",
+      "items": [
+        {
+          "rank": 1,
+          "file": "src/flask/app.py",
+          "lines": [
+            1456,
+            1482
+          ],
+          "symbol": "Flask.do_teardown_appcontext",
+          "symbol_status": "exact",
+          "source_at_line_start": "def do_teardown_appcontext(",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/app.py::Flask.ensure_sync",
+              "rule": "self",
+              "cited_file": "src/flask/app.py",
+              "cited_line": 1477,
+              "source_at_cited_line": "self.ensure_sync(func)(exc)"
+            },
+            {
+              "relationship": "calls",
+              "other": "src/flask/helpers.py::_CollectErrors",
+              "rule": "import",
+              "cited_file": "src/flask/app.py",
+              "cited_line": 1473,
+              "source_at_cited_line": "collect_errors = _CollectErrors()"
+            },
+            {
+              "relationship": "calls",
+              "other": "src/flask/helpers.py::_CollectErrors.raise_any",
+              "rule": "unique-name",
+              "cited_file": "src/flask/app.py",
+              "cited_line": 1482,
+              "source_at_cited_line": "collect_errors.raise_any(\"Errors during app teardown\")"
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "file": "tests/type_check/typing_app_decorators.py",
+          "lines": [
+            27,
+            28
+          ],
+          "symbol": "teardown_sync",
+          "symbol_status": "exact",
+          "source_at_line_start": "@app.teardown_appcontext",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/sansio/app.py::App.teardown_appcontext",
+              "rule": "unique-name",
+              "cited_file": "tests/type_check/typing_app_decorators.py",
+              "cited_line": 27,
+              "source_at_cited_line": "@app.teardown_appcontext"
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "file": "tests/test_appctx.py",
+          "lines": [
+            197,
+            213
+          ],
+          "symbol": "test_clean_pop",
+          "symbol_status": "exact",
+          "source_at_line_start": "def test_clean_pop(app):",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/app.py::Flask.app_context",
+              "rule": "unique-name",
+              "cited_file": "tests/test_appctx.py",
+              "cited_line": 209,
+              "source_at_cited_line": "with app.app_context():"
+            },
+            {
+              "relationship": "calls",
+              "other": "src/flask/sansio/app.py::App.teardown_appcontext",
+              "rule": "unique-name",
+              "cited_file": "tests/test_appctx.py",
+              "cited_line": 205,
+              "source_at_cited_line": "@app.teardown_appcontext"
+            },
+            {
+              "relationship": "calls",
+              "other": "src/flask/sansio/scaffold.py::Scaffold.teardown_request",
+              "rule": "unique-name",
+              "cited_file": "tests/test_appctx.py",
+              "cited_line": 201,
+              "source_at_cited_line": "@app.teardown_request"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "query": "render_template",
+      "items": [
+        {
+          "rank": 1,
+          "file": "tests/type_check/typing_route.py",
+          "lines": [
+            105,
+            106
+          ],
+          "symbol": "RenderTemplateView.dispatch_request",
+          "symbol_status": "exact",
+          "source_at_line_start": "def dispatch_request(self: RenderTemplateView) -> str:",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/templating.py::render_template",
+              "rule": "import",
+              "cited_file": "tests/type_check/typing_route.py",
+              "cited_line": 106,
+              "source_at_cited_line": "return render_template(self.template_name)"
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "file": "tests/test_apps/blueprintapp/apps/frontend/__init__.py",
+          "lines": [
+            12,
+            14
+          ],
+          "symbol": "missing_template",
+          "symbol_status": "exact",
+          "source_at_line_start": "@frontend.route(\"/missing\")",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/sansio/scaffold.py::Scaffold.route",
+              "rule": "unique-name",
+              "cited_file": "tests/test_apps/blueprintapp/apps/frontend/__init__.py",
+              "cited_line": 12,
+              "source_at_cited_line": "@frontend.route(\"/missing\")"
+            },
+            {
+              "relationship": "calls",
+              "other": "src/flask/templating.py::render_template",
+              "rule": "import",
+              "cited_file": "tests/test_apps/blueprintapp/apps/frontend/__init__.py",
+              "cited_line": 14,
+              "source_at_cited_line": "return render_template(\"missing_template.html\")"
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "file": "src/flask/templating.py",
+          "lines": [
+            123,
+            133
+          ],
+          "symbol": "_render",
+          "symbol_status": "exact",
+          "source_at_line_start": "def _render(ctx: AppContext, template: Template, context: dict[str, t.Any]) -> str:",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/app.py::Flask.update_template_context",
+              "rule": "unique-name",
+              "cited_file": "src/flask/templating.py",
+              "cited_line": 125,
+              "source_at_cited_line": "app.update_template_context(ctx, context)"
+            },
+            {
+              "relationship": "called_by",
+              "other": "src/flask/templating.py::render_template",
+              "rule": "local",
+              "cited_file": "src/flask/templating.py",
+              "cited_line": 148,
+              "source_at_cited_line": "return _render(ctx, template, context)"
+            },
+            {
+              "relationship": "called_by",
+              "other": "src/flask/templating.py::render_template_string",
+              "rule": "local",
+              "cited_file": "src/flask/templating.py",
+              "cited_line": 160,
+              "source_at_cited_line": "return _render(ctx, template, context)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "query": "jsonify",
+      "items": [
+        {
+          "rank": 1,
+          "file": "tests/test_json.py",
+          "lines": [
+            105,
+            130
+          ],
+          "symbol": "test_jsonify_arrays",
+          "symbol_status": "exact",
+          "source_at_line_start": "def test_jsonify_arrays(app, client):",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/json/__init__.py::jsonify",
+              "rule": "import-module",
+              "cited_file": "tests/test_json.py",
+              "cited_line": 121,
+              "source_at_cited_line": "return flask.jsonify(*a_list)"
+            },
+            {
+              "relationship": "calls",
+              "other": "src/flask/sansio/scaffold.py::Scaffold.route",
+              "rule": "unique-name",
+              "cited_file": "tests/test_json.py",
+              "cited_line": 119,
+              "source_at_cited_line": "@app.route(\"/args_unpack\")"
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "file": "examples/javascript/js_example/views.py",
+          "lines": [
+            14,
+            18
+          ],
+          "symbol": "add",
+          "symbol_status": "exact",
+          "source_at_line_start": "@app.route(\"/add\", methods=[\"POST\"])",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/json/__init__.py::jsonify",
+              "rule": "import",
+              "cited_file": "examples/javascript/js_example/views.py",
+              "cited_line": 18,
+              "source_at_cited_line": "return jsonify(result=a + b)"
+            },
+            {
+              "relationship": "calls",
+              "other": "src/flask/sansio/scaffold.py::Scaffold.route",
+              "rule": "unique-name",
+              "cited_file": "examples/javascript/js_example/views.py",
+              "cited_line": 14,
+              "source_at_cited_line": "@app.route(\"/add\", methods=[\"POST\"])"
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "file": "tests/test_basic.py",
+          "lines": [
+            1355,
+            1358
+          ],
+          "symbol": "test_jsonify_args_and_kwargs_check",
+          "symbol_status": "exact",
+          "source_at_line_start": "def test_jsonify_args_and_kwargs_check(app, req_ctx):",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/json/__init__.py::jsonify",
+              "rule": "import-module",
+              "cited_file": "tests/test_basic.py",
+              "cited_line": 1357,
+              "source_at_cited_line": "flask.jsonify(\"fake args\", kwargs=\"fake\")"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "query": "register_error_handler",
+      "items": [
+        {
+          "rank": 1,
+          "file": "src/flask/sansio/scaffold.py",
+          "lines": [
+            605,
+            647
+          ],
+          "symbol": "Scaffold.errorhandler",
+          "symbol_status": "exact",
+          "source_at_line_start": "@setupmethod",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/sansio/scaffold.py::Scaffold.register_error_handler",
+              "rule": "self",
+              "cited_file": "src/flask/sansio/scaffold.py",
+              "cited_line": 644,
+              "source_at_cited_line": "self.register_error_handler(code_or_exception, f)"
+            },
+            {
+              "relationship": "calls",
+              "other": "src/flask/sansio/scaffold.py::setupmethod",
+              "rule": "local",
+              "cited_file": "src/flask/sansio/scaffold.py",
+              "cited_line": 605,
+              "source_at_cited_line": "@setupmethod"
+            },
+            {
+              "relationship": "called_by",
+              "other": "src/flask/sansio/blueprints.py::Blueprint.app_errorhandler",
+              "rule": "unique-name",
+              "cited_file": "src/flask/sansio/blueprints.py",
+              "cited_line": 665,
+              "source_at_cited_line": "state.app.errorhandler(code)(f)"
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "file": "tests/test_user_error_handler.py",
+          "lines": [
+            10,
+            58
+          ],
+          "symbol": "test_error_handler_no_match",
+          "symbol_status": "exact",
+          "source_at_line_start": "def test_error_handler_no_match(app, client):",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/helpers.py::abort",
+              "rule": "import-module",
+              "cited_file": "tests/test_user_error_handler.py",
+              "cited_line": 53,
+              "source_at_cited_line": "flask.abort(500)"
+            },
+            {
+              "relationship": "calls",
+              "other": "src/flask/sansio/scaffold.py::Scaffold.errorhandler",
+              "rule": "unique-name",
+              "cited_file": "tests/test_user_error_handler.py",
+              "cited_line": 14,
+              "source_at_cited_line": "@app.errorhandler(CustomException)"
+            },
+            {
+              "relationship": "calls",
+              "other": "src/flask/sansio/scaffold.py::Scaffold.register_error_handler",
+              "rule": "unique-name",
+              "cited_file": "tests/test_user_error_handler.py",
+              "cited_line": 20,
+              "source_at_cited_line": "app.register_error_handler(CustomException(), None)"
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "file": "src/flask/sansio/app.py",
+          "lines": [
+            868,
+            891
+          ],
+          "symbol": "App._find_error_handler",
+          "symbol_status": "exact",
+          "source_at_line_start": "def _find_error_handler(",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/sansio/scaffold.py::Scaffold._get_exc_class_and_code",
+              "rule": "self",
+              "cited_file": "src/flask/sansio/app.py",
+              "cited_line": 876,
+              "source_at_cited_line": "exc_class, code = self._get_exc_class_and_code(type(e))"
+            },
+            {
+              "relationship": "called_by",
+              "other": "src/flask/app.py::Flask.handle_exception",
+              "rule": "self",
+              "cited_file": "src/flask/app.py",
+              "cited_line": 946,
+              "source_at_cited_line": "handler = self._find_error_handler(server_error, ctx.request.blueprints)"
+            },
+            {
+              "relationship": "called_by",
+              "other": "src/flask/app.py::Flask.handle_http_exception",
+              "rule": "self",
+              "cited_file": "src/flask/app.py",
+              "cited_line": 863,
+              "source_at_cited_line": "handler = self._find_error_handler(e, ctx.request.blueprints)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "query": "test_client",
+      "items": [
+        {
+          "rank": 1,
+          "file": "examples/tutorial/tests/conftest.py",
+          "lines": [
+            35,
+            38
+          ],
+          "symbol": "client",
+          "symbol_status": "exact",
+          "source_at_line_start": "@pytest.fixture",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/app.py::Flask.test_client",
+              "rule": "unique-name",
+              "cited_file": "examples/tutorial/tests/conftest.py",
+              "cited_line": 38,
+              "source_at_cited_line": "return app.test_client()"
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "file": "examples/javascript/tests/conftest.py",
+          "lines": [
+            13,
+            15
+          ],
+          "symbol": "client",
+          "symbol_status": "exact",
+          "source_at_line_start": "@pytest.fixture",
+          "graph_edges": []
+        },
+        {
+          "rank": 3,
+          "file": "src/flask/app.py",
+          "lines": [
+            758,
+            814
+          ],
+          "symbol": "Flask.test_client",
+          "symbol_status": "exact",
+          "source_at_line_start": "def test_client(self, use_cookies: bool = True, **kwargs: t.Any) -> FlaskClient:",
+          "graph_edges": [
+            {
+              "relationship": "calls",
+              "other": "src/flask/testing.py::FlaskCliRunner",
+              "rule": "import",
+              "cited_file": "src/flask/app.py",
+              "cited_line": 812,
+              "source_at_cited_line": "return cls(  # type: ignore"
+            },
+            {
+              "relationship": "called_by",
+              "other": "examples/tutorial/tests/conftest.py::client",
+              "rule": "unique-name",
+              "cited_file": "examples/tutorial/tests/conftest.py",
+              "cited_line": 38,
+              "source_at_cited_line": "return app.test_client()"
+            },
+            {
+              "relationship": "called_by",
+              "other": "tests/conftest.py::client",
+              "rule": "unique-name",
+              "cited_file": "tests/conftest.py",
+              "cited_line": 51,
+              "source_at_cited_line": "return app.test_client()"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "checks": {
+    "questions": 73,
+    "items": 730,
+    "check1_file_order_equals_saved_m8_top10": {
+      "mismatches": []
+    },
+    "check1_equals_unmodified_hybrid_retriever": {
+      "mismatches": []
+    },
+    "checks2to4_6_invariant_violations": {},
+    "check5_repeat_in_process": {
+      "questions_with_differences": {}
+    },
+    "symbol_status_counts": {
+      "exact": 604,
+      "module_level": 126
+    },
+    "category_counts": {
+      "source": 361,
+      "test": 347,
+      "docs": 22
+    },
+    "graph": {
+      "items_with_graph": 730,
+      "items_with_relationships": 651,
+      "items_truncated": 130,
+      "links_to_other_results": 384
+    },
+    "questions_with_exact_embedding_ties": [
+      "flask-001",
+      "flask-011",
+      "flask-012",
+      "flask-013",
+      "flask-018",
+      "flask-019",
+      "flask-021",
+      "flask-023",
+      "flask-025",
+      "flask-032",
+      "flask-042",
+      "flask-046",
+      "flask-051",
+      "flask-052",
+      "flask-053",
+      "flask-054",
+      "flask-055",
+      "flask-056",
+      "flask-057",
+      "flask-058",
+      "flask-059",
+      "flask-060",
+      "flask-061",
+      "flask-062",
+      "flask-070",
+      "flask-071",
+      "flask-072"
+    ],
+    "check5_fresh_process": {
+      "questions": [
+        "flask-001",
+        "flask-008",
+        "flask-015",
+        "flask-022",
+        "flask-029",
+        "flask-036",
+        "flask-043",
+        "flask-050",
+        "flask-057",
+        "flask-064"
+      ],
+      "differences": {}
+    },
+    "check8_incremental_equals_fresh": {
+      "edit_function": {
+        "questions": 73,
+        "identical": 72,
+        "different": [
+          "flask-045"
+        ],
+        "different_with_exact_embedding_ties": [
+          "flask-045"
+        ],
+        "different_without_ties": [],
+        "invalid_responses": [],
+        "passes": true
+      },
+      "graph_rename_symbol": {
+        "questions": 73,
+        "identical": 73,
+        "different": [],
+        "different_with_exact_embedding_ties": [],
+        "different_without_ties": [],
+        "invalid_responses": [],
+        "passes": true
+      },
+      "add_file": {
+        "questions": 73,
+        "identical": 71,
+        "different": [
+          "flask-037",
+          "flask-059"
+        ],
+        "different_with_exact_embedding_ties": [
+          "flask-037",
+          "flask-059"
+        ],
+        "different_without_ties": [],
+        "invalid_responses": [],
+        "passes": true
+      }
+    }
+  },
+  "passes": true
+}

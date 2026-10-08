@@ -1,8 +1,6 @@
 """Evidence API tests (Milestone 12): schema, symbol mapping, graph annotations, determinism,
 edge cases from the plan's table, and consistency with incremental updates."""
 
-import hashlib
-import random
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -20,7 +18,7 @@ from app.evidence.schema import EvidenceResponse
 from app.evidence.validate import check_response, compare_evidence
 from app.indexing.live_index import LiveIndex
 from app.main import create_app
-from app.retrieval.embedder import HashingEmbedder
+from app.retrieval.embedder import HashingEmbedder, SeededEmbedder
 from app.retrieval.hybrid import HybridRetriever
 from app.retrieval.vector_store import VectorStore
 
@@ -129,27 +127,6 @@ def root(tmp_path: Path) -> Path:
 def store(tmp_path: Path) -> Iterator[VectorStore]:
     with VectorStore(tmp_path / "q") as s:
         yield s
-
-
-class SeededEmbedder:
-    """Distinct texts get distinct pseudo-random unit vectors, so no two chunks tie by accident
-    (the bag-of-words stand-in produces many exact ties). Identical texts still tie."""
-
-    model_name = "seeded"
-    dimension = 32
-    device = "cpu"
-
-    def _vector(self, text: str) -> list[float]:
-        rng = random.Random(hashlib.sha256(text.encode()).digest())
-        v = [rng.gauss(0, 1) for _ in range(self.dimension)]
-        norm = sum(x * x for x in v) ** 0.5
-        return [x / norm for x in v]
-
-    def embed_documents(self, texts: list[str], show_progress: bool = False) -> list[list[float]]:
-        return [self._vector(t) for t in texts]
-
-    def embed_query(self, text: str) -> list[float]:
-        return self._vector("query:" + text)
 
 
 def make_index(root: Path, state: Path, store: VectorStore, embedder: Any = None) -> LiveIndex:

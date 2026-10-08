@@ -303,3 +303,24 @@ not claim embedding ties are stable across stores; it is now stated as the deter
   embedding scores in their top 10 is reported.
 - The incremental-update equivalence test (check 8) uses an embedder without accidental ties so
   that it tests the evidence logic and not the store's tie order.
+
+**Deviation 3 (clarification of check 8, before any validation run): how incremental consistency
+is tested at Flask scale.** Check 8 asks that evidence after an incremental update equals evidence
+from a from-scratch index. The synthetic-repository unit test does exactly that. At Flask scale
+the runner repeats it for three changes (edit inside `Flask.dispatch_request`, rename
+`Flask.ensure_sync`, add a new module) over the 73 benchmark questions as realistic queries, using
+a seeded pseudo-random embedder for both indexes (real embeddings are not needed to test the
+evidence logic, and this keeps the runner fast). Because identical-text chunks tie exactly (deviation
+2), the result is reported as: questions identical / questions different, and for every different
+question whether its depth-50 embedding list contains exactly tied scores. The check passes if
+every question **without** such ties is identical; questions with ties are listed, not hidden.
+
+**Deviation 4 (after run 1 of the validation, before run 2): two bugs in my validation code.**
+Run 1 (`evidence_api_flask_run1.json`) reported failures that were bugs in the checking code, not
+in the API: `compare_evidence` compared full-precision in-process scores with the 6-decimal rounded
+scores of a response that went through JSON (every item of the 10 fresh-process comparisons
+"differed"), and the check against the unmodified `HybridRetriever` compared a rounded score with
+an unrounded one (all 73 questions "mismatched"). Both comparisons now round to the serialised
+6 decimals first. Everything else in run 1 stands and is kept in the run-1 file: file order equal
+to the saved M8 ranking for 73/73 questions, zero invariant violations, zero in-process
+differences, and the three Flask-scale incremental checks.

@@ -608,3 +608,93 @@ Full rebuild vs one-file vs five-file edit: 133 s vs 0.23 s (end-of-file edit) v
 repositories it needs targeted re-resolution (backlog). The timings are one machine, three
 repetitions; sub-0.1 s differences are noise. Only Python files are indexed. Run-1 numbers are kept
 in `results/incremental_indexing_flask_run1.json`.
+
+## Milestone 12: the Evidence API
+
+Pre-registered in `evaluation/plans/m12-evidence-api.md` (four recorded deviations). This is an
+interface and grounding milestone: **no retrieval-quality number is reported or was tuned**. The 73
+questions are only a realistic query set for invariant checks. The API returns one evidence item
+per retrieved file with file, file hash, line range, symbol (`exact` / `module_level` /
+`unparsed`, never guessed), RRF score, per-component rank/score/lines, and structural graph facts.
+The graph annotates and never reorders (M10B). Full schema: `results/evidence_schema_v1.json`.
+
+**Validation (final run 3, after the graph fix below; runs 1 and 2 are kept in `results/evidence_api_flask_run1.json` and `..._run2_before_graph_fix.json`; run 2 passed every check too, run 1 failed two because of bugs in my validation code, see below).**
+
+| Check | Result |
+|---|---|
+| File order = saved M8 AST-hybrid top 10, 73 questions | 73/73 identical |
+| Files, lines and RRF scores = unmodified `HybridRetriever`, 73 questions | 73/73 identical |
+| Line integrity, symbol integrity, graph integrity, schema, text = file bytes (730 items) | 0 violations |
+| Repeat in-process, 73 questions | 0 differences |
+| Fresh process (command line), 10 questions | 0 differences |
+| Incremental update = fresh build at Flask scale (3 changes x 73 questions) | edit inside a function 72/73, rename a symbol 73/73, add a module 71/73; every difference has exactly tied embedding scores (see below) |
+| Hand-checked spot checks (10 queries, judged on run 2) | 9/10 fully confirmed, 1 wrong graph edge, fixed afterwards (below) |
+| Real server smoke test (uvicorn process, HTTP; `python -m app.evidence.smoke`, `results/evidence_api_smoke_flask.json`) | passes: `/v1/index/status` 200 (83 files, 1,027 chunks); file order equals the saved M8 ranking for 5 of 5 questions through HTTP; `include_text`; six malformed requests -> 422; `/health` 200; 19 s startup, 38-115 ms per request |
+
+Descriptive counts over the 730 items: 604 `exact` symbols, 126 `module_level`, 0 `unparsed`; 652
+items have at least one graph relationship, 130 hit the 10-relationship cap, 384 links connect
+items of the same response. Latency of a top-10 response without text: median 29.6 ms, max 37.0 ms
+in-process (30 questions, one machine). Building the index took 123-180 s across runs.
+
+**Findings.**
+- **Run 1 failed on two bugs in my validation code, not in the API:** I compared full-precision
+  in-process scores with the 6-decimal scores of a response that had gone through JSON. Fixed
+  and recorded as deviation 4; the unaffected checks were identical in both runs.
+- **Embedding scores are not bit-stable, and exact ties follow the vector store's order.**
+  Qdrant's local mode returned scores differing by about 3e-8 between identical searches, and
+  chunks with identical text tie exactly (27 of 73 questions have exact embedding ties within
+  their top 50). So the determinism contract is: identical evidence except the embedding raw
+  score (within 1.5e-6), and the order among exactly tied chunks is the store's. The three
+  differences between an incrementally updated index and a fresh one (questions 037, 045, 059)
+  are all such tie cases. This is a property of the existing retrieval layer, exposed by the
+  new requirement; changing tie-breaking would change retrieval and needs its own evaluation.
+- **The hand check found a wrong graph edge from M10** (details: `results/evidence_spot_checks_flask.md`):
+  two function-local imports `... as cls` in one file collided and `Flask.test_client` was linked
+  to `FlaskCliRunner`. The evidence layer reported the graph faithfully. It was fixed as an M10
+  follow-up (next section) and the whole validation was re-run on the fixed graph: all checks
+  pass, and the item for `Flask.test_client` now shows `FlaskClient`. Graph facts still carry their
+  `rule` and are documented as structural annotations, not relevance.
+- **Scope note:** `python -m app.evidence` can also build or update the index (`--build`) as a
+  development convenience. `EvidenceBuilder` itself only reads an existing `LiveIndex`; it does not
+  own indexing.
+
+**Caveats.** One repository; one machine. The validation runs were made with an uncommitted
+working tree (the reports say so). The Flask-scale equivalence check uses a seeded
+random embedder, not the real model, because it tests evidence logic, not embeddings.
+M13 contract (frozen in the plan): the LLM layer sees evidence only through this API.
+
+### Milestone 10 follow-up: function-local import scoping (found in Milestone 12)
+
+Recorded as follow-up deviation 2 in [`plans/m10-code-graph.md`](plans/m10-code-graph.md). The
+M12 hand check found `Flask.test_client` linked to `FlaskCliRunner`: two methods each had
+`from .testing import ... as cls`, and the graph kept one import map per file, so one overwrote the
+other. Imports now carry the function or class they sit in, and calls see that function's own
+imports first, then the module's; nothing else in the rules changed.
+
+| | Before | After |
+|---|---|---|
+| Call edges resolved | 1,452 (`unique-name` 709) | 1,525 (`unique-name` 782) |
+| Graph edges (all kinds) | 2,231 | 2,283 (+53, -1, 8 edges gained cited lines) |
+| V1 import edges vs Python's `ast` | identical (95/95) | identical (95/95) |
+| V2 hand-verified facts | 51/51 | 51/51 |
+
+- **The one removed edge is the wrong one**; its replacement `Flask.test_client -> FlaskClient` is
+  right (checked against app.py:809-814).
+- **52 of the 53 added edges came from a second effect of the same cause:** a test-local
+  `from blueprintapp import app` made `app` an "external" name in all of `test_blueprints.py` and
+  `test_templating.py`, so calls like `@app.route("/")` and `app.test_client()` were skipped. They
+  now resolve (rule `unique-name`) to `Scaffold.route`, `App.template_filter` and so on. I read all
+  52 cited lines: in each the receiver is the `app` fixture (`tests/conftest.py` returns a `Flask`)
+  and the method is defined once, so all are correct. These are test files, so the count of
+  correct-looking additions says little about precision elsewhere.
+- **Fresh sample** (seed 1, 30 of the 64 `import`/`import-module` edges in `src/flask`): 30 of 30
+  correct. Single reviewer; the sample is dominated by `@setupmethod` decorator edges.
+- **Not recomputed:** the M10B retrieval result. It used the earlier graph; the call-edge change
+  is 54 of 2,231 edges, in two test files and one method.
+
+The regression tests (`tests/test_graph_builder.py`) cover: two functions with the same alias and
+different targets, no leak into other functions, a local import shadowing the module-level one only
+inside its function, local module and class receivers, module-level `try`/`if` imports staying
+module-level, and the scope recorded by the parser. Four of them fail on the old builder.
+The live index format version is now 2 (stored parses carry the scope), so an index built before
+this change must be rebuilt.

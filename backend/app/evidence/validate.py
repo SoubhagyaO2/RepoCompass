@@ -154,12 +154,12 @@ def compare_evidence(a: EvidenceResponse, b: EvidenceResponse) -> list[str]:
             diffs.append(f"rank {x.rank}: embedding component present in only one")
         elif ex and ey and abs(ex.score - ey.score) > EMBEDDING_SCORE_TOLERANCE:
             diffs.append(f"rank {x.rank}: embedding score {ex.score} vs {ey.score}")
-        mx = x.model_copy(deep=True)
-        my = y.model_copy(deep=True)
-        for item in (mx, my):
-            if item.scores.embedding:
-                item.scores.embedding.score = 0.0
-        if mx != my:
+        # compare as serialised (6-decimal scores), as a client would see them
+        dx, dy = x.model_dump(mode="json"), y.model_dump(mode="json")
+        for d in (dx, dy):
+            if d["scores"]["embedding"]:
+                d["scores"]["embedding"]["score"] = None
+        if dx != dy:
             diffs.append(f"rank {x.rank} ({x.file}:{x.line_start}) differs")
     for field in ("query", "index", "retrieval", "notes", "schema_version"):
         if getattr(a, field) != getattr(b, field):
