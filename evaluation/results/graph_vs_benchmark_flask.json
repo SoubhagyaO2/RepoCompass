@@ -1,0 +1,497 @@
+{
+  "summary": {
+    "caller": {
+      "n": 13,
+      "exact_match": 8,
+      "mean_precision": 0.6923076923076923,
+      "mean_recall": 0.6615384615384615
+    },
+    "dependency": {
+      "n": 12,
+      "exact_match": 12,
+      "mean_precision": 1.0,
+      "mean_recall": 1.0
+    }
+  },
+  "per_question": [
+    {
+      "id": "flask-038",
+      "category": "caller",
+      "question": "What calls `ensure_sync`?",
+      "graph_files": [
+        "src/flask/app.py",
+        "src/flask/ctx.py",
+        "src/flask/views.py"
+      ],
+      "benchmark_files": [
+        "src/flask/app.py",
+        "src/flask/ctx.py",
+        "src/flask/helpers.py",
+        "src/flask/templating.py",
+        "src/flask/views.py"
+      ],
+      "precision": 1.0,
+      "recall": 0.6,
+      "exact": false,
+      "missing": [
+        "src/flask/helpers.py",
+        "src/flask/templating.py"
+      ],
+      "extra": []
+    },
+    {
+      "id": "flask-039",
+      "category": "caller",
+      "question": "What calls `get_debug_flag`?",
+      "graph_files": [
+        "src/flask/app.py",
+        "src/flask/cli.py",
+        "src/flask/sansio/app.py"
+      ],
+      "benchmark_files": [
+        "src/flask/app.py",
+        "src/flask/cli.py",
+        "src/flask/sansio/app.py"
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "exact": true,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "id": "flask-040",
+      "category": "caller",
+      "question": "Which functions use `_endpoint_from_view_func`?",
+      "graph_files": [
+        "src/flask/sansio/app.py",
+        "src/flask/sansio/blueprints.py"
+      ],
+      "benchmark_files": [
+        "src/flask/sansio/app.py",
+        "src/flask/sansio/blueprints.py"
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "exact": true,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "id": "flask-041",
+      "category": "caller",
+      "question": "What calls `get_root_path`?",
+      "graph_files": [
+        "src/flask/sansio/scaffold.py"
+      ],
+      "benchmark_files": [
+        "src/flask/sansio/scaffold.py"
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "exact": true,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "id": "flask-042",
+      "category": "caller",
+      "question": "What calls `Flask.process_response`?",
+      "graph_files": [
+        "src/flask/app.py"
+      ],
+      "benchmark_files": [
+        "src/flask/app.py"
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "exact": true,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "id": "flask-043",
+      "category": "caller",
+      "question": "What calls `open_session` to load the session for a request?",
+      "graph_files": [],
+      "benchmark_files": [
+        "src/flask/ctx.py",
+        "src/flask/testing.py"
+      ],
+      "precision": 0.0,
+      "recall": 0.0,
+      "exact": false,
+      "missing": [
+        "src/flask/ctx.py",
+        "src/flask/testing.py"
+      ],
+      "extra": []
+    },
+    {
+      "id": "flask-044",
+      "category": "caller",
+      "question": "What calls `save_session`?",
+      "graph_files": [],
+      "benchmark_files": [
+        "src/flask/app.py",
+        "src/flask/testing.py"
+      ],
+      "precision": 0.0,
+      "recall": 0.0,
+      "exact": false,
+      "missing": [
+        "src/flask/app.py",
+        "src/flask/testing.py"
+      ],
+      "extra": []
+    },
+    {
+      "id": "flask-045",
+      "category": "caller",
+      "question": "What calls `match_request`?",
+      "graph_files": [
+        "src/flask/ctx.py"
+      ],
+      "benchmark_files": [
+        "src/flask/ctx.py"
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "exact": true,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "id": "flask-046",
+      "category": "caller",
+      "question": "What calls `find_best_app`?",
+      "graph_files": [
+        "src/flask/cli.py"
+      ],
+      "benchmark_files": [
+        "src/flask/cli.py"
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "exact": true,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "id": "flask-047",
+      "category": "caller",
+      "question": "What calls `Blueprint.register`?",
+      "graph_files": [],
+      "benchmark_files": [
+        "src/flask/sansio/app.py",
+        "src/flask/sansio/blueprints.py"
+      ],
+      "precision": 0.0,
+      "recall": 0.0,
+      "exact": false,
+      "missing": [
+        "src/flask/sansio/app.py",
+        "src/flask/sansio/blueprints.py"
+      ],
+      "extra": []
+    },
+    {
+      "id": "flask-048",
+      "category": "caller",
+      "question": "What calls `full_dispatch_request`?",
+      "graph_files": [
+        "src/flask/app.py"
+      ],
+      "benchmark_files": [
+        "src/flask/app.py"
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "exact": true,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "id": "flask-049",
+      "category": "caller",
+      "question": "What calls `create_url_adapter`?",
+      "graph_files": [
+        "src/flask/app.py",
+        "src/flask/ctx.py"
+      ],
+      "benchmark_files": [
+        "src/flask/app.py",
+        "src/flask/ctx.py"
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "exact": true,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "id": "flask-050",
+      "category": "caller",
+      "question": "What uses `_default_template_ctx_processor`?",
+      "graph_files": [],
+      "benchmark_files": [
+        "src/flask/sansio/scaffold.py"
+      ],
+      "precision": 0.0,
+      "recall": 0.0,
+      "exact": false,
+      "missing": [
+        "src/flask/sansio/scaffold.py"
+      ],
+      "extra": []
+    },
+    {
+      "id": "flask-051",
+      "category": "dependency",
+      "question": "Which files import `flask.sessions`?",
+      "graph_files": [
+        "src/flask/app.py",
+        "src/flask/ctx.py",
+        "src/flask/globals.py",
+        "src/flask/testing.py"
+      ],
+      "benchmark_files": [
+        "src/flask/app.py",
+        "src/flask/ctx.py",
+        "src/flask/globals.py",
+        "src/flask/testing.py"
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "exact": true,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "id": "flask-052",
+      "category": "dependency",
+      "question": "Which files import `flask.signals`?",
+      "graph_files": [
+        "src/flask/__init__.py",
+        "src/flask/app.py",
+        "src/flask/ctx.py",
+        "src/flask/helpers.py",
+        "src/flask/templating.py"
+      ],
+      "benchmark_files": [
+        "src/flask/__init__.py",
+        "src/flask/app.py",
+        "src/flask/ctx.py",
+        "src/flask/helpers.py",
+        "src/flask/templating.py"
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "exact": true,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "id": "flask-053",
+      "category": "dependency",
+      "question": "Which files import `flask.templating`?",
+      "graph_files": [
+        "src/flask/__init__.py",
+        "src/flask/app.py",
+        "src/flask/sansio/app.py",
+        "src/flask/sansio/scaffold.py"
+      ],
+      "benchmark_files": [
+        "src/flask/__init__.py",
+        "src/flask/app.py",
+        "src/flask/sansio/app.py",
+        "src/flask/sansio/scaffold.py"
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "exact": true,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "id": "flask-054",
+      "category": "dependency",
+      "question": "Which files import `flask.json.provider`?",
+      "graph_files": [
+        "src/flask/json/__init__.py",
+        "src/flask/sansio/app.py"
+      ],
+      "benchmark_files": [
+        "src/flask/json/__init__.py",
+        "src/flask/sansio/app.py"
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "exact": true,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "id": "flask-055",
+      "category": "dependency",
+      "question": "Which files import `flask.debughelpers`?",
+      "graph_files": [
+        "src/flask/app.py",
+        "src/flask/templating.py",
+        "src/flask/wrappers.py"
+      ],
+      "benchmark_files": [
+        "src/flask/app.py",
+        "src/flask/templating.py",
+        "src/flask/wrappers.py"
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "exact": true,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "id": "flask-056",
+      "category": "dependency",
+      "question": "Which files import `flask.config`?",
+      "graph_files": [
+        "src/flask/__init__.py",
+        "src/flask/sansio/app.py"
+      ],
+      "benchmark_files": [
+        "src/flask/__init__.py",
+        "src/flask/sansio/app.py"
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "exact": true,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "id": "flask-057",
+      "category": "dependency",
+      "question": "Which files import `flask.testing`?",
+      "graph_files": [
+        "src/flask/app.py",
+        "src/flask/sansio/app.py"
+      ],
+      "benchmark_files": [
+        "src/flask/app.py",
+        "src/flask/sansio/app.py"
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "exact": true,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "id": "flask-058",
+      "category": "dependency",
+      "question": "Which files import the `flask.sansio.scaffold` module?",
+      "graph_files": [
+        "src/flask/blueprints.py",
+        "src/flask/debughelpers.py",
+        "src/flask/sansio/app.py",
+        "src/flask/sansio/blueprints.py",
+        "src/flask/templating.py"
+      ],
+      "benchmark_files": [
+        "src/flask/blueprints.py",
+        "src/flask/debughelpers.py",
+        "src/flask/sansio/app.py",
+        "src/flask/sansio/blueprints.py",
+        "src/flask/templating.py"
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "exact": true,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "id": "flask-059",
+      "category": "dependency",
+      "question": "Which files import `flask.ctx`?",
+      "graph_files": [
+        "src/flask/__init__.py",
+        "src/flask/app.py",
+        "src/flask/globals.py",
+        "src/flask/sansio/app.py",
+        "src/flask/templating.py"
+      ],
+      "benchmark_files": [
+        "src/flask/__init__.py",
+        "src/flask/app.py",
+        "src/flask/globals.py",
+        "src/flask/sansio/app.py",
+        "src/flask/templating.py"
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "exact": true,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "id": "flask-060",
+      "category": "dependency",
+      "question": "Which other Flask modules does `flask/sessions.py` import?",
+      "graph_files": [
+        "src/flask/app.py",
+        "src/flask/json/tag.py",
+        "src/flask/wrappers.py"
+      ],
+      "benchmark_files": [
+        "src/flask/app.py",
+        "src/flask/json/tag.py",
+        "src/flask/wrappers.py"
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "exact": true,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "id": "flask-061",
+      "category": "dependency",
+      "question": "Which other Flask modules does `flask/views.py` depend on?",
+      "graph_files": [
+        "src/flask/globals.py",
+        "src/flask/typing.py"
+      ],
+      "benchmark_files": [
+        "src/flask/globals.py",
+        "src/flask/typing.py"
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "exact": true,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "id": "flask-062",
+      "category": "dependency",
+      "question": "Which other Flask modules does `flask/helpers.py` import?",
+      "graph_files": [
+        "src/flask/globals.py",
+        "src/flask/signals.py",
+        "src/flask/wrappers.py"
+      ],
+      "benchmark_files": [
+        "src/flask/globals.py",
+        "src/flask/signals.py",
+        "src/flask/wrappers.py"
+      ],
+      "precision": 1.0,
+      "recall": 1.0,
+      "exact": true,
+      "missing": [],
+      "extra": []
+    }
+  ]
+}
