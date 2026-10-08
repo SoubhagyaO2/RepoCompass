@@ -83,3 +83,29 @@ class HashingEmbedder:
 
     def embed_query(self, text: str) -> list[float]:
         return self._embed(text)
+
+
+class SeededEmbedder:
+    """Distinct texts get distinct pseudo-random unit vectors (no accidental score ties; the
+    bag-of-words stand-in produces many). Identical texts still get identical vectors.
+
+    For tests and runs that check evidence logic rather than the embedding model."""
+
+    model_name = "seeded-random"
+    device = "cpu"
+    dimension = 32
+
+    def _vector(self, text: str) -> list[float]:
+        import hashlib
+        import random
+
+        rng = random.Random(hashlib.sha256(text.encode()).digest())
+        v = [rng.gauss(0, 1) for _ in range(self.dimension)]
+        norm = sum(x * x for x in v) ** 0.5
+        return [x / norm for x in v]
+
+    def embed_documents(self, texts: list[str], show_progress: bool = False) -> list[list[float]]:
+        return [self._vector(t) for t in texts]
+
+    def embed_query(self, text: str) -> list[float]:
+        return self._vector("query:" + text)

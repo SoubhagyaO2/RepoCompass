@@ -25,3 +25,11 @@ as a gain, and keeping the code and the result makes the decision auditable.
 | Live index: SHA-256 change detection, per-file records, embedding reuse by chunk-text hash, in-place BM25, graph re-assembled from stored parses | Identical to a full rebuild in 11/11 scenarios, both runs; 133 s cold build vs 0.23 s (one-file edit) and 0.57 s (five files); cross-file graph edges correctly removed (M11) | **In the project** (`app/indexing/live_index.py`). Config changes (chunk size, model) require a full rebuild |
 | Skip unchanged points on update (deviation 1) | Run 1: writes dominated small edits; run 2: `edit_end` 0.66 -> 0.23 s, `edit_5_files` 1.5 -> 0.57 s | Kept; both runs reported |
 | AST vs fixed chunks for a live index | One inserted line re-embedded 84 fixed windows but 1 AST chunk | Favours AST chunks for incremental use |
+
+## Milestone 12: Evidence API
+
+| Component | Evidence | Decision |
+|---|---|---|
+| Evidence layer: one auditable item per retrieved file (file, hash, lines, symbol, scores, graph facts) over the AST hybrid | File order identical to the saved M8 ranking for 73/73 questions; 0 invariant violations over 730 items; fresh-process output identical; 9/10 hand checks fully confirmed (M12) | **In the project** (`app/evidence`, `GET /v1/evidence`). It is the only way M13 may see the repository |
+| Graph as annotation only | M10B: graph-driven reranking hurts. Schema states that relationships are structural, not relevance | Kept; never used for ordering |
+| Determinism contract | Embedding scores vary by ~3e-8 in Qdrant local mode; exactly tied chunks follow store order (27/73 questions have such ties) | Documented; embedding tie-breaking is a separate retrieval change (backlog) |

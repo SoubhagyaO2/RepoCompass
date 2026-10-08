@@ -67,3 +67,10 @@ All untested; design and tune on a dev set, never on the frozen benchmark:
   driven by the experiment runner and tests.
 - **Edit-stable fixed windows** (content-defined boundaries) if the fixed chunking is kept.
 - **Measure on a larger repository** (second repo) to see where the global parts start to matter.
+
+## From Milestone 12 (Evidence API)
+
+- **Deterministic tie-breaking for the embedding component** (for example by chunk id after
+  quantising scores). It changes retrieval, so evaluate it on a dev set and re-run M8 first.
+- **`additional_chunks` per file** (schema v2) if M13 needs several chunks of one file; evaluate
+  as a separate extension, never silently.
