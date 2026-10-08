@@ -544,3 +544,67 @@ precision 0.69, mean recall 0.66).
   session cookie saved") is the obvious next experiment, but it is suggested by these results, so
   it must be designed and tuned on a dev set, never on this benchmark, and its dependency gains can
   only be believed on questions whose answers were not derived from the same parser.
+
+## Milestone 11: incremental indexing
+
+Pre-registered in `evaluation/plans/m11-incremental-indexing.md`. This is an engineering
+experiment, not a retrieval-quality one: the claim is that updating the index after a change costs
+far less than rebuilding it **without changing what the index contains**. Changes are detected by
+SHA-256 of file bytes (never timestamps); embeddings are reused by chunk-text hash; BM25 is updated
+in place with scores bit-identical to the static index; the graph is re-assembled from stored
+parses, because name resolution is global.
+
+**Correctness (the criterion that decides pass/fail).** In all 11 scenarios, in both runs, the
+updated index was identical to a from-scratch rebuild: chunks, vector-store points and payloads,
+BM25 top-50 ids and scores for the 73 questions (exact), graph nodes and edges with evidence, and
+sampled real embeddings (cosine 1.000000000). The saved Milestone 8 hybrid rankings were
+reproduced at the start and again at the end, for both chunkings.
+
+**Cross-file graph tests (source of the other file unchanged).** After renaming `ensure_sync` in
+`app.py`, the edge `views.py::View.as_view -> Flask.ensure_sync` disappeared (+2/-14 edges). After
+adding a second class with a `make_shell_context` method, the edge `cli.py::shell_command ->
+Flask.make_shell_context` disappeared, because the name stopped being unique (+2/-1).
+
+**Timing** (median of 3, this CPU, model load excluded, includes hashing every file). Cold build of
+everything: run 1 136.2 s, run 2 133.0 s (about 95% is embedding; 83 files, 792 fixed + 1,027 AST
+chunks).
+
+| Scenario | Run 1 s | Run 2 s | Speed-up (run 2) | Embedded fixed / AST |
+|---|---|---|---|---|
+| noop | 0.037 | 0.053 | 2,507x | 0 / 0 |
+| touch (same bytes) | 0.053 | 0.051 | 2,618x | 0 / 0 |
+| edit_end (1 file) | 0.656 | 0.228 | 583x | 1 / 1 |
+| edit_start (1 file) | 7.36 | 7.23 | 18x | 84 / 1 |
+| edit_function (1 file) | 3.24 | 2.94 | 45x | 34 / 1 |
+| edit_5_files | 1.507 | 0.568 | 234x | 5 / 5 |
+| add_file | 0.195 | 0.209 | 636x | 1 / 5 |
+| delete_file | 0.092 | 0.146 | 914x | 0 / 0 |
+| rename_file | 0.137 | 0.163 | 814x | 0 / 0 |
+| graph_rename_symbol | 2.82 | 2.94 | 45x | 30 / 1 |
+| graph_ambiguity | 0.147 | 0.127 | 1,046x | 1 / 2 |
+
+Full rebuild vs one-file vs five-file edit: 133 s vs 0.23 s (end-of-file edit) vs 0.57 s.
+
+**Findings.**
+- **Run 1 revealed a flaw in my implementation, not in the plan:** for small edits the cost was
+  rewriting vector-store points, not embedding (0.45 of 0.66 s for `edit_end`), because every chunk
+  of a changed file was upserted. Deviation 1 (recorded in the plan before run 2) skips chunks
+  identical to what is stored. Run 2 cut `edit_end` from 0.66 to 0.23 s and `edit_5_files` from
+  1.5 to 0.57 s. Other scenarios differ by run-to-run noise (single-digit hundredths of a second;
+  `delete_file` min-max was 0.097-0.147 s in run 2). The change affects which points are written,
+  not the index, and every criterion was checked again.
+- **Fixed windows are not edit-stable; AST chunks are.** Inserting one line at the top of a file
+  re-embedded all 84 fixed windows but exactly 1 AST chunk (`edit_start`: 7.2 s). Editing inside
+  one function re-embedded 34 fixed windows vs 1 AST chunk. This is a point in favour of AST
+  chunking for a live index, independent of its retrieval-quality effect.
+- **Qdrant local mode does not clear points when a collection is deleted and recreated.** Found by
+  the from-scratch reference test; fixed in `VectorStore` with a regression test. I checked the
+  M4-M10 collections: they held exactly 792 and 1,027 points, so earlier results are unaffected.
+- **Crash safety** was tested, and found a design flaw on the way (a record overwrote the file the
+  old manifest pointed to). Records are now versioned by content hash, orphans are cleaned up, and
+  `load()` repairs stray points or raises if points are missing.
+
+**Caveats.** Flask-sized repository only (83 files). Graph re-assembly is global; for much larger
+repositories it needs targeted re-resolution (backlog). The timings are one machine, three
+repetitions; sub-0.1 s differences are noise. Only Python files are indexed. Run-1 numbers are kept
+in `results/incremental_indexing_flask_run1.json`.
