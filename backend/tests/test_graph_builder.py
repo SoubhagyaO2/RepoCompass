@@ -406,3 +406,125 @@ def test_stats_and_json_export() -> None:
     exported = json.loads(g.to_json())
     assert exported["stats"]["files"] == 1
     assert {n["id"] for n in exported["graph"]["nodes"]} == {"m.py", "m.py::a", "m.py::b"}
+
+
+# --- function-local imports are scoped to their function (M10 follow-up, found in M12) ------------
+
+ALIAS_MODULES = {
+    "pkg/__init__.py": "",
+    "pkg/client.py": "class Client:\n    pass\n",
+    "pkg/runner.py": "class Runner:\n    pass\n",
+    "pkg/util.py": "def helper(): ...\n",
+}
+
+
+def test_two_functions_reusing_an_alias_resolve_to_their_own_import() -> None:
+    """The Flask case: `from .testing import FlaskClient as cls` in one method and
+    `... import FlaskCliRunner as cls` in another."""
+    g = build(
+        {
+            **ALIAS_MODULES,
+            "pkg/app.py": """
+                class App:
+                    def make_client(self):
+                        from .client import Client as cls
+                        return cls()
+
+                    def make_runner(self):
+                        from .runner import Runner as cls
+                        return cls()
+            """,
+        }
+    )
+    assert calls(g, "pkg/app.py::App.make_client", "pkg/client.py::Client")
+    assert calls(g, "pkg/app.py::App.make_runner", "pkg/runner.py::Runner")
+    assert not calls(g, "pkg/app.py::App.make_client", "pkg/runner.py::Runner")
+    assert not calls(g, "pkg/app.py::App.make_runner", "pkg/client.py::Client")
+
+
+def test_a_local_import_does_not_leak_into_other_functions() -> None:
+    g = build(
+        {
+            **ALIAS_MODULES,
+            "pkg/app.py": """
+                def uses_it():
+                    from .client import Client
+                    return Client()
+
+                def does_not():
+                    return Client()
+            """,
+        }
+    )
+    assert calls(g, "pkg/app.py::uses_it", "pkg/client.py::Client")
+    assert not calls(g, "pkg/app.py::does_not", "pkg/client.py::Client")
+
+
+def test_a_local_import_shadows_the_module_level_binding_only_inside_its_function() -> None:
+    g = build(
+        {
+            **ALIAS_MODULES,
+            "pkg/app.py": """
+                from .client import Client as Thing
+
+                def top():
+                    return Thing()
+
+                def local():
+                    from .runner import Runner as Thing
+                    return Thing()
+            """,
+        }
+    )
+    assert calls(g, "pkg/app.py::top", "pkg/client.py::Client")
+    assert calls(g, "pkg/app.py::local", "pkg/runner.py::Runner")
+    assert not calls(g, "pkg/app.py::local", "pkg/client.py::Client")
+
+
+def test_local_module_imports_and_class_receivers_are_scoped_too() -> None:
+    g = build(
+        {
+            **ALIAS_MODULES,
+            "pkg/client.py": "class Client:\n    @classmethod\n    def create(cls): ...\n",
+            "pkg/app.py": """
+                def f():
+                    import pkg.util as u
+                    from .client import Client
+                    u.helper()
+                    Client.create()
+
+                def g():
+                    u.helper()
+            """,
+        }
+    )
+    assert calls(g, "pkg/app.py::f", "pkg/util.py::helper")
+    assert calls(g, "pkg/app.py::f", "pkg/client.py::Client.create")
+    assert not calls(g, "pkg/app.py::g", "pkg/util.py::helper")
+
+
+def test_module_level_imports_inside_if_and_try_stay_module_level() -> None:
+    g = build(
+        {
+            **ALIAS_MODULES,
+            "pkg/app.py": """
+                try:
+                    from .client import Client
+                except ImportError:
+                    Client = None
+
+                def f():
+                    return Client()
+            """,
+        }
+    )
+    assert calls(g, "pkg/app.py::f", "pkg/client.py::Client")
+
+
+def test_parser_records_the_scope_of_each_import() -> None:
+    code = (
+        "import os\n\ndef f():\n    import json\n\nclass C:\n    import re\n\n"
+        "    def m(self):\n        from a import b\n"
+    )
+    imports = {i.module: i.scope for i in parse_python_source(code.encode(), "x.py").imports}
+    assert imports == {"os": None, "json": "f", "re": "C", "a": "C.m"}

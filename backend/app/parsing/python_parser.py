@@ -43,7 +43,7 @@ def parse_python_source(source: bytes, path: str) -> ParsedFile:
         path=path,
         language="Python",
         symbols=symbols,
-        imports=_collect_imports(root),
+        imports=_collect_imports(root, owners),
         has_errors=root.has_error,
         calls=_collect_calls(root, owners),
     )
@@ -191,18 +191,23 @@ def _call_target(
 # --- imports -------------------------------------------------------------------------
 
 
-def _collect_imports(root: Node) -> list[Import]:
-    """Collect every import in the file, including ones inside functions or `if` blocks."""
+def _collect_imports(root: Node, owners: dict[tuple[int, int], str]) -> list[Import]:
+    """Collect every import in the file, including ones inside functions or `if` blocks, each
+    tagged with the symbol whose body it sits in (None at module level)."""
     imports: list[Import] = []
-    stack = [root]
+    stack: list[tuple[Node, str | None]] = [(root, None)]
     while stack:
-        node = stack.pop()
+        node, owner = stack.pop()
+        if node.type in _DEFINITION_NODES:
+            owner = owners.get((node.start_byte, node.end_byte), owner)
         if node.type == "import_statement":
-            imports.extend(_plain_import(node))
+            found = _plain_import(node)
         elif node.type in ("import_from_statement", "future_import_statement"):
-            imports.extend(_from_import(node))
+            found = _from_import(node)
         else:
-            stack.extend(reversed(node.named_children))
+            stack.extend((child, owner) for child in reversed(node.named_children))
+            continue
+        imports.extend(imp.model_copy(update={"scope": owner}) for imp in found)
     return imports
 
 

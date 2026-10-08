@@ -101,9 +101,13 @@ class _Builder:
                     seen.add(s.qualified_name)
                     self.methods_by_name.setdefault(s.name, []).append((path, s.qualified_name))
 
+        # Module-level bindings per file; imports inside a function or class body bind only
+        # there, so they live in `scoped`, keyed by (file, qualified name of that symbol).
         self.bindings: dict[str, dict[str, _Binding]] = {p: {} for p in self.paths}
-        # names a file binds to code outside the repository (`import click`, `from x import Y`)
+        self.scoped: dict[tuple[str, str], dict[str, _Binding]] = {}
+        # names bound to code outside the repository (`import click`, `from x import Y`)
         self.external: dict[str, set[str]] = {p: set() for p in self.paths}
+        self.scoped_external: dict[tuple[str, str], set[str]] = {}
         self._bases_cache: dict[tuple[str, str], list[tuple[str, str]]] = {}
 
     # --- import resolution ---------------------------------------------------------------
@@ -134,34 +138,65 @@ class _Builder:
 
     def _build_bindings(self, path: str) -> None:
         for imp in self.parsed[path].imports:
-            module = self._target_module(path, imp)
-            if module is None:
-                continue
-            if imp.name is None:  # import a.b [as c]
-                target = self.module_to_path.get(module)
-                if target is None:
-                    self.external[path].add(imp.alias or module.split(".")[0])
-                    continue
-                if imp.alias:
-                    self.bindings[path][imp.alias] = _Binding("module", target)
-                else:
-                    self.bindings[path][module] = _Binding("module", target)
-                    first = module.split(".")[0]
-                    if first in self.module_to_path:
-                        self.bindings[path].setdefault(
-                            first, _Binding("module", self.module_to_path[first])
-                        )
-            elif imp.name != "*":  # from m import n [as a]
-                bound = imp.alias or imp.name
-                submodule = self.module_to_path.get(f"{module}.{imp.name}")
-                if submodule:
-                    self.bindings[path][bound] = _Binding("module", submodule)
-                elif module in self.module_to_path:
-                    self.bindings[path][bound] = _Binding(
-                        "name", self.module_to_path[module], imp.name
-                    )
-                else:
-                    self.external[path].add(bound)
+            if imp.scope is None:
+                bindings, external = self.bindings[path], self.external[path]
+            else:
+                bindings = self.scoped.setdefault((path, imp.scope), {})
+                external = self.scoped_external.setdefault((path, imp.scope), set())
+            self._bind(path, imp, bindings, external)
+
+    def _bind(
+        self, path: str, imp: Import, bindings: dict[str, _Binding], external: set[str]
+    ) -> None:
+        module = self._target_module(path, imp)
+        if module is None:
+            return
+        if imp.name is None:  # import a.b [as c]
+            target = self.module_to_path.get(module)
+            if target is None:
+                external.add(imp.alias or module.split(".")[0])
+                return
+            if imp.alias:
+                bindings[imp.alias] = _Binding("module", target)
+            else:
+                bindings[module] = _Binding("module", target)
+                first = module.split(".")[0]
+                if first in self.module_to_path:
+                    bindings.setdefault(first, _Binding("module", self.module_to_path[first]))
+        elif imp.name != "*":  # from m import n [as a]
+            bound = imp.alias or imp.name
+            submodule = self.module_to_path.get(f"{module}.{imp.name}")
+            if submodule:
+                bindings[bound] = _Binding("module", submodule)
+            elif module in self.module_to_path:
+                bindings[bound] = _Binding("name", self.module_to_path[module], imp.name)
+            else:
+                external.add(bound)
+
+    def _binding(self, path: str, caller: str | None, name: str) -> _Binding | None:
+        """What `name` is bound to by an import visible to code in `caller`: the symbol's own
+        local imports first (they shadow), then the module's."""
+        if caller is not None:
+            local = self.scoped.get((path, caller), {}).get(name)
+            if local is not None:
+                return local
+        return self.bindings[path].get(name)
+
+    def _is_external(self, path: str, caller: str | None, name: str) -> bool:
+        local = self.scoped_external.get((path, caller), set()) if caller else set()
+        return name in local or name in self.external[path]
+
+    def _resolve_name(self, path: str, caller: str | None, name: str) -> tuple[str, str] | None:
+        """A top-level symbol that `name` denotes in `caller`'s code, honouring local imports."""
+        if caller is not None:
+            local = self.scoped.get((path, caller), {}).get(name)
+            if local is not None:
+                if local.kind == "name" and local.name:
+                    return self._resolve_exported(local.path, local.name)
+                return None  # bound to a module, which cannot be called or subclassed
+            if name in self.scoped_external.get((path, caller), set()):
+                return None
+        return self._resolve_exported(path, name)
 
     # --- symbol resolution ---------------------------------------------------------------
 
@@ -238,7 +273,7 @@ class _Builder:
         name also exists on builtin types) or 'self-recursion'."""
         name, receiver = call.name, call.receiver
         if receiver is None:
-            target = self._resolve_exported(path, name)
+            target = self._resolve_name(path, call.caller, name)
             if target is None:
                 return None, "unresolved"
             return target, "local" if name in self.top_level[path] else "import"
@@ -256,16 +291,16 @@ class _Builder:
             found = self._find_method(path, class_q, name)
             return (found, "self") if found else (None, "unresolved")
 
-        binding = self.bindings[path].get(receiver)
+        binding = self._binding(path, call.caller, receiver)
         if binding is not None and binding.kind == "module":
             target = self._resolve_exported(binding.path, name)
             return (target, "import-module") if target else (None, "unresolved")
 
-        if receiver.split(".")[0] in self.external[path]:
+        if self._is_external(path, call.caller, receiver.split(".")[0]):
             return None, "external"  # click.command(), werkzeug classes, ...: not our code
 
         if "." not in receiver:  # a class named directly: Class.method()
-            class_ref = self._resolve_exported(path, receiver)
+            class_ref = self._resolve_name(path, call.caller, receiver)
             if class_ref is not None and self._is_class(class_ref):
                 # The receiver's type is known, so never guess by name: a method that is not
                 # on the class or its resolvable bases is inherited from outside the repo.
