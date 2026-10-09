@@ -1,0 +1,132 @@
+"""The answer pipeline: evidence -> context -> one model call -> validation -> answer.
+
+The service receives evidence from a callable (`EvidenceSource`) and a model from an `LLMClient`.
+It has no other way to learn anything about the repository (plan rule R1).
+"""
+
+import time
+from collections.abc import Callable
+
+from app.answer.context import CONTEXT_BUDGET_CHARS, Context, build_context
+from app.answer.prompt import PROMPT_SHA256, SYSTEM_PROMPT
+from app.answer.schema import AnswerResponse, Claim, ResolvedCitation, ValidationReport
+from app.answer.validate import ValidationResult, validate_output
+from app.evidence.schema import EvidenceResponse
+from app.llm.base import LLMClient, LLMError, LLMQuotaError, LLMRequest, UsageRecord
+
+TOP_K = 8
+MAX_OUTPUT_TOKENS = 8192
+
+EvidenceSource = Callable[[str, int], EvidenceResponse]
+
+
+class AnswerUnavailable(RuntimeError):
+    """The model could not be reached. The evidence is kept so the failure is auditable."""
+
+    def __init__(
+        self,
+        message: str,
+        evidence: EvidenceResponse,
+        usage: UsageRecord | None,
+        quota_exhausted: bool = False,
+        retry_after_s: float | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.evidence = evidence
+        self.usage = usage
+        self.quota_exhausted = quota_exhausted
+        self.retry_after_s = retry_after_s
+
+
+def _resolve(context: Context, result: ValidationResult) -> list[Claim]:
+    by_id = context.by_id()
+    claims = []
+    for claim in result.claims:
+        citations = []
+        for evidence_id in claim.citations:
+            item = by_id[evidence_id].item
+            citations.append(
+                ResolvedCitation(
+                    evidence_id=evidence_id,
+                    file=item.file,
+                    file_sha256=item.file_sha256,
+                    line_start=item.line_start,
+                    line_end=item.line_end,
+                    symbol=item.symbol.qualified_name if item.symbol else None,
+                )
+            )
+        claims.append(Claim(text=claim.text, citations=citations))
+    return claims
+
+
+def derive_text(claims: list[Claim]) -> str:
+    return " ".join(
+        f"{c.text} " + "".join(f"[{x.evidence_id}]" for x in c.citations) for c in claims
+    )
+
+
+class AnswerService:
+    def __init__(
+        self,
+        evidence_source: EvidenceSource | None,
+        llm: LLMClient,
+        top_k: int = TOP_K,
+        budget_chars: int = CONTEXT_BUDGET_CHARS,
+        max_output_tokens: int = MAX_OUTPUT_TOKENS,
+    ) -> None:
+        self._source = evidence_source
+        self._llm = llm
+        self.top_k = top_k
+        self._budget = budget_chars
+        self._max_output_tokens = max_output_tokens
+
+    def answer(self, question: str, top_k: int | None = None) -> AnswerResponse:
+        if self._source is None:
+            raise RuntimeError("this service has no evidence source")
+        evidence = self._source(question, top_k or self.top_k)
+        return self.answer_from_evidence(question, evidence)
+
+    def answer_from_evidence(self, question: str, evidence: EvidenceResponse) -> AnswerResponse:
+        started = time.perf_counter()
+        context = build_context(question, evidence, self._budget)
+        request = LLMRequest(
+            system=SYSTEM_PROMPT,
+            user=context.text,
+            max_output_tokens=self._max_output_tokens,
+            temperature=0.0,
+        )
+        try:
+            reply = self._llm.generate(request)
+        except LLMQuotaError as error:
+            raise AnswerUnavailable(
+                str(error), evidence, error.usage, True, error.retry_after_s
+            ) from error
+        except LLMError as error:
+            raise AnswerUnavailable(str(error), evidence, error.usage) from error
+
+        result = validate_output(reply.text, context)
+        report = ValidationReport(
+            valid=result.valid,
+            reasons=result.reasons,
+            paths_only_in_uncited_items=result.paths_only_in_uncited_items,
+        )
+        if result.valid:
+            claims = _resolve(context, result)
+            status, missing, text = result.status, result.missing, derive_text(claims)
+        else:
+            claims, status, missing, text = [], "invalid_output", "", None
+        return AnswerResponse(
+            question=question,
+            status=status,  # type: ignore[arg-type]
+            claims=claims,
+            missing=missing,
+            answer_text=text,
+            validation=report,
+            items_shown=len(context.items),
+            items_omitted=context.omitted,
+            prompt_sha256=PROMPT_SHA256,
+            raw_output=reply.text,
+            model=reply.usage,
+            evidence=evidence,
+            timing_ms=round((time.perf_counter() - started) * 1000, 1),
+        )

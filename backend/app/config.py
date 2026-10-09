@@ -7,6 +7,7 @@ All configuration is read from environment variables (or a `.env` file) prefixed
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -30,6 +31,11 @@ class Settings(BaseSettings):
     # Naive baseline chunking (Milestone 4).
     baseline_chunk_size: int = 1000
     baseline_chunk_overlap: int = 200
+
+    # The answer layer (Milestone 13): a configurable provider; the key lives in backend/.env only.
+    llm_provider: str = "gemini"
+    gemini_model: str = "gemini-3.7-flash"
+    gemini_api_key: SecretStr | None = Field(default=None, validation_alias="GEMINI_API_KEY")
 
     # The live index served by the Evidence API (Milestones 11-12).
     live_repository: str | None = None

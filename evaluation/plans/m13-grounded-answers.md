@@ -289,3 +289,52 @@ answer-quality benchmarking; the web UI.
 9. Malformed-output tests are mandatory (section 6, item 1).
 10. The M10B retrieval result predates the graph-scope correction (M10 follow-up); M13 uses the
     corrected graph through the Evidence API and does not recompute M10B.
+
+## Addendum (2026-10-08, during implementation, before any live call)
+
+**Deviation 1: Python builtins and keywords are exempt from the symbol check (section 4a, rule 5).**
+The frozen rule says a claim may name a code symbol only if the name occurs in the context. Read
+literally it would reject a correct claim such as "the function calls `isinstance()`" whenever that
+builtin is not spelled in the evidence, although a builtin is not a repository symbol. The
+validator therefore ignores names in `dir(builtins)`, the Python keywords, and `self`/`cls`.
+Everything else in rule 5 is unchanged (dotted names are checked segment by segment against the
+identifiers of the context: chunk text, symbol names, relationship targets and file paths). This
+is recorded before any live call; the number of claims it would have rejected is not known and is
+not tuned.
+
+**Deviation 2 (operational, before the live run): transport-failed cases may be re-attempted in a later pass.**
+During implementation the provider returned HTTP 503 "high demand" for `gemini-3.7-flash` on several consecutive
+requests (4 in a row exhausted the planned retries; the next call succeeded), so some cases of the live run may
+end in a transport error after the planned 3 retries. The runner has a `--retry-errors` flag that re-attempts
+only those cases in a later pass. The raw file is append-only: every failed attempt stays in it, a case's answer
+is its latest successful row, and the summary reports how many cases needed a second pass. This applies only to
+transport failures (no model output exists); **invalid model output is never re-attempted**, and a case is
+never re-run to obtain a "better" answer.
+
+**Deviation 3 (2026-10-09, before the live run restarted): the model is `gemini-3.5-flash-lite`, and a quota error stops the run.**
+The first start of the live run, on the planned `gemini-3.7-flash`, completed 2 of 113 cases (one transport error
+after 503 "high demand" responses, one answer) and was then stopped by an HTTP 429: the free tier of that model allows
+**20 requests per day per project** ("GenerateRequestsPerDayPerProjectPerModel-FreeTier", limit 20), and my own test
+calls and the retries of 503 responses had used it up; the server asked for a retry in about 3 h 52 m. Google does not
+publish free-tier limits (they are shown per project in AI Studio), so no model's limit could be known in advance.
+Changes, all made before any further live call:
+
+1. **Model.** The requested model is now `gemini-3.5-flash-lite` (`REPOCOMPASS_GEMINI_MODEL`, set in the gitignored
+   `.env`); the code default and everything else in the plan are unchanged. Chosen because it answered promptly in
+   availability checks, returns its own name as `modelVersion` (no alias drift observed) and uses no thinking tokens by
+   default; its free-tier daily limit is not known and may also be too low, in which case the run stops and resumes the
+   next day. This is a weaker model than the planned one, so results are not comparable with any run on `gemini-3.7-flash`.
+2. **The two rows from the stopped `gemini-3.7-flash` start** are kept, unedited, in
+   `evaluation/results/answers_flask_raw_ABORTED_gemini-3.7-flash.jsonl` and are not part of any result.
+3. **Quota handling (a flaw in my client).** The client had slept for the server's 3 h 52 m retry delay and, before that,
+   had retried 429s that would never succeed, each retry using quota. Now a 429 that names a per-day quota, or asks for a
+   wait over 60 s, raises `LLMQuotaError` at once with no retry and no sleep; the runner stops without writing a row for
+   the case, exits with code 3 and prints how to resume. Per-minute 429s with short delays are still retried as planned.
+   Invalid model output is still never retried, and deviation 2 (a later pass for transport failures) still applies.
+
+**Deviation 4 (2026-10-09, after the live run, before any label exists): the review sheets show the whole context for abstentions and partial answers.**
+The sheets generated from the finished run showed, for an `insufficient_evidence` answer, only the question and
+`missing`; rubric item 5 ("did it abstain correctly, `missing` naming a real gap?") cannot be judged without seeing
+what the model was given. The sheet generator now adds, for `insufficient_evidence` and `partial` answers, every
+evidence item of the context with its text. Nothing else about the run, the answers, the selection of reviewed answers
+or the rubric changed, and the sheets were regenerated from the saved raw file with no API call.
