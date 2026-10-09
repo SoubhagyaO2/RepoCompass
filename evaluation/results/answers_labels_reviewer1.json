@@ -1,5 +1,5 @@
 {
-  "reviewer": "reviewer 1 (Claude, the author of the system)",
+  "reviewer": "reviewer 1: Claude, an AI assistant and the author of the system (not a human reader)",
   "rubric": {
     "1": "Is every factual claim supported by the cited evidence?",
     "2": "Does every citation actually support the claim it is attached to?",
