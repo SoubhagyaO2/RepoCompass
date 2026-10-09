@@ -1,0 +1,82 @@
+{
+  "answers_compared": 10,
+  "cells_compared": 37,
+  "cells_agreeing": 32,
+  "agreement": "32/37",
+  "answers_with_no_disagreement": 8,
+  "per_answer": [
+    {
+      "case": "flask-050",
+      "disagreements": []
+    },
+    {
+      "case": "flask-054",
+      "disagreements": []
+    },
+    {
+      "case": "flask-006",
+      "disagreements": []
+    },
+    {
+      "case": "flask-034",
+      "disagreements": []
+    },
+    {
+      "case": "flask-068",
+      "disagreements": []
+    },
+    {
+      "case": "flask-065",
+      "disagreements": []
+    },
+    {
+      "case": "flask-052",
+      "disagreements": [
+        {
+          "item": "1",
+          "reviewer1": "PASS",
+          "reviewer2": "UNCERTAIN"
+        },
+        {
+          "item": "2",
+          "reviewer1": "UNCERTAIN",
+          "reviewer2": "FAIL"
+        },
+        {
+          "item": "4",
+          "reviewer1": "PASS",
+          "reviewer2": "FAIL"
+        },
+        {
+          "item": "5",
+          "reviewer1": "PASS",
+          "reviewer2": "UNCERTAIN"
+        }
+      ]
+    },
+    {
+      "case": "flask-061",
+      "disagreements": []
+    },
+    {
+      "case": "flask-051",
+      "disagreements": []
+    },
+    {
+      "case": "flask-072",
+      "disagreements": [
+        {
+          "item": "2",
+          "reviewer1": "PASS",
+          "reviewer2": "UNCERTAIN"
+        }
+      ]
+    }
+  ],
+  "caveats": [
+    "Reviewer 1's labels for these 10 were made after seeing reviewer 2's, so agreement is an upper bound.",
+    "Cells where one reader had no claims or no abstention to judge (N/A / null) are not compared.",
+    "The review sheet did not show the graph structure lines the model was given; this explains the disagreements on flask-052 items 1, 4 and 5.",
+    "Who or what produced reviewer 2's labels has to be confirmed by the user: the plan asked for a human second reader."
+  ]
+}

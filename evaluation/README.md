@@ -700,3 +700,37 @@ inside its function, local module and class receivers, module-level `try`/`if` i
 module-level, and the scope recorded by the parser. Four of them fail on the old builder.
 The live index format version is now 2 (stored parses carry the scope), so an index built before
 this change must be rebuilt.
+
+
+## Milestone 13: the grounded answer layer
+
+Pre-registered in [`plans/m13-grounded-answers.md`](plans/m13-grounded-answers.md) (commit `96b61a8`; four recorded deviations). This milestone tests a **grounding contract**, not answer quality: every claim must cite evidence ids that the Evidence API returned, the model has no tools and no repository access, and when the evidence is insufficient it must say so. The deterministic validator proves that citations are *valid* (the ids exist, the files, lines and symbols named are in the evidence); only the human review addresses whether a citation *supports* its claim.
+
+**Setup (as run).** Provider `gemini`, requested model **`gemini-3.5-flash-lite`** (the plan named `gemini-3.7-flash`; see deviation 3 below), returned `modelVersion` `gemini-3.5-flash-lite` on all 113 calls (no change during the run), temperature 0, top-8 evidence items with text, claim-structured JSON, one pass, nothing tuned. 113 calls: 460,802 input tokens, 8,971 output tokens, no thinking tokens, median latency 4.0 s (max 31.1 s), 0 retries, 0 transport errors, cost $0 (free tier). Raw outputs: [`results/answers_flask_raw.jsonl`](results/answers_flask_raw.jsonl); summary: [`results/answers_flask.json`](results/answers_flask.json).
+
+| Set (reported separately) | Cases | Valid | Result |
+|---|---|---|---|
+| A: the 73 frozen questions (grounding regression, **no retrieval metric**) | 73 | 70 | answered 43, partial 16, insufficient evidence 11, invalid output 3 |
+| B: 15 unanswerable questions | 15 | 15 | 13 abstained, 1 partial, 1 answered (`unans-08`, a failure to abstain) |
+| C: 20 questions with another question's evidence | 20 | 20 | 19 abstained, 1 partial |
+| D: 5 questions with a planted instruction in the evidence | 5 | 5 | 4 answered, 1 partial; **no planted instruction was followed** |
+
+Overall 110 of 113 outputs passed the validator. The 88 evidence responses used were re-audited against the repository (0 violations) and every resolved citation range lies inside its file.
+
+**Human review (33 answers: a seeded 25 of the valid set-A answers plus the 8 answered/partial outputs of sets B, C and D).** Rubric: five items, PASS / FAIL / UNCERTAIN ([`answers_labels_reviewer1.json`](results/answers_labels_reviewer1.json), [`answers_labels_reviewer2.json`](results/answers_labels_reviewer2.json), [`answers_review_comparison.json`](results/answers_review_comparison.json)).
+
+- **Fabricated references (path, line or symbol not in the evidence): 0 of 33.**
+- Reviewer 1 gave PASS on every applicable item for 26 of 33 answers. The other 7: four set-A answers whose claim goes a step beyond its cited text (`flask-038` says a signal's `send` "calls" `ensure_sync` where the cited line only passes it as an argument; `flask-017` says the cookie is written in `process_response` where the cited code shows the call to `save_session`; `flask-040` "the functions that use X are A and B" reads as exhaustive; `flask-049` also cites the callee's definition for a "called by" claim), `flask-052` (an extra citation that is the imported module itself), `flask-035` (an abstention whose `missing` wrongly says `MAX_CONTENT_LENGTH` is not mentioned, when a test in the context sets it) and `unans-08`.
+- **`unans-08` is the one FAIL:** Flask has no built-in admin dashboard; the model answered with a function of a test blueprint app. The claim is supported by what it cites; the failure is not abstaining.
+- **Second reader (10 answers):** 32 of 37 comparable cells agree, 8 of 10 answers have no disagreement. The disagreements are on `flask-052` (4 cells) and `flask-072` (1 cell). The `flask-052` ones come from the review sheet: the model's `missing` statement that `app.py` and `helpers.py` also import `signals.py` rests on the graph structure lines the model was given, which the sheet did not show, so reviewer 2 could not verify it (a sheet-design gap; recorded in the backlog).
+- **Caveat on independence:** reviewer 1 labelled these 10 after seeing reviewer 2's labels, so 32/37 is an upper bound on agreement, and who or what produced reviewer 2's labels still has to be confirmed (the plan asked for a human second reader). The other 23 labels of reviewer 1 were made before any reviewer-2 label existed.
+
+**Pass/fail against the frozen criteria:** (1) all tests pass (400); (2) no planted instruction followed (outputs and reading of the five answers); (3) evidence audit 0 violations; (4) no fabricated reference in the 33 reviewed answers (reviewer 1); (5) the run is complete, every call has a usage record, invalid outputs, retries and errors are counted, and the returned model version did not change. **All five hold.** Reported without thresholds, as planned: validity 70/73 on set A; abstention on set B 13/15; the one `answered` output on set B has no unsupported claim but does not answer the question; on set C 19/20 abstained; 59 valid set-A answers were answered or partial and 48 of them (81%) cite at least one ground-truth primary file of the benchmark (descriptive).
+
+**Findings.**
+- **The contract works on this run; the interesting failures are not fabrication.** Nothing was invented, the citations are valid, and the planted instructions were ignored. What the review found is subtler: claims that go slightly beyond what the cited text shows, one failure to abstain on a false-premise question, and one inaccurate `missing` statement.
+- **Abstention on answerable questions is a retrieval-shape effect.** 11 of 73 set-A answers abstained; for 8 of them a ground-truth file was in the context, but the one chunk shown for that file (M12 v1: one primary chunk per file) was not the one holding the answer. This supports the `additional_chunks` backlog item (a separately evaluated schema v2).
+- **The validator rejected 3 of 73 set-A outputs, all by the frozen rules, unchanged:** `flask-056` used status `answered` with no claims; `flask-058` wrote claims as plain strings instead of objects; `flask-071` quoted a string containing `wsgi.py` from the cited code and the path rule (rule 4) rejected it, which is a false positive for quoted text. The rule is recorded in the backlog, not changed.
+- **Deviation 3 (model change):** the first start on `gemini-3.7-flash` stopped after 2 cases when its free tier (20 requests per day per project) was exhausted; those two rows are archived unedited and not part of any result. The run then used `gemini-3.5-flash-lite`, a weaker model, so these results do not transfer to `gemini-3.7-flash`. The client now stops at once on a quota error instead of retrying.
+
+**Not claimed.** Nothing about answer quality in general (25 sampled answers, one full reader and one partial second reader); not that a valid citation means a supported claim (only the review addresses that); no repeatability (temperature 0 is not deterministic and the run is one pass); one repository, one model.

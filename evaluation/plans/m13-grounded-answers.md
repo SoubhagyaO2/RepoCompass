@@ -338,3 +338,12 @@ The sheets generated from the finished run showed, for an `insufficient_evidence
 what the model was given. The sheet generator now adds, for `insufficient_evidence` and `partial` answers, every
 evidence item of the context with its text. Nothing else about the run, the answers, the selection of reviewed answers
 or the rubric changed, and the sheets were regenerated from the saved raw file with no API call.
+
+## Outcome (2026-10-09)
+
+The live run completed (113 of 113 cases) and the review is complete (33 answers by reviewer 1, 10 of them also by reviewer 2). Against
+section 8: criteria 1-5 hold (see `evaluation/README.md`, "Milestone 13"). Recorded deviations: 1 (builtins exempt from the symbol
+check), 2 (a later pass for transport failures; not needed, none occurred), 3 (model `gemini-3.5-flash-lite` and fail-fast quota
+handling), 4 (the review sheets show the whole context for abstentions). Not covered by a deviation but worth stating: reviewer 1's
+labels for the 10 shared answers were made after seeing reviewer 2's, and the sheets did not show the graph structure lines the model
+had been given.

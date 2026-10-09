@@ -74,3 +74,18 @@ All untested; design and tune on a dev set, never on the frozen benchmark:
   quantising scores). It changes retrieval, so evaluate it on a dev set and re-run M8 first.
 - **`additional_chunks` per file** (schema v2) if M13 needs several chunks of one file; evaluate
   as a separate extension, never silently.
+
+## From Milestone 13 (grounded answers)
+
+- **Run again on a stronger model** (`gemini-3.7-flash`, or a paid tier) with the same frozen plan, to see how much of the
+  review result depends on the model; keep it a separate run, never merged with this one.
+- **`additional_chunks` per file (schema v2):** 8 of 11 set-A abstentions had a ground-truth file in context without the chunk that
+  holds the answer. Design and evaluate as its own experiment.
+- **Validator rule 4 (paths) is too strict for quoted text:** `flask-071` quoted `'wsgi.py'` from the cited code and was rejected.
+  Consider accepting a path that occurs verbatim inside the cited text. A change to the frozen validator needs its own recorded deviation.
+- **Format failures** (`flask-056` answered with no claims, `flask-058` plain-string claims): try provider-enforced structured output
+  (a response schema) instead of relying on the prompt; evaluate separately.
+- **False-premise questions:** `unans-08` accepted the presupposition ("built-in admin dashboard") and answered from a test app. A
+  premise check would be a prompt change; evaluate on a dev set, not on this run.
+- **Review sheet:** show the structure (graph relationship) lines the model was given, so claims and `missing` statements that rest on
+  them can be checked; and make the second reader a person (confirm who produced reviewer 2's labels).
