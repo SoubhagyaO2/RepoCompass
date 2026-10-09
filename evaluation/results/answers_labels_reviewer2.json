@@ -1,0 +1,34 @@
+{
+  "reviewer": "reviewer 2 (labels pasted into the chat by the user, transcribed unchanged; who produced them is to be confirmed by the user)",
+  "sheet": "evaluation/results/answers_review_sheet_reviewer2.md, as generated after plan deviation 4",
+  "rubric": {
+    "1": "Is every factual claim supported by the cited evidence?",
+    "2": "Does every citation actually support the claim it is attached to?",
+    "3": "Are the cited line ranges correct?",
+    "4": "Are there factual claims without a citation?",
+    "5": "(abstentions only) Did it abstain correctly, `missing` naming a real gap?"
+  },
+  "labels": {
+    "flask-050": {"1": "PASS", "2": "N/A", "3": "N/A", "4": "PASS", "5": "PASS"},
+    "flask-054": {"1": "PASS", "2": "PASS", "3": "PASS", "4": "PASS", "5": "N/A"},
+    "flask-006": {"1": "PASS", "2": "PASS", "3": "PASS", "4": "PASS", "5": "N/A"},
+    "flask-034": {"1": "PASS", "2": "PASS", "3": "PASS", "4": "PASS", "5": "N/A"},
+    "flask-068": {"1": "PASS", "2": "PASS", "3": "PASS", "4": "PASS", "5": "PASS"},
+    "flask-065": {"1": "PASS", "2": "PASS", "3": "PASS", "4": "PASS", "5": "N/A"},
+    "flask-052": {
+      "1": "UNCERTAIN", "2": "FAIL", "3": "PASS", "4": "FAIL", "5": "UNCERTAIN",
+      "reasons": {
+        "1": "The three listed imports are visible, but the missing field also asserts that graph relationships identify imports in app.py and helpers.py; those relationships are not shown in the supplied evidence.",
+        "2": "E1 shows signal definitions, not imports into the three claimed files. E2, E4 and E7 contain the actual import statements, but the additional E1 citations do not support those claims.",
+        "4": "The graph-relationship assertion in missing has no supporting citation in the supplied evidence.",
+        "5": "The stated gap is plausible, but the accompanying assertion about graph relationships cannot be verified from the shown excerpts."
+      }
+    },
+    "flask-061": {"1": "PASS", "2": "N/A", "3": "N/A", "4": "PASS", "5": "PASS"},
+    "flask-051": {"1": "PASS", "2": "PASS", "3": "PASS", "4": "PASS", "5": "PASS"},
+    "flask-072": {
+      "1": "PASS", "2": "UNCERTAIN", "3": "PASS", "4": "PASS", "5": "N/A",
+      "reasons": {"2": "E6 supports all three methods; E1 and E2 show get calls only. The overall claim is supported, but the additional citations do not support the full list individually."}
+    }
+  }
+}

@@ -37,3 +37,12 @@ as a gain, and keeping the code and the result makes the decision auditable.
 Note on M10B: the always-on graph expansion result in the table above was computed on the graph
 **before** the function-local import scoping fix (M10 follow-up, 2026-10-08) and has not been re-run
 on the corrected graph.
+
+## Milestone 13: grounded answer layer
+
+| Component | Evidence | Decision |
+|---|---|---|
+| Claim-structured answers with evidence-id citations, deterministic validator, no tools, evidence only through the Evidence API | 113 calls on `gemini-3.5-flash-lite`: 110 valid outputs, 0 fabricated references in the 33 hand-reviewed answers, 0 planted instructions followed, 13/15 correct abstentions on unanswerable questions, 19/20 on mismatched evidence (M13) | **In the project** (`app/answer`, `app/llm`, `POST /v1/answer`). The frozen pass criteria hold |
+| Provider abstraction (Gemini first) | A free tier of 20 requests/day on `gemini-3.7-flash` stopped the first run; the client now fails fast on quota errors; the run completed on `gemini-3.5-flash-lite` (deviation 3) | Kept; model choice is configuration, results are specific to the model used |
+| Human review as the check for semantic support | The validator cannot tell whether a citation supports a claim; the review found claims slightly beyond their cited text (4 answers) and one failure to abstain on a false-premise question | Kept; deterministic validity is never presented as proof of grounding |
+| One chunk per file (M12 v1) | 8 of 11 set-A abstentions had the right file in context but not the chunk holding the answer | Unchanged for now; `additional_chunks` stays a separately evaluated schema v2 |
