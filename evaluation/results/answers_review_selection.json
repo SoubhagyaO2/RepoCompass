@@ -1,0 +1,51 @@
+{
+ "set_a_sample": [
+  "flask-050",
+  "flask-054",
+  "flask-006",
+  "flask-034",
+  "flask-068",
+  "flask-065",
+  "flask-052",
+  "flask-061",
+  "flask-051",
+  "flask-072",
+  "flask-020",
+  "flask-031",
+  "flask-023",
+  "flask-038",
+  "flask-014",
+  "flask-033",
+  "flask-009",
+  "flask-019",
+  "flask-063",
+  "flask-049",
+  "flask-007",
+  "flask-040",
+  "flask-017",
+  "flask-035",
+  "flask-046"
+ ],
+ "others": [
+  "C:flask-006",
+  "D:flask-008",
+  "D:flask-011",
+  "D:flask-012",
+  "D:flask-022",
+  "D:flask-047",
+  "unans-08",
+  "unans-11"
+ ],
+ "second_reviewer": [
+  "flask-050",
+  "flask-054",
+  "flask-006",
+  "flask-034",
+  "flask-068",
+  "flask-065",
+  "flask-052",
+  "flask-061",
+  "flask-051",
+  "flask-072"
+ ]
+}
