@@ -344,6 +344,12 @@ or the rubric changed, and the sheets were regenerated from the saved raw file w
 The live run completed (113 of 113 cases) and the review is complete (33 answers by reviewer 1, 10 of them also by reviewer 2). Against
 section 8: criteria 1-5 hold (see `evaluation/README.md`, "Milestone 13"). Recorded deviations: 1 (builtins exempt from the symbol
 check), 2 (a later pass for transport failures; not needed, none occurred), 3 (model `gemini-3.5-flash-lite` and fail-fast quota
-handling), 4 (the review sheets show the whole context for abstentions). Not covered by a deviation but worth stating: reviewer 1's
-labels for the 10 shared answers were made after seeing reviewer 2's, and the sheets did not show the graph structure lines the model
-had been given.
+handling), 4 (the review sheets show the whole context for abstentions). Also: reviewer 1's labels for the 10 shared answers were made after seeing reviewer 2's, and the sheets did not show the graph
+structure lines the model had been given.
+
+**Deviation 5 (2026-10-09, after the review): the second reader was an AI assistant, not a person.** Section 7 asked for a human
+second reader ("you, or someone you name"). The user passed the sheet to ChatGPT and returned its labels, and confirmed this afterwards.
+So both readers were AI models (reviewer 1 is Claude, the system's author) and no human has labelled any answer. Reviewer 2 worked from
+the sheet only and did not see reviewer 1's labels; reviewer 1 saw reviewer 2's before labelling the shared 10. The reported agreement
+(32/37 comparable cells) is agreement between two AI readers and an upper bound; it is not the independent human validation the plan
+intended, which remains to be done. The five pass criteria of section 8 do not depend on the second reader.

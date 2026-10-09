@@ -77,6 +77,6 @@
     "Reviewer 1's labels for these 10 were made after seeing reviewer 2's, so agreement is an upper bound.",
     "Cells where one reader had no claims or no abstention to judge (N/A / null) are not compared.",
     "The review sheet did not show the graph structure lines the model was given; this explains the disagreements on flask-052 items 1, 4 and 5.",
-    "Who or what produced reviewer 2's labels has to be confirmed by the user: the plan asked for a human second reader."
+    "Reviewer 2 was an AI assistant (ChatGPT), not a human, and reviewer 1 is also an AI: this is agreement between two AI readers, not independent human validation (plan deviation 5)."
   ]
 }

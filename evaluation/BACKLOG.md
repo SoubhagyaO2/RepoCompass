@@ -88,4 +88,4 @@ All untested; design and tune on a dev set, never on the frozen benchmark:
 - **False-premise questions:** `unans-08` accepted the presupposition ("built-in admin dashboard") and answered from a test app. A
   premise check would be a prompt change; evaluate on a dev set, not on this run.
 - **Review sheet:** show the structure (graph relationship) lines the model was given, so claims and `missing` statements that rest on
-  them can be checked; and make the second reader a person (confirm who produced reviewer 2's labels).
+  them can be checked; and get a human reader: reviewer 2 was an AI assistant (ChatGPT), so no person has labelled any M13 answer yet.
