@@ -123,3 +123,41 @@ class EvidenceResponse(BaseModel):
     notes: dict[str, str] = NOTES
     evidence: list[EvidenceItem]
     timing_ms: float | None = None  # outside the deterministic part: never compare it
+
+
+# --- schema v2 (Milestone 14): additional chunks per file ------------------------------------
+
+
+class ChunkComponentScore(BaseModel):
+    rank: int  # 1-based position in the component's chunk list (not among files)
+    score: Float6  # the component's raw score
+
+
+class ChunkScores(BaseModel):
+    rrf_chunk: Float6  # sum over components of 1 / (60 + position); used only to choose and order
+    bm25: ChunkComponentScore | None
+    embedding: ChunkComponentScore | None
+
+
+class AdditionalChunk(BaseModel):
+    """Another chunk of an already retrieved file, taken from what the components returned."""
+
+    rank_in_file: int  # 1 = the best additional chunk of this file
+    line_start: int
+    line_end: int
+    symbol: SymbolInfo | None
+    symbol_status: SymbolStatus
+    scores: ChunkScores
+    text: str | None
+
+
+class EvidenceItemV2(EvidenceItem):
+    """Every v1 field unchanged, plus the additional chunks (possibly none)."""
+
+    additional_chunks: list[AdditionalChunk]
+
+
+class EvidenceResponseV2(EvidenceResponse):
+    schema_version: int = 2
+    extra_chunks: int  # the N the request asked for (the most chunks added per file)
+    evidence: list[EvidenceItemV2]  # type: ignore[assignment]

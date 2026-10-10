@@ -59,6 +59,18 @@ class ComponentMatch:
 
 
 @dataclass(frozen=True)
+class ChunkCandidate:
+    """A chunk of a retrieved file that some component returned, and where: its 1-based position
+    in each component's chunk list (None = that component did not return it) and its hit there.
+    Nothing outside what the components returned is ever a candidate (Milestone 14)."""
+
+    start_line: int
+    end_line: int
+    positions: tuple[int | None, ...]
+    hits: tuple[SearchHit | None, ...]
+
+
+@dataclass(frozen=True)
 class FusedFile:
     """One file of the fused ranking, with everything that produced its position."""
 
@@ -66,6 +78,7 @@ class FusedFile:
     score: float  # the RRF score
     hit: SearchHit  # the displayed chunk (score = that component's raw score)
     matches: tuple[ComponentMatch | None, ...]  # per component, None = not retrieved by it
+    chunks: tuple[ChunkCandidate, ...] = ()  # every retrieved chunk of the file, by start line
 
 
 class HybridRetriever:
@@ -102,12 +115,33 @@ class HybridRetriever:
                 if path not in representative or match.rank < representative[path].rank:
                     representative[path] = match
 
+        candidates = _chunk_candidates(results)
         return [
             FusedFile(
                 path=path,
                 score=score,
                 hit=representative[path].hit,
                 matches=tuple(m.get(path) for m in matches),
+                chunks=tuple(candidates.get(path, ())),
             )
             for path, score in reciprocal_rank_fusion(rankings, self._k)
         ]
+
+
+def _chunk_candidates(results: list[list[SearchHit]]) -> dict[str, list[ChunkCandidate]]:
+    """Per file, every chunk the components returned with its position in each component's list."""
+    seen: dict[tuple[str, int, int], list[tuple[int | None, SearchHit | None]]] = {}
+    for component, hits in enumerate(results):
+        for position, hit in enumerate(hits, 1):
+            key = (hit.file_path, hit.start_line, hit.end_line)
+            slots = seen.setdefault(key, [(None, None)] * len(results))
+            if slots[component][0] is None:  # the first occurrence in a list is its position
+                slots[component] = (position, hit)
+    by_file: dict[str, list[ChunkCandidate]] = {}
+    for (path, start, end), slots in seen.items():
+        by_file.setdefault(path, []).append(
+            ChunkCandidate(start, end, tuple(p for p, _ in slots), tuple(h for _, h in slots))
+        )
+    for chunks in by_file.values():
+        chunks.sort(key=lambda c: (c.start_line, c.end_line))
+    return by_file

@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, SerializeAsAny
 
 from app.evidence.schema import EvidenceResponse
 from app.llm.base import UsageRecord
@@ -49,5 +49,5 @@ class AnswerResponse(BaseModel):
     prompt_sha256: str
     raw_output: str
     model: UsageRecord
-    evidence: EvidenceResponse
+    evidence: SerializeAsAny[EvidenceResponse]
     timing_ms: float | None = None
