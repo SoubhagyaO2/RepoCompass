@@ -7,11 +7,17 @@ It has no other way to learn anything about the repository (plan rule R1).
 import time
 from collections.abc import Callable
 
-from app.answer.context import CONTEXT_BUDGET_CHARS, Context, build_context
+from app.answer.context import (
+    CONTEXT_BUDGET_CHARS,
+    CONTEXT_BUDGET_CHARS_V2,
+    Context,
+    build_context,
+    build_context_v2,
+)
 from app.answer.prompt import PROMPT_SHA256, SYSTEM_PROMPT
 from app.answer.schema import AnswerResponse, Claim, ResolvedCitation, ValidationReport
 from app.answer.validate import ValidationResult, validate_output
-from app.evidence.schema import EvidenceResponse
+from app.evidence.schema import EvidenceResponse, EvidenceResponseV2
 from app.llm.base import LLMClient, LLMError, LLMQuotaError, LLMRequest, UsageRecord
 
 TOP_K = 8
@@ -72,12 +78,14 @@ class AnswerService:
         llm: LLMClient,
         top_k: int = TOP_K,
         budget_chars: int = CONTEXT_BUDGET_CHARS,
+        budget_chars_v2: int = CONTEXT_BUDGET_CHARS_V2,
         max_output_tokens: int = MAX_OUTPUT_TOKENS,
     ) -> None:
         self._source = evidence_source
         self._llm = llm
         self.top_k = top_k
         self._budget = budget_chars
+        self._budget_v2 = budget_chars_v2
         self._max_output_tokens = max_output_tokens
 
     def answer(self, question: str, top_k: int | None = None) -> AnswerResponse:
@@ -88,7 +96,10 @@ class AnswerService:
 
     def answer_from_evidence(self, question: str, evidence: EvidenceResponse) -> AnswerResponse:
         started = time.perf_counter()
-        context = build_context(question, evidence, self._budget)
+        if isinstance(evidence, EvidenceResponseV2):
+            context = build_context_v2(question, evidence, self._budget_v2)
+        else:
+            context = build_context(question, evidence, self._budget)
         request = LLMRequest(
             system=SYSTEM_PROMPT,
             user=context.text,

@@ -5,9 +5,14 @@ from typing import Any
 
 from app.answer.context import Context, build_context
 from app.evidence.schema import (
+    AdditionalChunk,
+    ChunkComponentScore,
+    ChunkScores,
     ComponentScore,
     EvidenceItem,
+    EvidenceItemV2,
     EvidenceResponse,
+    EvidenceResponseV2,
     GraphDegree,
     GraphEvidence,
     GraphRelationship,
@@ -102,6 +107,51 @@ def make_evidence(question: str = QUESTION) -> EvidenceResponse:
             method="hybrid-rrf", rrf_k=60, depth=50, components=["bm25", "embedding"]
         ),
         evidence=items,
+    )  # fmt: skip
+
+
+# additional chunks per file for the v2 fixtures: (start, end, qualified name, text)
+EXTRAS = {
+    1: [
+        (22, 30, "SessionInterface.open_session",
+         "def open_session(self, app, request):\n    return None\n"),
+        (32, 40, "SessionInterface.is_null_session",
+         "def is_null_session(self, obj):\n    return isinstance(obj, NullSession)\n"),
+    ],
+    2: [(120, 130, "App.make_response", "def make_response(self, rv):\n    return rv\n")],
+    3: [],
+}  # fmt: skip
+
+
+def make_evidence_v2(extra: int | None = None, question: str = QUESTION) -> EvidenceResponseV2:
+    """The v1 fixture with additional chunks: 2, 1 and 0 for the three files by default; with
+    `extra=n` at most n per file."""
+    v1 = make_evidence(question)
+    items = []
+    for item in v1.evidence:
+        pool = EXTRAS[item.rank][: (extra if extra is not None else 99)]
+        chunks = []
+        for k, (start, end, name, text) in enumerate(pool, 1):
+            symbol = SymbolInfo(
+                qualified_name=name, name=name.rsplit(".", 1)[-1], kind="method",
+                node_id=f"{item.file}::{name}", line_start=start, line_end=end,
+            )  # fmt: skip
+            chunks.append(
+                AdditionalChunk(
+                    rank_in_file=k, line_start=start, line_end=end, symbol=symbol,
+                    symbol_status="exact",
+                    scores=ChunkScores(
+                        rrf_chunk=1 / (60 + k),
+                        bm25=ChunkComponentScore(rank=k, score=3.0),
+                        embedding=None,
+                    ),
+                    text=text,
+                )
+            )  # fmt: skip
+        items.append(EvidenceItemV2(**item.model_dump(), additional_chunks=chunks))
+    return EvidenceResponseV2(
+        query=v1.query, index=v1.index, retrieval=v1.retrieval,
+        extra_chunks=extra if extra is not None else 2, evidence=items,
     )  # fmt: skip
 
 

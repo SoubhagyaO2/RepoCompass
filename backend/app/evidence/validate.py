@@ -16,7 +16,13 @@ from app.evidence.builder import (
     RELATIONSHIP_ORDER,
     _line_and_rule,
 )
-from app.evidence.schema import EvidenceItem, EvidenceResponse, GraphEvidence
+from app.evidence.schema import (
+    EvidenceItem,
+    EvidenceItemV2,
+    EvidenceResponse,
+    EvidenceResponseV2,
+    GraphEvidence,
+)
 from app.indexing.changes import sha256_bytes
 from app.indexing.live_index import LiveIndex
 
@@ -165,3 +171,79 @@ def compare_evidence(a: EvidenceResponse, b: EvidenceResponse) -> list[str]:
         if getattr(a, field) != getattr(b, field):
             diffs.append(f"{field} differs")
     return diffs
+
+
+def check_response_v2(
+    response: EvidenceResponseV2, index: LiveIndex, root: Path, extra_chunks: int
+) -> list[str]:
+    """The M12 checks on the v1 content of a v2 response, plus plan section 2 (c)-(d), (f) for the
+    additional chunks, each re-derived from the file on disk and the stored parse."""
+    bad: list[str] = []
+    v1 = EvidenceResponse.model_validate_json(response.model_dump_json())
+    bad += check_response(v1, index, root)
+    if response.extra_chunks != extra_chunks:
+        bad.append(f"extra_chunks is {response.extra_chunks}, expected {extra_chunks}")
+    for item in response.evidence:
+        bad += _check_additional(item, index, root, extra_chunks)
+    return bad
+
+
+def _check_additional(item: EvidenceItemV2, index: LiveIndex, root: Path, n: int) -> list[str]:
+    bad: list[str] = []
+    where = f"{item.file}:{item.line_start}"
+    extras = item.additional_chunks
+    if len(extras) > n:
+        bad.append(f"{where}: {len(extras)} additional chunks, at most {n} allowed")
+    if [c.rank_in_file for c in extras] != list(range(1, len(extras) + 1)):
+        bad.append(f"{where}: rank_in_file is not 1..{len(extras)}")
+    spans = [(item.line_start, item.line_end)] + [(c.line_start, c.line_end) for c in extras]
+    if len(set(spans)) != len(spans):
+        bad.append(f"{where}: an additional chunk repeats the primary or another chunk")
+    scores = [c.scores.rrf_chunk for c in extras]
+    if scores != sorted(scores, reverse=True):
+        bad.append(f"{where}: additional chunks are not in descending chunk-score order")
+
+    record = index.records.get(item.file)
+    if record is None:
+        return [*bad, f"{where}: no record in the index"]
+    lines = _split_lines((root / item.file).read_bytes().decode("utf-8", errors="replace"))
+    for c in extras:
+        tag = f"{item.file}:{c.line_start} (additional {c.rank_in_file})"
+        if not 1 <= c.line_start <= c.line_end <= len(lines):
+            bad.append(f"{tag}: lines out of range")
+            continue
+        if c.text is not None and c.text != _join(lines, c.line_start, c.line_end):
+            bad.append(f"{tag}: text differs from the file's lines")
+        chunk = next((x for x in record.chunks["ast"] if x.start_line == c.line_start), None)
+        if chunk is None or chunk.end_line != c.line_end:
+            bad.append(f"{tag}: no AST chunk with these lines")
+            continue
+        if not (c.scores.bm25 or c.scores.embedding):
+            bad.append(f"{tag}: no component returned this chunk")
+        positions = [s.rank for s in (c.scores.bm25, c.scores.embedding) if s is not None]
+        if abs(sum(1 / (60 + p) for p in positions) - c.scores.rrf_chunk) > 1e-6:
+            bad.append(f"{tag}: rrf_chunk does not match the component positions")
+        expected = None
+        if chunk.symbol_type != "module":
+            expected = next(
+                (
+                    p
+                    for p in record.parsed.symbols
+                    if p.start_line == chunk.start_line and p.qualified_name == chunk.symbol_name
+                ),
+                None,
+            )
+        if chunk.symbol_type == "module":
+            if c.symbol is not None or c.symbol_status != "module_level":
+                bad.append(f"{tag}: a module chunk must have no symbol and status module_level")
+        elif expected is None:
+            if c.symbol is not None or c.symbol_status != "unparsed":
+                bad.append(f"{tag}: no parse symbol, so the symbol must be null and unparsed")
+        elif (
+            c.symbol is None
+            or c.symbol_status != "exact"
+            or (c.symbol.qualified_name, c.symbol.line_start, c.symbol.line_end)
+            != (expected.qualified_name, expected.start_line, expected.end_line)
+        ):
+            bad.append(f"{tag}: symbol differs from the stored parse")
+    return bad

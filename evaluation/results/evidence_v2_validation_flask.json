@@ -1,0 +1,55 @@
+{
+  "plan": "evaluation/plans/m14-additional-chunks.md",
+  "commit": "d73fa1cdcbd8b1465c151db8924ba58b1dd14e35",
+  "dataset_fingerprint": "6e78d06ad988b637eb3f77f047232238667e0cf9b325abd971f1eab3c024a311",
+  "invariants_a_to_f_and_h": {
+    "questions": 73,
+    "failures": {
+      "a_zero_equals_v1": {},
+      "b_files_unchanged": {},
+      "cdf_invalid": {},
+      "e_derivation": {},
+      "e_repeat": {},
+      "h_v1_checks": {},
+      "h_m8_order": {}
+    },
+    "all_hold": true,
+    "n2_extra_chunks_total": 1608,
+    "n2_files_total": 2126,
+    "n2_files_with_extra_chunks": 971
+  },
+  "invariant_g_incremental": {
+    "edit_function": {
+      "identical": 69,
+      "different": [
+        "flask-007",
+        "flask-015",
+        "flask-045",
+        "flask-072"
+      ],
+      "different_without_ties": [],
+      "invalid_responses": [],
+      "passes": true
+    },
+    "graph_rename_symbol": {
+      "identical": 73,
+      "different": [],
+      "different_without_ties": [],
+      "invalid_responses": [],
+      "passes": true
+    },
+    "add_file": {
+      "identical": 69,
+      "different": [
+        "flask-002",
+        "flask-006",
+        "flask-007",
+        "flask-059"
+      ],
+      "different_without_ties": [],
+      "invalid_responses": [],
+      "passes": true
+    }
+  },
+  "passes": true
+}

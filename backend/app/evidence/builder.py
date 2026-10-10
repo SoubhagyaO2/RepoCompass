@@ -4,10 +4,16 @@ drops or reorders files, and graph facts annotate items without influencing them
 import json
 from typing import Any
 
+from app.evidence.chunks import chunk_rrf, select_additional
 from app.evidence.schema import (
+    AdditionalChunk,
+    ChunkComponentScore,
+    ChunkScores,
     ComponentScore,
     EvidenceItem,
+    EvidenceItemV2,
     EvidenceResponse,
+    EvidenceResponseV2,
     GraphDegree,
     GraphEvidence,
     GraphLink,
@@ -20,12 +26,14 @@ from app.evidence.schema import (
 )
 from app.indexing.changes import sha256_text
 from app.indexing.live_index import FileRecord, IndexedChunk, LiveIndex
-from app.retrieval.hybrid import RRF_K, ComponentMatch, FusedFile, HybridRetriever
+from app.retrieval.hybrid import RRF_K, ChunkCandidate, ComponentMatch, FusedFile, HybridRetriever
 
 MAX_RELATIONSHIPS = 10
 MAX_QUERY_CHARS = 2000
 DEPTH = 50  # chunks per component before deduplication: the depth used in every benchmark
 DEFAULT_TOP_K = 10
+MAX_EXTRA_CHUNKS = 4  # schema v2: the most additional chunks per file a request may ask for
+DEFAULT_EXTRA_CHUNKS = 2  # the value fixed by the Milestone 14 plan
 COMPONENTS = ["bm25", "embedding"]
 RELATIONSHIP_ORDER: list[Relationship] = [
     "calls", "called_by", "inherits", "imports", "imported_by", "defines",
@@ -60,33 +68,100 @@ class EvidenceBuilder:
 
     # --- public ----------------------------------------------------------------------------
 
-    def build(
-        self, query: str, top_k: int = DEFAULT_TOP_K, include_text: bool = False
-    ) -> EvidenceResponse:
+    def _fused(self, query: str, top_k: int) -> list[FusedFile]:
         if not query.strip():
             raise EvidenceQueryError("the query is empty")
         if len(query) > MAX_QUERY_CHARS:
             raise EvidenceQueryError(f"the query is longer than {MAX_QUERY_CHARS} characters")
         if not 1 <= top_k <= DEPTH:
             raise EvidenceQueryError(f"top_k must be between 1 and {DEPTH}")
-
         retriever = HybridRetriever(
             [self.index.bm25_search(VIEW), self.index.embedding_search(VIEW)], RRF_K
         )
-        fused = retriever.search_detailed(query, DEPTH)[:top_k]
+        return retriever.search_detailed(query, DEPTH)[:top_k]
+
+    def _items(self, fused: list[FusedFile], include_text: bool) -> list[EvidenceItem]:
         nodes = {f.path: self._node_of(f) for f in fused}
         rank_of_node = {node: rank for rank, node in enumerate(nodes.values(), 1)}
-        items = [
+        return [
             self._item(rank, f, nodes[f.path], rank_of_node, include_text)
             for rank, f in enumerate(fused, 1)
         ]
+
+    def _retrieval_info(self) -> RetrievalInfo:
+        return RetrievalInfo(method="hybrid-rrf", rrf_k=RRF_K, depth=DEPTH, components=COMPONENTS)
+
+    def build(
+        self, query: str, top_k: int = DEFAULT_TOP_K, include_text: bool = False
+    ) -> EvidenceResponse:
+        fused = self._fused(query, top_k)
         return EvidenceResponse(
             query=query,
             index=self.index_info(),
-            retrieval=RetrievalInfo(
-                method="hybrid-rrf", rrf_k=RRF_K, depth=DEPTH, components=COMPONENTS
-            ),
-            evidence=items,
+            retrieval=self._retrieval_info(),
+            evidence=self._items(fused, include_text),
+        )
+
+    def build_v2(
+        self,
+        query: str,
+        top_k: int = DEFAULT_TOP_K,
+        include_text: bool = False,
+        extra_chunks: int = DEFAULT_EXTRA_CHUNKS,
+    ) -> EvidenceResponseV2:
+        """Schema v2 (Milestone 14): the v1 items unchanged, each with up to `extra_chunks`
+        additional chunks of the same file, chosen from what the components already returned."""
+        if not 0 <= extra_chunks <= MAX_EXTRA_CHUNKS:
+            raise EvidenceQueryError(f"extra_chunks must be between 0 and {MAX_EXTRA_CHUNKS}")
+        fused = self._fused(query, top_k)
+        items = self._items(fused, include_text)
+        v2_items = [
+            EvidenceItemV2(
+                **item.model_dump(),
+                additional_chunks=self._additional(f, item, extra_chunks, include_text),
+            )
+            for f, item in zip(fused, items, strict=True)
+        ]
+        return EvidenceResponseV2(
+            query=query,
+            index=self.index_info(),
+            retrieval=self._retrieval_info(),
+            extra_chunks=extra_chunks,
+            evidence=v2_items,
+        )
+
+    def _additional(
+        self, fused: FusedFile, item: EvidenceItem, n: int, include_text: bool
+    ) -> list[AdditionalChunk]:
+        record = self._record(fused.path)
+        primary = (item.line_start, item.line_end)
+        chosen = select_additional(fused.chunks, primary, n)
+        return [
+            self._additional_chunk(record, rank_in_file, candidate, include_text)
+            for rank_in_file, candidate in enumerate(chosen, 1)
+        ]
+
+    def _additional_chunk(
+        self, record: FileRecord, rank_in_file: int, c: ChunkCandidate, include_text: bool
+    ) -> AdditionalChunk:
+        chunk = self._chunk(record, c.start_line, c.end_line)
+        symbol = self._symbol(record, chunk)
+        if chunk.symbol_type == "module":
+            status = "module_level"
+        else:
+            status = "exact" if symbol else "unparsed"
+        bm25, embedding = (
+            ChunkComponentScore(rank=p, score=h.score) if p is not None and h is not None else None
+            for p, h in zip(c.positions, c.hits, strict=True)
+        )
+        return AdditionalChunk(
+            rank_in_file=rank_in_file,
+            line_start=chunk.start_line,
+            line_end=chunk.end_line,
+            symbol=symbol,
+            symbol_status=status,
+            scores=ChunkScores(rrf_chunk=chunk_rrf(c), bm25=bm25, embedding=embedding),
+            text=chunk.content if include_text else None,
         )
 
     def index_info(self) -> IndexInfo:

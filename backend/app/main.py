@@ -15,6 +15,7 @@ from app import __version__
 from app.answer.service import AnswerService
 from app.api.answer import router as answer_router
 from app.api.evidence import router as evidence_router
+from app.api.evidence import router_v2 as evidence_v2_router
 from app.api.health import router as health_router
 from app.config import get_settings
 from app.evidence.builder import EvidenceBuilder
@@ -57,6 +58,7 @@ def create_app(builder: EvidenceBuilder | None = None, llm: LLMClient | None = N
     app = FastAPI(title=settings.app_name, version=__version__, lifespan=lifespan)
     app.include_router(health_router)
     app.include_router(evidence_router)
+    app.include_router(evidence_v2_router)
     app.include_router(answer_router)
     return app
 
