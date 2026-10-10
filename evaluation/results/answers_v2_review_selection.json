@@ -1,0 +1,48 @@
+{
+ "newly_answered": [
+  "flask-004",
+  "flask-007",
+  "flask-012",
+  "flask-025",
+  "flask-041",
+  "flask-048",
+  "flask-050"
+ ],
+ "other_sample": [
+  "flask-006",
+  "flask-010",
+  "flask-011",
+  "flask-017",
+  "flask-020",
+  "flask-029",
+  "flask-033",
+  "flask-035",
+  "flask-036",
+  "flask-043",
+  "flask-049",
+  "flask-058",
+  "flask-062",
+  "flask-065",
+  "flask-068"
+ ],
+ "others": [
+  "C:flask-006",
+  "C:flask-046",
+  "C:flask-066",
+  "D:flask-008",
+  "D:flask-011",
+  "D:flask-012",
+  "D:flask-047",
+  "unans-08",
+  "unans-14"
+ ],
+ "human": [
+  "flask-004",
+  "flask-007",
+  "flask-012",
+  "flask-025",
+  "flask-041",
+  "flask-048",
+  "flask-050"
+ ]
+}

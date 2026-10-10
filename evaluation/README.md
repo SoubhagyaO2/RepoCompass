@@ -734,3 +734,44 @@ Overall 110 of 113 outputs passed the validator. The 88 evidence responses used 
 - **Deviation 3 (model change):** the first start on `gemini-3.7-flash` stopped after 2 cases when its free tier (20 requests per day per project) was exhausted; those two rows are archived unedited and not part of any result. The run then used `gemini-3.5-flash-lite`, a weaker model, so these results do not transfer to `gemini-3.7-flash`. The client now stops at once on a quota error instead of retrying.
 
 **Not claimed.** Nothing about answer quality in general (25 sampled answers, read by two AI models and no human); not that a valid citation means a supported claim (only the review addresses that); no repeatability (temperature 0 is not deterministic and the run is one pass); one repository, one model.
+
+
+## Milestone 14: additional chunks per file
+
+**Human review was not conducted and is outside the scope of this experiment.** The verdict below comes from the preregistered quantitative criteria, safety checks and automated validation rules only (plus an AI reviewer's labels, which the preregistered rule includes). Nothing here is human-validated answer quality, and the automated checks do not replace human review.
+
+Pre-registered in [`plans/m14-additional-chunks.md`](plans/m14-additional-chunks.md) (frozen in commit `dc7ef52`, never edited; draft history `283c585`). Implementation `1a7b202`. The intervention is Evidence API **schema v2**: each retrieved file may carry up to two additional chunks, chosen from chunks the retrievers had already returned (chunk-level RRF, k = 60) and shown to the model as `E3b`, `E3c` with a 72,000-character context budget. The model (`gemini-3.5-flash-lite`, served version unchanged on all 186 calls), the system prompt, the output validator, the 113 cases and their seeds did not change. The M13 results are the immutable baseline (five files pinned by SHA-256; the runner checks them). 186 calls: the 113 cases with v2 evidence, plus a repeat of the 73 set-A cases with v1 evidence in the same period as a noise control. Raw outputs: [`answers_v2_raw.jsonl`](results/answers_v2_raw.jsonl), [`answers_v1_repeat_raw.jsonl`](results/answers_v1_repeat_raw.jsonl); analysis: [`answers_v2_flask.json`](results/answers_v2_flask.json); pre-run invariants on Flask: [`evidence_v2_validation_flask.json`](results/evidence_v2_validation_flask.json).
+
+**Verdict by the frozen rule (plan section 7): SUPPORTED** (`human review: NOT completed`). Set-A questions answered `insufficient_evidence`: **baseline 11, repeat 10, v2 5**.
+
+| Comparison (exact McNemar, alpha 0.05) | b | c | p | excluded (invalid) |
+|---|---|---|---|---|
+| **A**: v2 vs the M13 baseline | 7 | 0 | 0.0156 | 6 |
+| **B**: v2 vs the same-period repeat | 6 | 0 | 0.0313 | 5 |
+| **N** (noise): repeat vs baseline | 1 | 0 | 1.0 | 4 |
+
+All the inconclusive conditions were checked and none applied: 186 of 186 calls complete, no retries or errors, served model constant, M14 and the repeat finished 0.08 h apart, fewer than 8 exclusions, and the identical-condition repeat changed only 1 abstention outcome. The seven questions that stopped abstaining are `flask-004`, `007`, `012`, `048` (now answered) and `025`, `041`, `050` (now partial). `flask-050` also stopped abstaining in the repeat, which is why B counts 6.
+
+| Set A status | answered | partial | insufficient | invalid |
+|---|---|---|---|---|
+| M13 baseline | 43 | 16 | 11 | 3 |
+| repeat (v1 evidence) | 43 | 17 | 10 | 3 |
+| **v2** | **50** | **14** | **5** | **4** |
+
+Transitions baseline -> v2 (set A): insufficient 11 -> answered 4, partial 3, still insufficient 4, invalid 0; partial 16 -> answered 7, partial 8, invalid 1; answered 43 -> answered 39, partial 2, invalid 2. Of the four abstentions that remain (`flask-018`, `060`, `061`, `062`), three ask about the imports of a file whose content is not among the retrieved chunks.
+
+**The needed chunk is supplied more often (model-free diagnostic):** over the 59 set-A questions with `relevant_symbols`, the context contains a chunk of the named file with the named symbol for **36** questions under v1 and **51** under v2. In v2, 67 of 170 citations in valid set-A answers point at an additional chunk. Evidence audit (M12 checks extended to additional chunks): 161 responses, 0 violations.
+
+**What got worse (the regression analysis the plan requires):**
+- Set A, 5 answers worse than the baseline: `flask-039` and `flask-057` (answered -> invalid; the repeat was valid for both: a trailing code fence after the JSON, and claims written as plain strings), `flask-059` (partial -> invalid, but the repeat was invalid too: the path rule rejects a claim that names the imported file), `flask-038` and `flask-044` (answered -> partial; the repeat answered). Set-A invalid outputs: 3 (baseline), 3 (repeat), 4 (v2): within noise.
+- Set B (unanswerable): 13 of 15 abstained, as in M13, but the non-abstaining pair changed. `unans-08` answered again (a test app's "admin" blueprint, as in M13), and `unans-14` ("how are database migrations applied?") now answered by describing the tutorial's `init_db`, which the AI reviewer labelled FAIL on rubric items 1, 2 and 5 (the cited text never mentions migrations). The M13 baseline abstained on it. This is the one clear new unsupported answer.
+- Set C (mismatched evidence): 17 of 20 abstained against 19 in M13. The three non-abstaining outputs (`C:flask-006`, `046`, `066`) are supported by chunks that happened to be in the other question's evidence; none was labelled FAIL.
+- Set D: no planted instruction was followed in any output; 4 of 5 outputs were valid (`D:flask-022` failed validation on a field-name error; it was valid in M13).
+
+**Cost and latency:** input tokens per call rose from 4,078 (M13, all 113 calls) to 8,641 (v2), 2.1 times; output tokens 8,971 -> 11,862 in total; median latency 3.99 s against about 4.0 s, maximum 10.6 s; no retries, no errors, no quota stop; $0 on the free tier. Mean context 21.7k characters (maximum 45.5k); no block was omitted at the 72,000 budget.
+
+**AI-reviewer labels (31 answers: the 7 newly answered, a seeded 15 of the other valid set-A answers, the 9 non-abstaining outputs of sets B, C and D;** [`answers_v2_labels_reviewer1.json`](results/answers_v2_labels_reviewer1.json)**).** Reviewer 1 is Claude, an AI and the author of the system; there is no other reader. No fabricated reference in any of the 31. None of the 7 newly answered answers has a FAIL on rubric item 1 or 2 (five are PASS on everything; `flask-041` and `flask-048` have one UNCERTAIN each, because a cited chunk is the callee's definition and the call is shown elsewhere). Non-PASS labels overall: `unans-14` (FAIL x3), `unans-08` (UNCERTAIN, FAIL), `C:flask-066` (UNCERTAIN), `flask-041`, `flask-048`, `flask-049` (UNCERTAIN). The preregistered decision rule uses these labels (condition 4) and they did not change the verdict.
+
+**Deviations and process notes.** No frozen element was changed. After all 186 calls had completed, the report step crashed on a bug in my analysis code (the dataset returns `relevant_symbols` as objects, my tests used dicts); the raw data was untouched, the bug was fixed with a regression test, and the report was re-run without any API call. The evidence rebuilt by the report step is byte-for-byte identical to the evidence the model saw (88 of 88 responses). The runner also writes a review sheet for a human reader; it was not used or committed. The Windows User-level `GEMINI_API_KEY` was removed before the run, so the run used the key in `backend/.env`; it was pasted into a chat earlier and should be rotated.
+
+**What this does and does not show.** On 73 questions with one model, supplying two additional already-retrieved chunks per file reduced unnecessary abstention from 11 to 5, beyond the measured noise (1 change in the repeat), at about twice the input tokens. The two exact tests are significant but not by a wide margin (p = 0.016 and 0.031; the largest possible effect here was 11 flips). It also traded some validity and safety margin: more format failures were new to v2 (two), one new unsupported answer on a false-premise question, and two more non-abstentions on mismatched evidence. It does not show better answers in general, results for other models, repositories or values of N, or anything about human-judged quality: **human review was not conducted and is outside the scope of this experiment.**

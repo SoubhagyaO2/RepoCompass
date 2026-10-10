@@ -608,7 +608,10 @@ def main(argv: list[str] | None = None) -> int:
     )
     assert len(cases) == 113
     a_cases = [c for c in cases if c.set == "A"]
-    questions = {q.id: {"relevant_symbols": q.relevant_symbols} for q in ds.questions}
+    questions = {
+        q.id: {"relevant_symbols": [{"file": r.file, "name": r.name} for r in q.relevant_symbols]}
+        for q in ds.questions
+    }
 
     builder, store = load_builder(settings, ra.REPO_NAME, root, ds.commit)
     try:

@@ -46,3 +46,11 @@ on the corrected graph.
 | Provider abstraction (Gemini first) | A free tier of 20 requests/day on `gemini-3.7-flash` stopped the first run; the client now fails fast on quota errors; the run completed on `gemini-3.5-flash-lite` (deviation 3) | Kept; model choice is configuration, results are specific to the model used |
 | Review as the check for semantic support | The validator cannot tell whether a citation supports a claim; both readers were AI models (no human has labelled anything yet); the review found claims slightly beyond their cited text (4 answers) and one failure to abstain on a false-premise question | Kept; deterministic validity is never presented as proof of grounding |
 | One chunk per file (M12 v1) | 8 of 11 set-A abstentions had the right file in context but not the chunk holding the answer | Unchanged for now; `additional_chunks` stays a separately evaluated schema v2 |
+
+## Milestone 14: additional chunks per file (Evidence API schema v2)
+
+| Component | Evidence | Decision |
+|---|---|---|
+| Up to two additional, already-retrieved chunks per file (`/v2/evidence`, ids `E3b`/`E3c`, 72,000-character context) | Set-A abstentions 11 (M13) -> 5, against 10 in a same-period repeat; exact McNemar p = 0.016 (vs M13) and 0.031 (vs repeat); the model-free check finds the needed symbol chunk in context for 51 of 59 questions against 36; verdict **supported** by the frozen rule, with human review not conducted (M14) | **Kept as an optional, separately versioned evidence mode.** `/v1/evidence` is unchanged and remains the default; v2 is not made the default because it costs about 2.1x the input tokens and was not free of regressions |
+| Regressions seen | Two new format failures (a trailing code fence, plain-string claims), one new unsupported answer on a false-premise question (`unans-14`), two more non-abstentions on mismatched evidence (set C 17/20 vs 19/20) | Documented; none changes the frozen verdict; false-premise handling and structured output are backlog experiments |
+| Review | AI reviewer only (31 answers, 0 fabricated references); no human reader | Stated in every report: "Human review was not conducted and is outside the scope of this experiment." |
