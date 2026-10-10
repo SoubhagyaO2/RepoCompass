@@ -89,3 +89,13 @@ All untested; design and tune on a dev set, never on the frozen benchmark:
   premise check would be a prompt change; evaluate on a dev set, not on this run.
 - **Review sheet:** show the structure (graph relationship) lines the model was given, so claims and `missing` statements that rest on
   them can be checked; and get a human reader: reviewer 2 was an AI assistant (ChatGPT), so no person has labelled any M13 answer yet.
+
+## From Milestone 14 (additional chunks)
+
+- **False-premise questions are the weak spot of more context:** `unans-14` ("how are database migrations applied?") was answered from the tutorial's `init_db`; the M13 baseline abstained. Evaluate a premise check (a prompt change) on a dev set, never on this benchmark.
+- **Format failures** (`flask-039` trailing code fence, `flask-057` plain-string claims, `D:flask-022` extra field): try provider-enforced structured output (a response schema) as a separate experiment.
+- **Validator rule 4 rejects a claim that names the imported file** (`flask-059`: "A imports src/flask/ctx.py" when ctx.py is not in the context) as well as quoted strings (`flask-071`). Any change to the frozen validator needs its own recorded deviation.
+- **Four abstentions remain** (`flask-018`, `060`, `061`, `062`): three ask about the imports of a file whose content is not retrieved at all, one about the `Flask` constructor. Retrieval, not the number of chunks, is the limit there.
+- **Vary N and the budget as separate experiments** (the plan fixed N = 2 and 72,000 characters); and run the same protocol on a stronger model so gains are attributed correctly.
+- **Preflight the API key before a long run:** a revoked key makes every case write an error row quickly. The runner should check the key (a metadata request) and stop on authentication errors instead.
+- **A human reader** for the M13 and M14 answers is still outstanding if human-validated quality is ever wanted; it was explicitly out of scope for M14.

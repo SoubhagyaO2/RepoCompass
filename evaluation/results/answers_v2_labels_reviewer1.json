@@ -1,0 +1,286 @@
+{
+  "reviewer": "reviewer 1: Claude, an AI assistant and the author of the system. Not a human reader. Human review was not conducted and is outside the scope of this experiment.",
+  "rubric": {
+    "1": "Is every factual claim supported by the cited evidence?",
+    "2": "Does every citation actually support the claim it is attached to?",
+    "3": "Are the cited line ranges correct?",
+    "4": "Are there factual claims without a citation?",
+    "5": "(abstentions only) Did it abstain correctly, `missing` naming a real gap?"
+  },
+  "note": "Made before any other reader's labels existed (there are none). null = not applicable. Standard as in M13: a citation that supports nothing of its claim (for example the definition of a function cited for 'is called by') is UNCERTAIN; support through structure (graph) metadata counts as support but is noted.",
+  "cases": [
+    "C:flask-006",
+    "C:flask-046",
+    "C:flask-066",
+    "D:flask-008",
+    "D:flask-011",
+    "D:flask-012",
+    "D:flask-047",
+    "flask-004",
+    "flask-006",
+    "flask-007",
+    "flask-010",
+    "flask-011",
+    "flask-012",
+    "flask-017",
+    "flask-020",
+    "flask-025",
+    "flask-029",
+    "flask-033",
+    "flask-035",
+    "flask-036",
+    "flask-041",
+    "flask-043",
+    "flask-048",
+    "flask-049",
+    "flask-050",
+    "flask-058",
+    "flask-062",
+    "flask-065",
+    "flask-068",
+    "unans-08",
+    "unans-14"
+  ],
+  "fabricated_references_found": 0,
+  "fabricated_references_scope": "all 31 reviewed answers",
+  "labels": {
+    "flask-004": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": null
+    },
+    "flask-007": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": null
+    },
+    "flask-012": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": null
+    },
+    "flask-025": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": "PASS"
+    },
+    "flask-041": {
+      "1": "PASS",
+      "2": "UNCERTAIN",
+      "3": "PASS",
+      "4": "PASS",
+      "5": "PASS",
+      "reasons": {
+        "2": "The claim 'called by Scaffold.__init__' rests on the structure line of E1 (called_by sansio/scaffold.py::Scaffold.__init__, line 96); the cited chunk is the callee's definition and contains no call. Structure data counts as metadata of the cited item (plan section 5), so item 1 is PASS."
+      }
+    },
+    "flask-048": {
+      "1": "PASS",
+      "2": "UNCERTAIN",
+      "3": "PASS",
+      "4": "PASS",
+      "5": null,
+      "reasons": {
+        "2": "E1c (Flask.wsgi_app) shows the call; E1, also cited, is the definition of full_dispatch_request and shows no caller."
+      }
+    },
+    "flask-050": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": "PASS"
+    },
+    "flask-006": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": null
+    },
+    "flask-010": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": null
+    },
+    "flask-011": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": null
+    },
+    "flask-017": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": null
+    },
+    "flask-020": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": null
+    },
+    "flask-029": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": null
+    },
+    "flask-033": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": "PASS"
+    },
+    "flask-035": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": null
+    },
+    "flask-036": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": null
+    },
+    "flask-043": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": null
+    },
+    "flask-049": {
+      "1": "PASS",
+      "2": "UNCERTAIN",
+      "3": "PASS",
+      "4": "PASS",
+      "5": "PASS",
+      "reasons": {
+        "2": "E1 (the definition of create_url_adapter) is cited with the callers' chunks for 'is called by'; it shows no call. E1b and E2 show the calls."
+      }
+    },
+    "flask-058": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": "PASS"
+    },
+    "flask-062": {
+      "1": null,
+      "2": null,
+      "3": null,
+      "4": null,
+      "5": "PASS"
+    },
+    "flask-065": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": null
+    },
+    "flask-068": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": null
+    },
+    "C:flask-006": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": null
+    },
+    "C:flask-046": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": "PASS"
+    },
+    "C:flask-066": {
+      "1": "UNCERTAIN",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": "PASS",
+      "reasons": {
+        "1": "'...adds a lambda that invokes s.add_url_rule when the blueprint is registered': the cited code shows self.record(lambda s: ...) but not when the recorded function runs."
+      }
+    },
+    "D:flask-008": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": null
+    },
+    "D:flask-011": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": null
+    },
+    "D:flask-012": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": null
+    },
+    "D:flask-047": {
+      "1": "PASS",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": "PASS"
+    },
+    "unans-08": {
+      "1": "UNCERTAIN",
+      "2": "PASS",
+      "3": "PASS",
+      "4": "PASS",
+      "5": "FAIL",
+      "reasons": {
+        "1": "The render_template calls are shown, but calling a test blueprint's template 'the admin dashboard UI' is a characterisation the cited code does not support.",
+        "5": "Should have abstained: Flask has no built-in admin dashboard; the answer is about a test application (tests/test_apps/blueprintapp). Same failure as in M13."
+      }
+    },
+    "unans-14": {
+      "1": "FAIL",
+      "2": "FAIL",
+      "3": "PASS",
+      "4": "PASS",
+      "5": "FAIL",
+      "reasons": {
+        "1": "The claim says database migrations are applied by init_db. The cited text only says init_db clears existing data and creates tables from schema.sql; it never mentions migrations, and dropping data is not applying a migration.",
+        "2": "The citation describes init_db correctly but does not support the claim that this is how migrations are applied.",
+        "5": "Should have abstained (Flask has no database migrations). New in M14: the M13 baseline abstained on this question."
+      }
+    }
+  }
+}

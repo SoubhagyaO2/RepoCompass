@@ -418,6 +418,9 @@ def test_analyse_computes_the_comparisons_the_decision_and_the_sheets(
     evidence = {c.evidence_from: make_evidence_v2() for c in cases if c.set in ("A", "B")}
     symbol = {"file": "src/pkg/sessions.py", "name": "SessionInterface.open_session"}
     questions = {i: {"relevant_symbols": [symbol]} for i in a_ids}  # fmt: skip
+    # isolate from the real label files that now exist next to the results
+    monkeypatch.setattr(r2, "LABELS_R1", tmp_path / "no_labels_reviewer1.json")
+    monkeypatch.setattr(r2, "LABELS_HUMAN", tmp_path / "no_labels_human.json")
     result = r2.analyse(
         cases, base, new, repeat, evidence, {"responses": 88, "violations": {}}, questions
     )
@@ -449,3 +452,19 @@ def test_an_incomplete_run_has_no_decision() -> None:
     new = {c.id: _row(c, "answered") for c in cases[:10]}
     result = r2.analyse(cases, {}, new, {}, {}, {"responses": 0, "violations": {}}, {})
     assert result["complete"] is False and result["decision"] is None
+
+
+def test_the_dataset_relevant_symbols_are_converted_for_the_diagnostic() -> None:
+    """The real dataset gives RelevantSymbol objects, not dicts: main() must convert them (the first
+    live run crashed here, in the report step, after all 186 calls had completed)."""
+    import inspect
+
+    from app.evaluation.dataset import RelevantSymbol
+
+    source = inspect.getsource(r2.main)
+    assert '{"file": r.file, "name": r.name}' in source
+    symbol = RelevantSymbol(file="src/pkg/sessions.py", name="SessionInterface.open_session")
+    from answer_fixtures import make_evidence_v2
+
+    converted = [{"file": symbol.file, "name": symbol.name}]
+    assert r2.context_has_symbol(make_evidence_v2(), converted, include_additional=True)
