@@ -169,3 +169,20 @@ The three known failures used in the development phase are `unans-08`, `unans-14
 5. **Credential:** one preflight request before the first live call of each session (section 8), not repeated checks; the key is read from `backend/.env` with the inherited variable cleared.
 
 Process agreed at the same time: freeze the test set before prompt development; the M14 results stay the immutable control; false-premise abstention and true-premise answering are both measured; the regression guards stay; no human-review stage (out of scope, as in M14).
+
+## 13. Freeze, step 2: the chosen prompt (2026-10-12)
+
+The development phase ran as planned: the three candidates of `backend/app/answer/prompt_v3.py` (committed in `a5c9228` before any run) and the M14 baseline were each run once on the 19 development questions (8 pairs and the 3 known failures; schema v2 evidence; served model `gemini-3.5-flash-lite` in every call). Raw rows and summary: `evaluation/results/m15_dev_*_raw.jsonl`, `evaluation/results/m15_dev.json`.
+
+| Arm | Correct dev pairs (of 8) | Invalid in pairs | P abstained | Q answered | Known failures (unans-08 / 14 / 11) |
+|---|---|---|---|---|---|
+| baseline (M14 prompt, v1 contract) | 8 | 0 | 8 | 8 | partial / answered / insufficient |
+| c1 | 8 | 0 | 8 | 8 | insufficient / insufficient / insufficient |
+| c2 | 7 | 1 | 8 | 7 | insufficient / insufficient / insufficient |
+| c3 | 8 | 0 | 8 | 8 | insufficient / insufficient / insufficient |
+
+**Selection by the frozen rule (most correct pairs; ties: fewer invalid, then shorter prompt): `c1`.** c1 ties the baseline; **no candidate beats the baseline on the development pairs**, so, as section 4 prescribes, the best candidate is carried forward and this is stated here.
+
+**Finding that matters for the test phase.** The baseline already abstains on all 8 development false-premise questions and answers all 8 twins, so the development pairs cannot discriminate between arms (ceiling). If the same holds on the test pairs, the decision rule of section 7 applies as frozen: a baseline that abstains on every P cannot yield "Supported". The known failures differ: the baseline still answered/partially answered two of three; every candidate abstained on all three. These three were not scored. The author-bias limitation of section 2a still applies, and human review was not conducted and is outside the scope of this experiment.
+
+**Chosen prompt:** `CANDIDATES["c1"]` in `backend/app/answer/prompt_v3.py`, SHA-256 `2a345ea491dc615d7627a3631f1d0b19df3bf6191f894d6270765e0150216b0d`. It is frozen with this commit; no test-set call has been made.

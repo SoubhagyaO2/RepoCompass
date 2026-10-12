@@ -1,0 +1,90 @@
+{
+  "arms": {
+    "baseline": {
+      "complete": true,
+      "correct_pairs": 8,
+      "pairs": 8,
+      "invalid_outputs_in_pairs": 0,
+      "p_abstained": 8,
+      "q_answered": 8,
+      "known_failures": {
+        "unans-08": "partial",
+        "unans-14": "answered",
+        "unans-11": "insufficient_evidence"
+      },
+      "prompt_chars": 1725,
+      "model_versions": [
+        "gemini-3.5-flash-lite"
+      ],
+      "input_tokens": 181628
+    },
+    "c1": {
+      "complete": true,
+      "correct_pairs": 8,
+      "pairs": 8,
+      "invalid_outputs_in_pairs": 0,
+      "p_abstained": 8,
+      "q_answered": 8,
+      "known_failures": {
+        "unans-08": "insufficient_evidence",
+        "unans-14": "insufficient_evidence",
+        "unans-11": "insufficient_evidence"
+      },
+      "prompt_chars": 2408,
+      "model_versions": [
+        "gemini-3.5-flash-lite"
+      ],
+      "input_tokens": 184896
+    },
+    "c2": {
+      "complete": true,
+      "correct_pairs": 7,
+      "pairs": 8,
+      "invalid_outputs_in_pairs": 1,
+      "p_abstained": 8,
+      "q_answered": 7,
+      "known_failures": {
+        "unans-08": "insufficient_evidence",
+        "unans-14": "insufficient_evidence",
+        "unans-11": "insufficient_evidence"
+      },
+      "prompt_chars": 2889,
+      "model_versions": [
+        "gemini-3.5-flash-lite"
+      ],
+      "input_tokens": 186929
+    },
+    "c3": {
+      "complete": true,
+      "correct_pairs": 8,
+      "pairs": 8,
+      "invalid_outputs_in_pairs": 0,
+      "p_abstained": 8,
+      "q_answered": 8,
+      "known_failures": {
+        "unans-08": "insufficient_evidence",
+        "unans-14": "insufficient_evidence",
+        "unans-11": "insufficient_evidence"
+      },
+      "prompt_chars": 2867,
+      "model_versions": [
+        "gemini-3.5-flash-lite"
+      ],
+      "input_tokens": 187233
+    }
+  },
+  "complete": true,
+  "selected": "c1",
+  "beats_baseline": false,
+  "selected_prompt_sha256": "2a345ea491dc615d7627a3631f1d0b19df3bf6191f894d6270765e0150216b0d",
+  "note": "Selection by the frozen rule of plan section 4. If beats_baseline is false the best candidate is still carried to the test phase. Structural pair checks do not rule out author bias. Human review was not conducted and is outside the scope of this experiment.",
+  "plan": "evaluation/plans/m15-false-premise.md",
+  "environment": {
+    "python": "3.13.3",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "qdrant_client": "1.19.1",
+    "repocompass_commit": "a5c922898a53d36896896b50d9d86c0ef8df41ec",
+    "repocompass_tree_dirty": true
+  },
+  "timestamp": "2026-10-12T16:41:48+0530"
+}
