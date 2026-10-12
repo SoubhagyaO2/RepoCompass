@@ -1,7 +1,7 @@
 # Experiment plan: Milestone 15, false-premise handling
 
-**Status: DRAFT for review. Nothing is implemented and no question set is authored yet. To be frozen (and committed) in two steps before any live test run: (1) this protocol, (2) the chosen prompt, after the development phase.**
-Written 2026-10-12 on top of commit `119c975` (Milestone 14, pushed).
+**Status: FROZEN, step 1 of 2, on 2026-10-12: the protocol and the question sets. Draft history: `e4a19d1`; authoring commit `111d983` (the selected questions are unchanged by this freeze). Step 2, the freeze of the chosen prompt, comes after the development phase and before the first test-set call. Changes after this point only as recorded deviations.**
+Written on top of commit `119c975` (Milestone 14, pushed). Decisions of section 12 agreed on 2026-10-12.
 
 **Human review is not conducted in this milestone and is outside its scope**, as in M14. Every criterion below is automated, and no result will be described as human-validated answer quality.
 
@@ -58,6 +58,22 @@ All new questions are authored **before** any prompt v3 text exists, so the prom
 
 **Authoring rules (fixed now).** Each `P_i` and `Q_i` is verified against the pinned Flask checkout before freezing: a case-insensitive search of the Python files shows the false premise really is absent (as was done for set B); for each `Q_i` the author records the ground-truth file and symbol and a **model-free check** confirms that the v2 context contains that chunk (otherwise the question is replaced before freezing); for each S2 `P_i` the author records the decoy chunk and the same check confirms it is in the context (otherwise it is not a decoy and is replaced). The pairs and these records are hashed. Because I wrote the questions and will write the prompt, the author is not independent: you may add or replace questions before the freeze, and any questions you contribute are used as written.
 
+## 2a. Authoring record (kept, not rewritten)
+
+The 36 first-pass candidates were written in one pass, before any prompt text or model call, and checked by `backend/app/evaluation/check_m15_pairs.py`. What happened, in order:
+
+| Step | Candidates passing | What changed |
+|---|---|---|
+| First pass (`m15_pair_candidates_pass1.json`, `m15_pair_quality_pass1.json`, both kept) | 18 of 36 | failures: absence regexes too broad (7: they matched `docs/conf.py` and docstrings), twin's answer chunk not in context (7), decoy not in context (10); shortfalls in all three subtypes |
+| Pass 2, first run | 34 of 40 | regexes narrowed to implementations, absence scan limited to `src/`, `tests/`, `examples/`; decoys re-anchored on related symbols that the retriever actually returns; unreachable twins reworded; 7 candidates dropped, 11 added |
+| After two small fixes | 35 of 39, then 37 of 39 | `log_exception` truth moved to `Flask`; a superseded duplicate dropped; two decoys re-anchored |
+| After removing a lexical cue | 37 of 39 | 6 of 24 false-premise questions contained "built-in" while none of their twins did; the word was removed and a balance check (C7) added |
+| After fixing two bugs found by unit tests | 36 of 39 | a stemming bug ("does" -> "doe") had inflated every pair's shared-word count (the corrected check still passes every selected pair); S2/S3 pairs without a decoy had been passing silently and one was rejected and replaced |
+
+The intermediate per-run quality files were overwritten as the script was rerun; only the first-pass files and the final files are kept, and this table is the record of the steps between them. All tuning in this table used retrieval and text checks only: **no model output was ever seen for any of these questions**. The final selection (fixed rule: per subtype the first 8 passing pairs are the test set, the next 3/3/2 the development set) is 24 test pairs and 8 development pairs.
+
+**What these checks establish and what they do not.** They establish structural quality: a well-formed pair, a false premise that is really absent from the code, a twin whose answer is in the context, a decoy that is really in the context, balanced wording cues. They do **not** establish freedom from author bias: the same party wrote the questions, chose the decoys and will write the prompt candidates, and the pairs reflect that author's idea of a decoy.
+
 ## 3. Conditions and calls
 
 | Condition | What | Calls |
@@ -110,7 +126,7 @@ As M14 section 9: sequential, 4 s apart, three retries for transport errors and 
 
 ## 9. What is not claimed
 
-Nothing about answer quality in general, other models, other repositories, or human-judged quality. A significant primary result on 24 pairs, authored by the same party who wrote the prompt, with one model, is evidence about this contract on this benchmark, not a proof of generalisation. The stronger-model comparison and provider-enforced structured output are separate experiments so that effects can be attributed.
+Nothing about answer quality in general, other models, other repositories, or human-judged quality. A significant primary result on 24 pairs, authored by the same party who wrote the prompt, with one model, is evidence about this contract on this benchmark, not a proof of generalisation; the authoring checks of section 2a establish structural quality, not freedom from author bias, and every report of this milestone says so. The stronger-model comparison and provider-enforced structured output are separate experiments so that effects can be attributed.
 
 ## 10. Integrity
 
@@ -126,16 +142,30 @@ Pinned (SHA-256 of the committed blobs at `119c975`):
 | `backend/app/answer/validate.py` (baseline validator) | `909ab2133d33cfe5c6d676df5fe173f1b48b003f4ae60365956955d5241a5322` |
 | `backend/app/answer/context.py` (context template) | `616708ae10e05b74c23752020b4a5590c6ec8164191eb3bea2219cd36d525012` |
 
-The M13 baseline hashes of the M14 plan also still apply. The question files, the pair records and the chosen prompt are added to this table at the two freezes. Dataset fingerprint of the benchmark `6e78d06ad988b637eb3f77f047232238667e0cf9b325abd971f1eab3c024a311`, Flask commit `d73fa1cdcbd8b1465c151db8924ba58b1dd14e35`. Any change after freezing is a recorded deviation.
+Added at this freeze (step 1), SHA-256 of the committed blobs at `111d983` (LF line endings; checked equal to the working files):
+
+| File | SHA-256 |
+|---|---|
+| `evaluation/datasets/m15_pairs_test.json` (24 test pairs) | `25badb14a1feaa42b26f992c21446a166a80fa4e98408f7308a22cfd50834856` |
+| `evaluation/datasets/m15_pairs_dev.json` (8 development pairs) | `353d0e85eb9e0d21389c9d916532fa554e6553a3b5e3f48c93993dbeef6d3769` |
+| `evaluation/datasets/m15_pair_candidates.json` (final candidate pool with all authoring metadata) | `117a3e6dfc0c545765f10d572f8ad1d94f782f9a6567a77b9ff6d3264fa540c9` |
+| `evaluation/datasets/m15_pair_candidates_pass1.json` (first-pass pool, kept) | `fe39ace2b180e5524ec574e342e748adabc6000c89557591700552ca7602d015` |
+| `evaluation/results/m15_pair_quality.json` (final quality report) | `395e6261bd3bf8826cd060c5b23bbc3572e33269d2a2086bcf9114465674adf8` |
+| `evaluation/results/m15_pair_quality_pass1.json` (first-pass report, kept) | `86c1300cb598ee383ef012b68c14aaca5782cc431f8766a752afdb3a6bfac4c9` |
+| `backend/app/evaluation/check_m15_pairs.py` (the authoring checks) | `4aae1d35a28830a6b96ae18ecc9d939878478cc2a3504f228108fe1605c162fe` |
+
+The three known failures used in the development phase are `unans-08`, `unans-14`, `unans-11` of `evaluation/datasets/m13_unanswerable.json`. The prompt candidates and the chosen prompt are added to this table at step 2, before the first test-set call. Before this freeze no prompt candidate and no M15 implementation code existed (checked mechanically: no `prompt_v3`, `premise.py`, validator v3 or false-premise runner in the repository). Dataset fingerprint of the benchmark `6e78d06ad988b637eb3f77f047232238667e0cf9b325abd971f1eab3c024a311`, Flask commit `d73fa1cdcbd8b1465c151db8924ba58b1dd14e35`. Any change after freezing is a recorded deviation.
 
 ## 11. Planned modules and tests (written test-first after the freeze)
 
 `app/answer/premise.py` (contract v3 parsing and validator v3), `app/answer/prompt_v3.py`, a v3 mode of the answer service, `app/evaluation/run_false_premise.py` (dev, test and regression phases, pair table, McNemar, guards, decision), datasets `evaluation/datasets/m15_pairs_*.json`. Tests: one deterministic test per validator-v3 rule including malformed outputs (missing field, inconsistent status and relation, `premise_supported` not a boolean, unknown relation value), the unchanged baseline validator and prompt (hash tests), the decision rule for every category, pair scoring (abstaining everywhere and answering everywhere both score zero), and the authoring checks.
 
-## 12. Decisions I need from you before freezing
+## 12. Decisions (agreed 2026-10-12)
 
-1. **One treatment** (contract v3 plus prompt v3) as drafted, or two arms (prompt only versus prompt plus contract) to attribute the effect? Two arms add about 100 calls and a harder-to-power comparison; I recommend the single treatment, and a prompt-only ablation only if the result is supported.
-2. **Test size and authorship:** 24 pairs, written by me, verified by search and by the model-free context checks. Do you want to contribute or replace questions to reduce author bias?
-3. **The guards:** at most 2 set-A questions newly abstaining, at most 2 more abstentions on `Q`, at least 66 of 73 valid. Agree?
-4. **Evidence mode:** schema v2 (where the failure appeared). Agree, or also test v1 evidence? (v1 would double the test calls.)
-5. **Credential:** the key in `backend/.env` was pasted into a chat. Please rotate it and update `.env` before any live call; the runner will check the key first.
+1. **One treatment** (contract v3 plus prompt v3); no second arm. A prompt-only ablation only if the result is supported.
+2. **24 test pairs and 8 development pairs**, authored by me and checked by the model-free checks of section 2a; no questions contributed by others. The author-bias limitation stands and is stated in every report.
+3. **The guards of section 7:** at most 2 set-A questions newly abstaining, at most 2 more abstentions on the true-premise twins, at least 66 of 73 valid outputs on set A.
+4. **Evidence mode:** schema v2 only (N = 2, 72,000 characters); v1 evidence is not tested.
+5. **Credential:** one preflight request before the first live call of each session (section 8), not repeated checks; the key is read from `backend/.env` with the inherited variable cleared.
+
+Process agreed at the same time: freeze the test set before prompt development; the M14 results stay the immutable control; false-premise abstention and true-premise answering are both measured; the regression guards stay; no human-review stage (out of scope, as in M14).
