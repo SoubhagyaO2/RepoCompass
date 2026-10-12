@@ -1,0 +1,218 @@
+{
+ "description": "M15 development pairs (8), to choose among prompt candidates only.",
+ "repository": "pallets/flask",
+ "commit": "d73fa1cdcbd8b1465c151db8924ba58b1dd14e35",
+ "known_failures": [
+  "unans-08",
+  "unans-14",
+  "unans-11"
+ ],
+ "pairs": [
+  {
+   "pair_id": "d01",
+   "candidate": "s1-10",
+   "subtype": "S1",
+   "p": {
+    "id": "d01-P",
+    "question": "How does Flask send analytics events for each request?",
+    "false_premise": "Flask sends analytics events"
+   },
+   "q": {
+    "id": "d01-Q",
+    "question": "How does Flask send signals for each request?",
+    "truth": {
+     "file": "src/flask/app.py",
+     "name": "Flask.full_dispatch_request"
+    }
+   },
+   "decoy": null,
+   "absent_patterns": [
+    "analytics",
+    "mixpanel",
+    "telemetry",
+    "opentelemetry",
+    "statsd",
+    "prometheus"
+   ]
+  },
+  {
+   "pair_id": "d02",
+   "candidate": "s1-11",
+   "subtype": "S1",
+   "p": {
+    "id": "d02-P",
+    "question": "Where does Flask store uploaded files in cloud object storage?",
+    "false_premise": "Flask stores files in cloud object storage"
+   },
+   "q": {
+    "id": "d02-Q",
+    "question": "Where does Flask serve uploaded files from a local directory?",
+    "truth": {
+     "file": "src/flask/helpers.py",
+     "name": "send_from_directory"
+    }
+   },
+   "decoy": null,
+   "absent_patterns": [
+    "\\bs3\\b",
+    "boto3?",
+    "\\bgcs\\b",
+    "azure",
+    "\\bblob\\b",
+    "object.?storage"
+   ]
+  },
+  {
+   "pair_id": "d03",
+   "candidate": "s1-13",
+   "subtype": "S1",
+   "p": {
+    "id": "d03-P",
+    "question": "Where does Flask export request logs to CSV files?",
+    "false_premise": "Flask exports logs to CSV"
+   },
+   "q": {
+    "id": "d03-Q",
+    "question": "Where does Flask write request errors to the log stream?",
+    "truth": {
+     "file": "src/flask/logging.py",
+     "name": "wsgi_errors_stream"
+    }
+   },
+   "decoy": null,
+   "absent_patterns": [
+    "\\bcsv\\b"
+   ]
+  },
+  {
+   "pair_id": "d04",
+   "candidate": "s2-13",
+   "subtype": "S2",
+   "p": {
+    "id": "d04-P",
+    "question": "Where does Flask's built-in plugin marketplace install plugin commands?",
+    "false_premise": "Flask has a plugin marketplace"
+   },
+   "q": {
+    "id": "d04-Q",
+    "question": "Where does Flask load plugin commands from installed packages?",
+    "truth": {
+     "file": "src/flask/cli.py",
+     "name": "FlaskGroup._load_plugin_commands"
+    }
+   },
+   "decoy": {
+    "file": "src/flask/cli.py",
+    "name": "FlaskGroup._load_plugin_commands"
+   },
+   "absent_patterns": [
+    "marketplace",
+    "pip\\.main"
+   ]
+  },
+  {
+   "pair_id": "d05",
+   "candidate": "s2-14",
+   "subtype": "S2",
+   "p": {
+    "id": "d05-P",
+    "question": "How does Flask's built-in session store keep session data in Redis?",
+    "false_premise": "Flask has a built-in Redis session store"
+   },
+   "q": {
+    "id": "d05-Q",
+    "question": "How does Flask's built-in session interface keep session data in a signed cookie?",
+    "truth": {
+     "file": "src/flask/sessions.py",
+     "name": "SecureCookieSessionInterface"
+    }
+   },
+   "decoy": {
+    "file": "src/flask/sessions.py",
+    "name": "SecureCookieSessionInterface.open_session"
+   },
+   "absent_patterns": [
+    "RedisSessionInterface",
+    "redis.*session_interface",
+    "session_interface.*redis"
+   ]
+  },
+  {
+   "pair_id": "d06",
+   "candidate": "s2-16",
+   "subtype": "S2",
+   "p": {
+    "id": "d06-P",
+    "question": "Where does Flask's built-in error tracker send unhandled exceptions to Sentry?",
+    "false_premise": "Flask sends exceptions to Sentry"
+   },
+   "q": {
+    "id": "d06-Q",
+    "question": "Where does Flask log unhandled exceptions raised while handling a request?",
+    "truth": {
+     "file": "src/flask/app.py",
+     "name": "Flask.log_exception"
+    }
+   },
+   "decoy": {
+    "file": "src/flask/app.py",
+    "name": "Flask.handle_exception"
+   },
+   "absent_patterns": [
+    "sentry"
+   ]
+  },
+  {
+   "pair_id": "d07",
+   "candidate": "s3-10",
+   "subtype": "S3",
+   "p": {
+    "id": "d07-P",
+    "question": "Which function in the tutorial updates the comments of a post?",
+    "false_premise": "the tutorial has post comments"
+   },
+   "q": {
+    "id": "d07-Q",
+    "question": "Which function in the tutorial updates the title of a post?",
+    "truth": {
+     "file": "examples/tutorial/flaskr/blog.py",
+     "name": "update"
+    }
+   },
+   "decoy": {
+    "file": "examples/tutorial/flaskr/blog.py",
+    "name": "update"
+   },
+   "absent_patterns": [
+    "def\\s+\\w*comment\\w*\\("
+   ]
+  },
+  {
+   "pair_id": "d08",
+   "candidate": "s3-11",
+   "subtype": "S3",
+   "p": {
+    "id": "d08-P",
+    "question": "Which method of JSONProvider streams large responses incrementally?",
+    "false_premise": "JSONProvider can stream large responses"
+   },
+   "q": {
+    "id": "d08-Q",
+    "question": "Which method of JSONProvider builds a response from an object?",
+    "truth": {
+     "file": "src/flask/json/provider.py",
+     "name": "JSONProvider.response"
+    }
+   },
+   "decoy": {
+    "file": "src/flask/json/provider.py",
+    "name": "JSONProvider.response"
+   },
+   "absent_patterns": [
+    "iterencode",
+    "def\\s+stream_json",
+    "json_stream"
+   ]
+  }
+ ]
+}

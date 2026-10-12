@@ -1,0 +1,121 @@
+{
+ "candidates": 39,
+ "passing": 36,
+ "by_subtype": {
+  "S1": {
+   "candidates": 14,
+   "passing": 13
+  },
+  "S2": {
+   "candidates": 13,
+   "passing": 11
+  },
+  "S3": {
+   "candidates": 12,
+   "passing": 12
+  }
+ },
+ "failures_by_check": {
+  "C5_truth_in_context": 1,
+  "C6_decoy_required": 1,
+  "C6_decoy_in_context": 1
+ },
+ "shortfalls": {},
+ "selected_test": [
+  "s1-01",
+  "s1-02",
+  "s1-03",
+  "s1-05",
+  "s1-06",
+  "s1-07",
+  "s1-08",
+  "s1-09",
+  "s2-01",
+  "s2-02",
+  "s2-03",
+  "s2-04",
+  "s2-05",
+  "s2-06",
+  "s2-10",
+  "s2-12",
+  "s3-01",
+  "s3-02",
+  "s3-03b",
+  "s3-04",
+  "s3-05",
+  "s3-07",
+  "s3-08",
+  "s3-09"
+ ],
+ "selected_dev": [
+  "s1-10",
+  "s1-11",
+  "s1-13",
+  "s2-13",
+  "s2-14",
+  "s2-16",
+  "s3-10",
+  "s3-11"
+ ],
+ "rejected": [
+  {
+   "id": "s1-15",
+   "subtype": "S1",
+   "passes": false,
+   "problems": {
+    "C5_truth_in_context": [
+     "render_template is not in the v2 context of the twin"
+    ]
+   }
+  },
+  {
+   "id": "s2-11",
+   "subtype": "S2",
+   "passes": false,
+   "problems": {
+    "C6_decoy_required": [
+     "S2 and S3 pairs need a decoy symbol"
+    ]
+   }
+  },
+  {
+   "id": "s2-15",
+   "subtype": "S2",
+   "passes": false,
+   "problems": {
+    "C6_decoy_in_context": [
+     "register is not in the v2 context of the false-premise question"
+    ]
+   }
+  }
+ ],
+ "C7_cue_balance": {
+  "test": {
+   "built-in": {
+    "p_only": 0,
+    "q_only": 0,
+    "balanced": true
+   }
+  },
+  "dev": {
+   "built-in": {
+    "p_only": 2,
+    "q_only": 0,
+    "balanced": true
+   }
+  }
+ },
+ "files": {
+  "m15_pair_candidates.json": "117a3e6dfc0c545765f10d572f8ad1d94f782f9a6567a77b9ff6d3264fa540c9",
+  "m15_pairs_test.json": "25badb14a1feaa42b26f992c21446a166a80fa4e98408f7308a22cfd50834856",
+  "m15_pairs_dev.json": "353d0e85eb9e0d21389c9d916532fa554e6553a3b5e3f48c93993dbeef6d3769"
+ },
+ "rules": {
+  "min_shared_content_words": 2,
+  "length_ratio": [
+   0.6,
+   1.6
+  ],
+  "evidence_mode": "schema v2, top_k 8, extra_chunks 2"
+ }
+}

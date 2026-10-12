@@ -1,0 +1,263 @@
+{
+ "candidates": 36,
+ "passing": 18,
+ "by_subtype": {
+  "S1": {
+   "candidates": 12,
+   "passing": 9
+  },
+  "S2": {
+   "candidates": 12,
+   "passing": 4
+  },
+  "S3": {
+   "candidates": 12,
+   "passing": 5
+  }
+ },
+ "failures_by_check": {
+  "C3_absence": 7,
+  "C5_truth_in_context": 7,
+  "C6_decoy_in_context": 10
+ },
+ "shortfalls": {
+  "S1": "9 passing candidates, 11 needed",
+  "S2": "4 passing candidates, 11 needed",
+  "S3": "5 passing candidates, 10 needed"
+ },
+ "selected_test": [
+  "s1-01",
+  "s1-02",
+  "s1-03",
+  "s1-05",
+  "s1-07",
+  "s1-08",
+  "s1-09",
+  "s1-10",
+  "s2-02",
+  "s2-05",
+  "s2-11",
+  "s2-12",
+  "s3-01",
+  "s3-08",
+  "s3-09",
+  "s3-10",
+  "s3-11"
+ ],
+ "selected_dev": [
+  "s1-11"
+ ],
+ "rejected": [
+  {
+   "id": "s1-04",
+   "subtype": "S1",
+   "passes": false,
+   "problems": {
+    "C3_absence": [
+     "/gettext/ occurs in ['docs/conf.py']"
+    ],
+    "C5_truth_in_context": [
+     "Flask.handle_http_exception is not in the v2 context of the twin"
+    ]
+   }
+  },
+  {
+   "id": "s1-06",
+   "subtype": "S1",
+   "passes": false,
+   "problems": {
+    "C5_truth_in_context": [
+     "Scaffold.route is not in the v2 context of the twin"
+    ]
+   }
+  },
+  {
+   "id": "s1-12",
+   "subtype": "S1",
+   "passes": false,
+   "problems": {
+    "C5_truth_in_context": [
+     "_default is not in the v2 context of the twin"
+    ]
+   }
+  },
+  {
+   "id": "s2-01",
+   "subtype": "S2",
+   "passes": false,
+   "problems": {
+    "C3_absence": [
+     "/sqlalchemy/ occurs in ['docs/conf.py', 'src/flask/app.py', 'src/flask/sansio/app.py']"
+    ]
+   }
+  },
+  {
+   "id": "s2-03",
+   "subtype": "S2",
+   "passes": false,
+   "problems": {
+    "C3_absence": [
+     "/wtforms/ occurs in ['docs/conf.py']"
+    ],
+    "C6_decoy_in_context": [
+     "register is not in the v2 context of the false-premise question"
+    ]
+   }
+  },
+  {
+   "id": "s2-04",
+   "subtype": "S2",
+   "passes": false,
+   "problems": {
+    "C5_truth_in_context": [
+     "SecureCookieSessionInterface.get_signing_serializer is not in the v2 context of the twin"
+    ],
+    "C6_decoy_in_context": [
+     "SecureCookieSessionInterface.get_signing_serializer is not in the v2 context of the false-premise question"
+    ]
+   }
+  },
+  {
+   "id": "s2-06",
+   "subtype": "S2",
+   "passes": false,
+   "problems": {
+    "C3_absence": [
+     "/sqlalchemy/ occurs in ['docs/conf.py', 'src/flask/app.py', 'src/flask/sansio/app.py']"
+    ],
+    "C5_truth_in_context": [
+     "get_db is not in the v2 context of the twin"
+    ]
+   }
+  },
+  {
+   "id": "s2-07",
+   "subtype": "S2",
+   "passes": false,
+   "problems": {
+    "C6_decoy_in_context": [
+     "explain_template_loading_attempts is not in the v2 context of the false-premise question"
+    ]
+   }
+  },
+  {
+   "id": "s2-08",
+   "subtype": "S2",
+   "passes": false,
+   "problems": {
+    "C5_truth_in_context": [
+     "_lazy_sha1 is not in the v2 context of the twin"
+    ],
+    "C6_decoy_in_context": [
+     "_lazy_sha1 is not in the v2 context of the false-premise question"
+    ]
+   }
+  },
+  {
+   "id": "s2-09",
+   "subtype": "S2",
+   "passes": false,
+   "problems": {
+    "C3_absence": [
+     "/sqlalchemy/ occurs in ['docs/conf.py', 'src/flask/app.py', 'src/flask/sansio/app.py']"
+    ],
+    "C6_decoy_in_context": [
+     "explain_template_loading_attempts is not in the v2 context of the false-premise question"
+    ]
+   }
+  },
+  {
+   "id": "s2-10",
+   "subtype": "S2",
+   "passes": false,
+   "problems": {
+    "C3_absence": [
+     "/sqlalchemy/ occurs in ['docs/conf.py', 'src/flask/app.py', 'src/flask/sansio/app.py']"
+    ]
+   }
+  },
+  {
+   "id": "s3-02",
+   "subtype": "S3",
+   "passes": false,
+   "problems": {
+    "C3_absence": [
+     "/def\\s+unregister/ occurs in ['tests/test_user_error_handler.py']"
+    ]
+   }
+  },
+  {
+   "id": "s3-03",
+   "subtype": "S3",
+   "passes": false,
+   "problems": {
+    "C5_truth_in_context": [
+     "FlaskClient.session_transaction is not in the v2 context of the twin"
+    ]
+   }
+  },
+  {
+   "id": "s3-04",
+   "subtype": "S3",
+   "passes": false,
+   "problems": {
+    "C6_decoy_in_context": [
+     "Request.on_json_loading_failed is not in the v2 context of the false-premise question"
+    ]
+   }
+  },
+  {
+   "id": "s3-05",
+   "subtype": "S3",
+   "passes": false,
+   "problems": {
+    "C6_decoy_in_context": [
+     "routes_command is not in the v2 context of the false-premise question"
+    ]
+   }
+  },
+  {
+   "id": "s3-06",
+   "subtype": "S3",
+   "passes": false,
+   "problems": {
+    "C6_decoy_in_context": [
+     "Flask.run is not in the v2 context of the false-premise question"
+    ]
+   }
+  },
+  {
+   "id": "s3-07",
+   "subtype": "S3",
+   "passes": false,
+   "problems": {
+    "C6_decoy_in_context": [
+     "send_from_directory is not in the v2 context of the false-premise question"
+    ]
+   }
+  },
+  {
+   "id": "s3-12",
+   "subtype": "S3",
+   "passes": false,
+   "problems": {
+    "C6_decoy_in_context": [
+     "AppContext.copy is not in the v2 context of the false-premise question"
+    ]
+   }
+  }
+ ],
+ "files": {
+  "m15_pair_candidates.json": "fe39ace2b180e5524ec574e342e748adabc6000c89557591700552ca7602d015",
+  "m15_pairs_test.json": "f2dc0a94aeb6f7b0b8813402c3ce23c9064726ad269b575106e0fcd908385079",
+  "m15_pairs_dev.json": "0fcf7e8fbe9b130b0ccf5542b0b0fc3cfbb51eccd12756830f83890f2e861bf4"
+ },
+ "rules": {
+  "min_shared_content_words": 2,
+  "length_ratio": [
+   0.6,
+   1.6
+  ],
+  "evidence_mode": "schema v2, top_k 8, extra_chunks 2"
+ }
+}

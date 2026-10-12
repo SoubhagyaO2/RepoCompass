@@ -1,0 +1,793 @@
+{
+ "description": "M15 candidate question pairs, authored in one pass BEFORE any prompt-v3 text exists and before any model call on them. P is a question with a false or unsupported premise about Flask; Q is its matched twin with a true premise about the real nearby feature. Subtypes: S1 feature Flask lacks, no related code; S2 topical decoy (related code exists but is not the asked-for thing); S3 false presupposition inside a real topic. Automated checks (app/evaluation/check_m15_pairs.py) accept or reject each pair; the first 8 passing per subtype become the test set, the next 3/3/2 the dev set. Nobody tunes a question after seeing a result. Pass 2: regexes narrowed to implementations (the absence check scans src/, tests/ and examples/ only), decoys re-anchored on related symbols that are in the context, unreachable twins reworded, six candidates dropped and ten added; pass 1 is kept in m15_pair_candidates_pass1.json.",
+ "repository": "pallets/flask",
+ "commit": "d73fa1cdcbd8b1465c151db8924ba58b1dd14e35",
+ "candidates": [
+  {
+   "id": "s1-01",
+   "subtype": "S1",
+   "p": "Where does Flask render PDF documents from templates?",
+   "q": "Where does Flask render templates from strings?",
+   "premise": "Flask renders PDF documents",
+   "absent": [
+    "\\bpdf\\b",
+    "reportlab",
+    "weasyprint",
+    "xhtml2pdf"
+   ],
+   "q_truth": {
+    "file": "src/flask/templating.py",
+    "name": "render_template_string"
+   },
+   "decoy": null
+  },
+  {
+   "id": "s1-02",
+   "subtype": "S1",
+   "p": "How does Flask thumbnail uploaded files before sending them?",
+   "q": "How does Flask send uploaded files from a directory?",
+   "premise": "Flask creates thumbnails of uploaded files",
+   "absent": [
+    "thumbnail",
+    "\\bpillow\\b",
+    "\\bPIL\\b",
+    "resize"
+   ],
+   "q_truth": {
+    "file": "src/flask/helpers.py",
+    "name": "send_from_directory"
+   },
+   "decoy": null
+  },
+  {
+   "id": "s1-03",
+   "subtype": "S1",
+   "p": "Where does Flask schedule cleanup jobs for permanent sessions?",
+   "q": "Where does Flask set the lifetime of permanent sessions?",
+   "premise": "Flask schedules cleanup jobs for sessions",
+   "absent": [
+    "apscheduler",
+    "\\bcron(tab)?\\b",
+    "periodic_task",
+    "cleanup_job",
+    "schedule_cleanup"
+   ],
+   "q_truth": {
+    "file": "src/flask/sessions.py",
+    "name": "SessionInterface.get_expiration_time"
+   },
+   "decoy": null
+  },
+  {
+   "id": "s1-05",
+   "subtype": "S1",
+   "p": "Where does Flask search the contents of templates for keywords?",
+   "q": "Where does Flask search for templates in blueprint folders?",
+   "premise": "Flask searches template contents for keywords",
+   "absent": [
+    "elasticsearch",
+    "whoosh",
+    "full.?text",
+    "tf.?idf",
+    "inverted.?index",
+    "\\blunr\\b"
+   ],
+   "q_truth": {
+    "file": "src/flask/templating.py",
+    "name": "DispatchingJinjaLoader"
+   },
+   "decoy": null
+  },
+  {
+   "id": "s1-06",
+   "subtype": "S1",
+   "p": "How does Flask apply feature flags to individual routes?",
+   "q": "How does the route decorator register a view function on individual routes?",
+   "premise": "Flask has feature flags for routes",
+   "absent": [
+    "feature.?flag",
+    "launchdarkly",
+    "unleash"
+   ],
+   "q_truth": {
+    "file": "src/flask/sansio/scaffold.py",
+    "name": "Scaffold.route"
+   },
+   "decoy": null,
+   "revised_in_pass2": true
+  },
+  {
+   "id": "s1-07",
+   "subtype": "S1",
+   "p": "How does Flask compress responses before sending them to clients?",
+   "q": "How does Flask finalize responses before sending them to clients?",
+   "premise": "Flask compresses responses",
+   "absent": [
+    "gzip",
+    "brotli",
+    "zlib",
+    "deflate",
+    "compress"
+   ],
+   "q_truth": {
+    "file": "src/flask/app.py",
+    "name": "Flask.finalize_request"
+   },
+   "decoy": null
+  },
+  {
+   "id": "s1-08",
+   "subtype": "S1",
+   "p": "Where does Flask generate QR codes for login links?",
+   "q": "Where does Flask generate links to endpoints?",
+   "premise": "Flask generates QR codes",
+   "absent": [
+    "\\bqr\\b",
+    "qrcode",
+    "barcode"
+   ],
+   "q_truth": {
+    "file": "src/flask/helpers.py",
+    "name": "url_for"
+   },
+   "decoy": null
+  },
+  {
+   "id": "s1-09",
+   "subtype": "S1",
+   "p": "How does Flask verify captcha answers on form fields?",
+   "q": "How does Flask limit the number of form fields on requests?",
+   "premise": "Flask verifies captcha answers",
+   "absent": [
+    "captcha"
+   ],
+   "q_truth": {
+    "file": "src/flask/wrappers.py",
+    "name": "Request.max_form_parts"
+   },
+   "decoy": null
+  },
+  {
+   "id": "s1-10",
+   "subtype": "S1",
+   "p": "How does Flask send analytics events for each request?",
+   "q": "How does Flask send signals for each request?",
+   "premise": "Flask sends analytics events",
+   "absent": [
+    "analytics",
+    "mixpanel",
+    "telemetry",
+    "opentelemetry",
+    "statsd",
+    "prometheus"
+   ],
+   "q_truth": {
+    "file": "src/flask/app.py",
+    "name": "Flask.full_dispatch_request"
+   },
+   "decoy": null
+  },
+  {
+   "id": "s1-11",
+   "subtype": "S1",
+   "p": "Where does Flask store uploaded files in cloud object storage?",
+   "q": "Where does Flask serve uploaded files from a local directory?",
+   "premise": "Flask stores files in cloud object storage",
+   "absent": [
+    "\\bs3\\b",
+    "boto3?",
+    "\\bgcs\\b",
+    "azure",
+    "\\bblob\\b",
+    "object.?storage"
+   ],
+   "q_truth": {
+    "file": "src/flask/helpers.py",
+    "name": "send_from_directory"
+   },
+   "decoy": null
+  },
+  {
+   "id": "s1-13",
+   "subtype": "S1",
+   "p": "Where does Flask export request logs to CSV files?",
+   "q": "Where does Flask write request errors to the log stream?",
+   "premise": "Flask exports logs to CSV",
+   "absent": [
+    "\\bcsv\\b"
+   ],
+   "q_truth": {
+    "file": "src/flask/logging.py",
+    "name": "wsgi_errors_stream"
+   },
+   "decoy": null,
+   "added_in_pass2": true
+  },
+  {
+   "id": "s1-14",
+   "subtype": "S1",
+   "p": "How does Flask send SMS codes to verify new users?",
+   "q": "How does the tutorial verify new users when they register?",
+   "premise": "Flask sends SMS verification codes",
+   "absent": [
+    "\\bsms\\b",
+    "twilio",
+    "vonage"
+   ],
+   "q_truth": {
+    "file": "examples/tutorial/flaskr/auth.py",
+    "name": "register"
+   },
+   "decoy": null,
+   "added_in_pass2": true
+  },
+  {
+   "id": "s1-15",
+   "subtype": "S1",
+   "p": "Where does Flask render Markdown content into HTML for templates?",
+   "q": "Where does Flask render template content into HTML responses?",
+   "premise": "Flask renders Markdown",
+   "absent": [
+    "markdown",
+    "commonmark",
+    "mistune"
+   ],
+   "q_truth": {
+    "file": "src/flask/templating.py",
+    "name": "render_template"
+   },
+   "decoy": null,
+   "added_in_pass2": true
+  },
+  {
+   "id": "s1-16",
+   "subtype": "S1",
+   "p": "How does Flask detect the user's country from the request?",
+   "q": "How does Flask detect the endpoint from the request?",
+   "premise": "Flask detects the user's country",
+   "absent": [
+    "geoip",
+    "geolite",
+    "country_code",
+    "maxmind"
+   ],
+   "q_truth": {
+    "file": "src/flask/wrappers.py",
+    "name": "Request.endpoint"
+   },
+   "decoy": null,
+   "added_in_pass2": true
+  },
+  {
+   "id": "s2-01",
+   "subtype": "S2",
+   "p": "Which class implements Flask's database connection pool?",
+   "q": "Which function opens the database connection for each request in the tutorial?",
+   "premise": "Flask has a built-in database connection pool",
+   "absent": [
+    "connection.?pool",
+    "QueuePool",
+    "^\\s*(?:import|from)\\s+sqlalchemy"
+   ],
+   "q_truth": {
+    "file": "examples/tutorial/flaskr/db.py",
+    "name": "get_db"
+   },
+   "decoy": {
+    "file": "examples/tutorial/flaskr/db.py",
+    "name": "get_db"
+   },
+   "revised_in_pass2": true,
+   "cue_edit": "removed the 'built-in' cue that appeared only in the false-premise question"
+  },
+  {
+   "id": "s2-02",
+   "subtype": "S2",
+   "p": "Where does Flask's login manager store the logged-in user?",
+   "q": "Where does the tutorial store the logged-in user for each request?",
+   "premise": "Flask has a built-in login manager",
+   "absent": [
+    "flask.?login",
+    "login.?manager",
+    "user.?loader",
+    "current_user"
+   ],
+   "q_truth": {
+    "file": "examples/tutorial/flaskr/auth.py",
+    "name": "load_logged_in_user"
+   },
+   "decoy": {
+    "file": "examples/tutorial/flaskr/auth.py",
+    "name": "load_logged_in_user"
+   },
+   "revised_in_pass2": true,
+   "cue_edit": "removed the 'built-in' cue that appeared only in the false-premise question"
+  },
+  {
+   "id": "s2-03",
+   "subtype": "S2",
+   "p": "How does Flask's form validation reject invalid fields?",
+   "q": "How does the tutorial's register view reject invalid fields?",
+   "premise": "Flask has built-in form validation",
+   "absent": [
+    "wtforms",
+    "FlaskForm",
+    "validate_on_submit"
+   ],
+   "q_truth": {
+    "file": "examples/tutorial/flaskr/auth.py",
+    "name": "register"
+   },
+   "decoy": {
+    "file": "src/flask/wrappers.py",
+    "name": "Request._load_form_data"
+   },
+   "revised_in_pass2": true,
+   "cue_edit": "removed the 'built-in' cue that appeared only in the false-premise question"
+  },
+  {
+   "id": "s2-04",
+   "subtype": "S2",
+   "p": "Where does Flask generate the CSRF token stored in each session cookie?",
+   "q": "Where does Flask sign the session cookie before setting it on each response?",
+   "premise": "Flask generates CSRF tokens",
+   "absent": [
+    "csrf",
+    "xsrf"
+   ],
+   "q_truth": {
+    "file": "src/flask/sessions.py",
+    "name": "SecureCookieSessionInterface.save_session"
+   },
+   "decoy": {
+    "file": "src/flask/sessions.py",
+    "name": "SecureCookieSessionInterface.save_session"
+   },
+   "revised_in_pass2": true
+  },
+  {
+   "id": "s2-05",
+   "subtype": "S2",
+   "p": "Where does Flask's task queue schedule background jobs?",
+   "q": "Where does the Celery example create the Celery app for background jobs?",
+   "premise": "Flask has a built-in task queue",
+   "absent": [
+    "class\\s+\\w*(Scheduler|JobQueue|TaskQueue)",
+    "dramatiq",
+    "\\bhuey\\b",
+    "apscheduler"
+   ],
+   "q_truth": {
+    "file": "examples/celery/src/task_app/__init__.py",
+    "name": "celery_init_app"
+   },
+   "decoy": {
+    "file": "examples/celery/src/task_app/__init__.py",
+    "name": "celery_init_app"
+   },
+   "revised_in_pass2": true,
+   "cue_edit": "removed the 'built-in' cue that appeared only in the false-premise question"
+  },
+  {
+   "id": "s2-06",
+   "subtype": "S2",
+   "p": "How does Flask's ORM map database rows to model classes?",
+   "q": "How does the tutorial's database connection return rows that can be read by column name?",
+   "premise": "Flask has a built-in ORM",
+   "absent": [
+    "\\bORM\\b",
+    "declarative_base",
+    "db\\.Model",
+    "^\\s*(?:import|from)\\s+sqlalchemy",
+    "peewee"
+   ],
+   "q_truth": {
+    "file": "examples/tutorial/flaskr/db.py",
+    "name": "get_db"
+   },
+   "decoy": {
+    "file": "examples/tutorial/flaskr/db.py",
+    "name": "get_db"
+   },
+   "revised_in_pass2": true,
+   "cue_edit": "removed the 'built-in' cue that appeared only in the false-premise question"
+  },
+  {
+   "id": "s2-10",
+   "subtype": "S2",
+   "p": "Where does Flask's shell command export the database models?",
+   "q": "Where does Flask's shell command prepare the interactive context?",
+   "premise": "Flask's shell command exports database models",
+   "absent": [
+    "export.*models",
+    "db\\.Model",
+    "^\\s*(?:import|from)\\s+sqlalchemy",
+    "dumpdata"
+   ],
+   "q_truth": {
+    "file": "src/flask/cli.py",
+    "name": "shell_command"
+   },
+   "decoy": {
+    "file": "src/flask/cli.py",
+    "name": "shell_command"
+   },
+   "revised_in_pass2": true,
+   "cue_edit": "removed the 'built-in' cue that appeared only in the false-premise question"
+  },
+  {
+   "id": "s2-11",
+   "subtype": "S2",
+   "p": "How does Flask's cache decorator memoize view function results?",
+   "q": "How does Flask cache the Jinja environment created for view functions?",
+   "premise": "Flask has a cache decorator for views",
+   "absent": [
+    "flask_caching",
+    "@cache\\.cached",
+    "memoize",
+    "cache_page",
+    "def\\s+cached\\b"
+   ],
+   "q_truth": {
+    "file": "src/flask/sansio/app.py",
+    "name": "App.jinja_env"
+   },
+   "decoy": null
+  },
+  {
+   "id": "s2-12",
+   "subtype": "S2",
+   "p": "Where does the tutorial store the password reset tokens it emails to users?",
+   "q": "Where does the tutorial store the password hashes it saves for users?",
+   "premise": "the tutorial has password reset tokens",
+   "absent": [
+    "reset.?token",
+    "password.?reset",
+    "forgot.?password"
+   ],
+   "q_truth": {
+    "file": "examples/tutorial/flaskr/auth.py",
+    "name": "register"
+   },
+   "decoy": {
+    "file": "examples/tutorial/flaskr/auth.py",
+    "name": "register"
+   }
+  },
+  {
+   "id": "s2-13",
+   "subtype": "S2",
+   "p": "Where does Flask's built-in plugin marketplace install plugin commands?",
+   "q": "Where does Flask load plugin commands from installed packages?",
+   "premise": "Flask has a plugin marketplace",
+   "absent": [
+    "marketplace",
+    "pip\\.main"
+   ],
+   "q_truth": {
+    "file": "src/flask/cli.py",
+    "name": "FlaskGroup._load_plugin_commands"
+   },
+   "decoy": {
+    "file": "src/flask/cli.py",
+    "name": "FlaskGroup._load_plugin_commands"
+   },
+   "added_in_pass2": true
+  },
+  {
+   "id": "s2-14",
+   "subtype": "S2",
+   "p": "How does Flask's built-in session store keep session data in Redis?",
+   "q": "How does Flask's built-in session interface keep session data in a signed cookie?",
+   "premise": "Flask has a built-in Redis session store",
+   "absent": [
+    "RedisSessionInterface",
+    "redis.*session_interface",
+    "session_interface.*redis"
+   ],
+   "q_truth": {
+    "file": "src/flask/sessions.py",
+    "name": "SecureCookieSessionInterface"
+   },
+   "decoy": {
+    "file": "src/flask/sessions.py",
+    "name": "SecureCookieSessionInterface.open_session"
+   },
+   "added_in_pass2": true,
+   "revised_in_pass2": true
+  },
+  {
+   "id": "s2-15",
+   "subtype": "S2",
+   "p": "Where does the tutorial store the profile pictures uploaded by users?",
+   "q": "Where does the tutorial store the passwords submitted by users?",
+   "premise": "the tutorial stores uploaded profile pictures",
+   "absent": [
+    "profile.?pic",
+    "avatar"
+   ],
+   "q_truth": {
+    "file": "examples/tutorial/flaskr/auth.py",
+    "name": "register"
+   },
+   "decoy": {
+    "file": "examples/tutorial/flaskr/auth.py",
+    "name": "register"
+   },
+   "added_in_pass2": true
+  },
+  {
+   "id": "s2-16",
+   "subtype": "S2",
+   "p": "Where does Flask's built-in error tracker send unhandled exceptions to Sentry?",
+   "q": "Where does Flask log unhandled exceptions raised while handling a request?",
+   "premise": "Flask sends exceptions to Sentry",
+   "absent": [
+    "sentry"
+   ],
+   "q_truth": {
+    "file": "src/flask/app.py",
+    "name": "Flask.log_exception"
+   },
+   "decoy": {
+    "file": "src/flask/app.py",
+    "name": "Flask.handle_exception"
+   },
+   "added_in_pass2": true,
+   "revised_in_pass2": true
+  },
+  {
+   "id": "s3-01",
+   "subtype": "S3",
+   "p": "Which method of the Config class reloads the configuration when the file changes?",
+   "q": "Which method of the Config class loads values from a Python file?",
+   "premise": "Config reloads when files change",
+   "absent": [
+    "def\\s+reload_?config",
+    "def\\s+\\w*watch\\w*\\(self",
+    "watchdog"
+   ],
+   "q_truth": {
+    "file": "src/flask/config.py",
+    "name": "Config.from_pyfile"
+   },
+   "decoy": {
+    "file": "src/flask/config.py",
+    "name": "Config.from_pyfile"
+   }
+  },
+  {
+   "id": "s3-02",
+   "subtype": "S3",
+   "p": "Which method of the application unregisters a blueprint from the application?",
+   "q": "Which method of the application registers a blueprint on the application?",
+   "premise": "the application can unregister blueprints",
+   "absent": [
+    "def\\s+unregister_blueprint",
+    "def\\s+remove_blueprint",
+    "deregister_blueprint"
+   ],
+   "q_truth": {
+    "file": "src/flask/sansio/app.py",
+    "name": "App.register_blueprint"
+   },
+   "decoy": {
+    "file": "src/flask/sansio/app.py",
+    "name": "App.register_blueprint"
+   },
+   "revised_in_pass2": true
+  },
+  {
+   "id": "s3-03b",
+   "subtype": "S3",
+   "p": "Which method of FlaskClient saves cookies to disk between test runs?",
+   "q": "Which method of FlaskClient opens the session for changes inside a with block?",
+   "premise": "FlaskClient saves cookies to disk",
+   "absent": [
+    "def\\s+save_cookies",
+    "pickle\\.dump"
+   ],
+   "q_truth": {
+    "file": "src/flask/testing.py",
+    "name": "FlaskClient.session_transaction"
+   },
+   "decoy": {
+    "file": "src/flask/testing.py",
+    "name": "FlaskClient.session_transaction"
+   },
+   "added_in_pass2": true
+  },
+  {
+   "id": "s3-04",
+   "subtype": "S3",
+   "p": "Which method of the Request object parses XML bodies?",
+   "q": "Which method of the Request object handles JSON decoding failures?",
+   "premise": "Request has a method that parses XML bodies",
+   "absent": [
+    "def\\s+\\w*xml\\w*",
+    "xml\\.etree",
+    "lxml"
+   ],
+   "q_truth": {
+    "file": "src/flask/wrappers.py",
+    "name": "Request.on_json_loading_failed"
+   },
+   "decoy": {
+    "file": "src/flask/wrappers.py",
+    "name": "Request"
+   },
+   "revised_in_pass2": true
+  },
+  {
+   "id": "s3-05",
+   "subtype": "S3",
+   "p": "Which CLI command in Flask lists the installed extensions?",
+   "q": "Which CLI command in Flask lists the registered routes?",
+   "premise": "Flask has a CLI command listing extensions",
+   "absent": [
+    "def\\s+extensions_command",
+    "list_extensions",
+    "installed.?extensions"
+   ],
+   "q_truth": {
+    "file": "src/flask/cli.py",
+    "name": "routes_command"
+   },
+   "decoy": {
+    "file": "src/flask/cli.py",
+    "name": "FlaskGroup._load_plugin_commands"
+   },
+   "revised_in_pass2": true
+  },
+  {
+   "id": "s3-07",
+   "subtype": "S3",
+   "p": "Which helper in Flask validates the types of uploaded files?",
+   "q": "Which helper in Flask sends uploaded files from a directory?",
+   "premise": "Flask has a helper that validates uploaded file types",
+   "absent": [
+    "allowed_file",
+    "ALLOWED_EXTENSIONS",
+    "validate_upload",
+    "file_type_valid"
+   ],
+   "q_truth": {
+    "file": "src/flask/helpers.py",
+    "name": "send_from_directory"
+   },
+   "decoy": {
+    "file": "src/flask/wrappers.py",
+    "name": "Request._load_form_data"
+   },
+   "revised_in_pass2": true
+  },
+  {
+   "id": "s3-08",
+   "subtype": "S3",
+   "p": "Which function in the tutorial deletes the logged-in user's account?",
+   "q": "Which function in the tutorial logs the user out?",
+   "premise": "the tutorial can delete user accounts",
+   "absent": [
+    "def\\s+(delete|remove)_(user|account)",
+    "DELETE FROM user"
+   ],
+   "q_truth": {
+    "file": "examples/tutorial/flaskr/auth.py",
+    "name": "logout"
+   },
+   "decoy": {
+    "file": "examples/tutorial/flaskr/auth.py",
+    "name": "logout"
+   }
+  },
+  {
+   "id": "s3-09",
+   "subtype": "S3",
+   "p": "Which decorator in Flask requires an administrator role for a view?",
+   "q": "Which decorator in the tutorial requires a logged-in user for a view?",
+   "premise": "Flask has a decorator requiring an admin role",
+   "absent": [
+    "admin_required",
+    "roles_required",
+    "has_role",
+    "is_admin",
+    "permission_required"
+   ],
+   "q_truth": {
+    "file": "examples/tutorial/flaskr/auth.py",
+    "name": "login_required"
+   },
+   "decoy": {
+    "file": "examples/tutorial/flaskr/auth.py",
+    "name": "login_required"
+   }
+  },
+  {
+   "id": "s3-10",
+   "subtype": "S3",
+   "p": "Which function in the tutorial updates the comments of a post?",
+   "q": "Which function in the tutorial updates the title of a post?",
+   "premise": "the tutorial has post comments",
+   "absent": [
+    "def\\s+\\w*comment\\w*\\("
+   ],
+   "q_truth": {
+    "file": "examples/tutorial/flaskr/blog.py",
+    "name": "update"
+   },
+   "decoy": {
+    "file": "examples/tutorial/flaskr/blog.py",
+    "name": "update"
+   }
+  },
+  {
+   "id": "s3-11",
+   "subtype": "S3",
+   "p": "Which method of JSONProvider streams large responses incrementally?",
+   "q": "Which method of JSONProvider builds a response from an object?",
+   "premise": "JSONProvider can stream large responses",
+   "absent": [
+    "iterencode",
+    "def\\s+stream_json",
+    "json_stream"
+   ],
+   "q_truth": {
+    "file": "src/flask/json/provider.py",
+    "name": "JSONProvider.response"
+   },
+   "decoy": {
+    "file": "src/flask/json/provider.py",
+    "name": "JSONProvider.response"
+   }
+  },
+  {
+   "id": "s3-12",
+   "subtype": "S3",
+   "p": "Which method of AppContext serializes the context to disk?",
+   "q": "Which method of AppContext copies the context for another thread?",
+   "premise": "AppContext can be serialized to disk",
+   "absent": [
+    "def\\s+serialize_context",
+    "pickle\\.dump"
+   ],
+   "q_truth": {
+    "file": "src/flask/ctx.py",
+    "name": "AppContext.copy"
+   },
+   "decoy": {
+    "file": "src/flask/ctx.py",
+    "name": "AppContext"
+   },
+   "revised_in_pass2": true
+  },
+  {
+   "id": "s3-13",
+   "subtype": "S3",
+   "p": "Which method of the test client logs in a user automatically?",
+   "q": "Which method of the test client opens a request to a URL?",
+   "premise": "the test client can log in a user automatically",
+   "absent": [
+    "def\\s+login_user\\(",
+    "def\\s+auto_login\\("
+   ],
+   "q_truth": {
+    "file": "src/flask/testing.py",
+    "name": "FlaskClient.open"
+   },
+   "decoy": {
+    "file": "src/flask/testing.py",
+    "name": "FlaskClient"
+   },
+   "added_in_pass2": true
+  }
+ ],
+ "dropped_pass1": {
+  "s1-04": "retriever does not surface the intended chunk; replaced by a new candidate",
+  "s1-12": "retriever does not surface the intended chunk; replaced by a new candidate",
+  "s2-07": "retriever does not surface the intended chunk; replaced by a new candidate",
+  "s2-08": "retriever does not surface the intended chunk; replaced by a new candidate",
+  "s2-09": "retriever does not surface the intended chunk; replaced by a new candidate",
+  "s3-06": "retriever does not surface the intended chunk; replaced by a new candidate",
+  "s3-03": "superseded by s3-03b (same false-premise question, twin reworded so the retriever reaches it)"
+ }
+}
