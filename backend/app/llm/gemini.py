@@ -14,6 +14,7 @@ from typing import Any
 
 from app.llm.base import (
     CallError,
+    LLMConfigError,
     LLMError,
     LLMQuotaError,
     LLMRequest,
@@ -21,20 +22,23 @@ from app.llm.base import (
     UsageRecord,
 )
 
-ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+MODEL_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}"
+ENDPOINT = MODEL_URL + ":generateContent"
 RETRYABLE_STATUS = {429, 500, 502, 503, 504}
 RETRY_WAITS_S = (4.0, 8.0, 16.0)
 DEFAULT_TIMEOUT_S = 120.0
 MIN_INTERVAL_S = 4.0
 
-# (status, body) for a POST; status 0 means a transport failure with the reason as body text.
+# (status, body) for a POST, or a GET when the body is empty; status 0 means a transport
+# failure with the reason as body text.
 Transport = Callable[[str, dict[str, str], bytes, float], tuple[int, bytes]]
 
 
 def urllib_transport(
     url: str, headers: dict[str, str], body: bytes, timeout: float
 ) -> tuple[int, bytes]:
-    request = urllib.request.Request(url, data=body, headers=headers, method="POST")
+    method = "POST" if body else "GET"
+    request = urllib.request.Request(url, data=body or None, headers=headers, method=method)
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
             return response.status, response.read()
@@ -93,6 +97,22 @@ class GeminiClient:
 
     def __repr__(self) -> str:  # never show the key
         return f"GeminiClient(model={self.model!r})"
+
+    def preflight(self) -> str:
+        """One metadata request (a GET, never retried) that proves the key works before any
+        generation call. Returns the model resource name; raises without the key in the message."""
+        headers = {"x-goog-api-key": self._key}
+        url = MODEL_URL.format(model=self.model)
+        status, raw = self._transport(url, headers, b"", self._timeout)
+        if status == 429:
+            raise LLMQuotaError("Gemini preflight: quota exhausted (HTTP 429)")
+        if status != 200:
+            reason = f"HTTP {status}" if status else "transport error"
+            raise LLMConfigError(f"Gemini preflight failed ({reason}); check GEMINI_API_KEY")
+        try:
+            return str(json.loads(raw).get("name", ""))
+        except (json.JSONDecodeError, AttributeError):
+            return ""
 
     # --- request ---------------------------------------------------------------------------
 
