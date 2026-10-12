@@ -51,3 +51,7 @@ class AnswerResponse(BaseModel):
     model: UsageRecord
     evidence: SerializeAsAny[EvidenceResponse]
     timing_ms: float | None = None
+    # contract v3 only (Milestone 15); None under the baseline contract or for invalid output
+    premise: str | None = None
+    premise_supported: bool | None = None
+    evidence_relation: str | None = None

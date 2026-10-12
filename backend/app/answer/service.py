@@ -4,6 +4,7 @@ The service receives evidence from a callable (`EvidenceSource`) and a model fro
 It has no other way to learn anything about the repository (plan rule R1).
 """
 
+import hashlib
 import time
 from collections.abc import Callable
 
@@ -14,6 +15,7 @@ from app.answer.context import (
     build_context,
     build_context_v2,
 )
+from app.answer.premise import validate_output_v3
 from app.answer.prompt import PROMPT_SHA256, SYSTEM_PROMPT
 from app.answer.schema import AnswerResponse, Claim, ResolvedCitation, ValidationReport
 from app.answer.validate import ValidationResult, validate_output
@@ -80,13 +82,24 @@ class AnswerService:
         budget_chars: int = CONTEXT_BUDGET_CHARS,
         budget_chars_v2: int = CONTEXT_BUDGET_CHARS_V2,
         max_output_tokens: int = MAX_OUTPUT_TOKENS,
+        system_prompt: str = SYSTEM_PROMPT,
+        contract: str = "v1",
     ) -> None:
+        if contract not in ("v1", "v3"):
+            raise ValueError(f"unknown contract {contract!r}")
         self._source = evidence_source
         self._llm = llm
         self.top_k = top_k
         self._budget = budget_chars
         self._budget_v2 = budget_chars_v2
         self._max_output_tokens = max_output_tokens
+        self._prompt = system_prompt
+        self._contract = contract
+        self.prompt_sha256 = (
+            PROMPT_SHA256
+            if system_prompt == SYSTEM_PROMPT
+            else hashlib.sha256(system_prompt.encode("utf-8")).hexdigest()
+        )
 
     def answer(self, question: str, top_k: int | None = None) -> AnswerResponse:
         if self._source is None:
@@ -101,7 +114,7 @@ class AnswerService:
         else:
             context = build_context(question, evidence, self._budget)
         request = LLMRequest(
-            system=SYSTEM_PROMPT,
+            system=self._prompt,
             user=context.text,
             max_output_tokens=self._max_output_tokens,
             temperature=0.0,
@@ -115,7 +128,11 @@ class AnswerService:
         except LLMError as error:
             raise AnswerUnavailable(str(error), evidence, error.usage) from error
 
-        result = validate_output(reply.text, context)
+        assessment = None
+        if self._contract == "v3":
+            result, assessment = validate_output_v3(reply.text, context)
+        else:
+            result = validate_output(reply.text, context)
         report = ValidationReport(
             valid=result.valid,
             reasons=result.reasons,
@@ -135,9 +152,12 @@ class AnswerService:
             validation=report,
             items_shown=len(context.items),
             items_omitted=context.omitted,
-            prompt_sha256=PROMPT_SHA256,
+            prompt_sha256=self.prompt_sha256,
             raw_output=reply.text,
             model=reply.usage,
             evidence=evidence,
             timing_ms=round((time.perf_counter() - started) * 1000, 1),
+            premise=assessment.premise if assessment else None,
+            premise_supported=assessment.premise_supported if assessment else None,
+            evidence_relation=assessment.evidence_relation if assessment else None,
         )
