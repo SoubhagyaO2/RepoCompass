@@ -40,12 +40,15 @@ from app.llm import get_llm_client
 from app.llm.base import LLMConfigError, LLMQuotaError
 
 DEV_PAIRS = REPO_ROOT / "evaluation" / "datasets" / "m15_pairs_dev.json"
+TEST_PAIRS = REPO_ROOT / "evaluation" / "datasets" / "m15_pairs_test.json"
+CHOSEN = "c1"  # frozen at step 2 (plan section 13)
+TEST_ARMS = ("baseline", CHOSEN)
 ARMS = ("baseline", *prompt_v3.CANDIDATES)
 SUMMARY = RESULTS_DIR / "m15_dev.json"
 
 
-def raw_path(arm: str) -> Path:
-    return RESULTS_DIR / f"m15_dev_{arm}_raw.jsonl"
+def raw_path(arm: str, phase: str = "dev") -> Path:
+    return RESULTS_DIR / f"m15_{phase}_{arm}_raw.jsonl"
 
 
 # --- scoring (plan section 5) ---
@@ -99,7 +102,15 @@ def known_failures(rows: dict[str, dict[str, Any]]) -> dict[str, str]:
 
 
 def dev_cases() -> tuple[list[ra.Case], list[tuple[str, str]]]:
-    dev = json.loads(DEV_PAIRS.read_text(encoding="utf-8"))
+    return pair_cases(DEV_PAIRS)
+
+
+def test_cases() -> tuple[list[ra.Case], list[tuple[str, str]]]:
+    return pair_cases(TEST_PAIRS)
+
+
+def pair_cases(path: Path) -> tuple[list[ra.Case], list[tuple[str, str]]]:
+    dev = json.loads(path.read_text(encoding="utf-8"))
     cases: list[ra.Case] = []
     pairs: list[tuple[str, str]] = []
     for pair in dev["pairs"]:
@@ -111,7 +122,7 @@ def dev_cases() -> tuple[list[ra.Case], list[tuple[str, str]]]:
         x["id"]: x["question"]
         for x in json.loads(ra.UNANSWERABLE.read_text(encoding="utf-8"))["questions"]
     }
-    for known in dev["known_failures"]:
+    for known in dev.get("known_failures", []):
         cases.append(ra.Case(known, "KNOWN", unanswerable[known], known))
     return cases, pairs
 
@@ -180,15 +191,32 @@ def report(pairs: list[tuple[str, str]]) -> dict[str, Any]:
     return result
 
 
+def test_report(pairs: list[tuple[str, str]]) -> int:
+    for arm in TEST_ARMS:
+        rows = load_rows(raw_path(arm, "test"))
+        status = {c: _status(r) for c, r in rows.items()}
+        done = all(i in status for pair in pairs for i in pair)
+        if done:
+            score = score_arm(rows, pairs, prompt_chars(arm))
+            print(f"{arm}: {score.correct}/{len(pairs)} correct pairs, {score.invalid} invalid")
+        else:
+            print(f"{arm}: {len(rows)}/{2 * len(pairs)} questions run")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m app.evaluation.run_false_premise", description=__doc__
     )
     parser.add_argument("--arm", choices=ARMS)
+    parser.add_argument("--phase", choices=("dev", "test"), default="dev")
     parser.add_argument("--report", action="store_true", help="no API calls")
     args = parser.parse_args(argv)
 
-    cases, pairs = dev_cases()
+    test = args.phase == "test"
+    if test and args.arm not in (None, *TEST_ARMS):
+        parser.error(f"the test phase runs only {TEST_ARMS}")
+    cases, pairs = test_cases() if test else dev_cases()
     if args.arm and not args.report:
         problems = baseline_problems()
         if problems:
@@ -218,7 +246,7 @@ def main(argv: list[str] | None = None) -> int:
             try:
                 collect_condition(
                     cases, lambda c: evidence[c.id], make_service(args.arm, llm),
-                    raw_path(args.arm), False, args.arm,
+                    raw_path(args.arm, args.phase), False, args.arm,
                 )  # fmt: skip
             except ra.QuotaExhausted as stop:
                 print(
@@ -232,6 +260,8 @@ def main(argv: list[str] | None = None) -> int:
             if close:
                 close()
 
+    if test:
+        return test_report(pairs)
     result = report(pairs)
     result.update(
         plan="evaluation/plans/m15-false-premise.md",
