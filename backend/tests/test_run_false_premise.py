@@ -169,3 +169,40 @@ def test_preflight_is_not_retried() -> None:
     with pytest.raises(LLMConfigError):
         gemini.preflight()
     assert len(transport.calls) == 1
+
+
+# --- the regression guards (plan section 7) ---
+
+
+def _row(cid: str, set_name: str, status: str, valid: bool = True) -> dict:
+    answer = {"status": status, "validation": {"valid": valid}}
+    return {"case": {"id": cid, "set": set_name}, "answer": answer}
+
+
+def test_set_a_guards_count_new_abstentions_and_valid_outputs() -> None:
+    old = {f"q{i}": _row(f"q{i}", "A", "answered") for i in range(5)}
+    old["q4"] = _row("q4", "A", "insufficient_evidence")
+    new = dict(old)
+    new["q0"] = _row("q0", "A", "insufficient_evidence")
+    new["q1"] = _row("q1", "A", "invalid_output", valid=False)
+    new["q4"] = _row("q4", "A", "answered")  # a gain is not a loss
+    g = fp.set_a_guards(old, new, min_valid=4, max_new_abstentions=2)
+    assert g["newly_abstaining"] == ["q0"] and g["moved_to_invalid"] == ["q1"]
+    assert g["valid"] == 4 and g["abstention_ok"] and g["validity_ok"]
+    new["q2"] = _row("q2", "A", "insufficient_evidence")
+    new["q3"] = _row("q3", "A", "insufficient_evidence")
+    g = fp.set_a_guards(old, new, min_valid=4, max_new_abstentions=2)
+    assert not g["abstention_ok"] and len(g["newly_abstaining"]) == 3 and g["validity_ok"]
+
+
+def test_twin_abstention_excess_over_the_baseline() -> None:
+    pairs = [("p1", "q1"), ("p2", "q2"), ("p3", "q3"), ("p4", "q4")]
+    base = {"q1": "answered", "q2": "answered", "q3": "answered", "q4": "insufficient_evidence"}
+    treat = {"q1": "insufficient_evidence", "q2": "insufficient_evidence", "q3": "answered",
+             "q4": "insufficient_evidence"}  # fmt: skip
+    assert fp.twin_abstention_excess(pairs, base, treat) == 2  # 3 abstentions versus 1
+
+
+def test_regression_cases_are_the_113_m14_cases() -> None:
+    cases = fp.regression_cases()
+    assert len(cases) == 113 and {c.set for c in cases} == {"A", "B", "C", "D"}
