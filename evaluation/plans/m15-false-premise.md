@@ -186,3 +186,16 @@ The development phase ran as planned: the three candidates of `backend/app/answe
 **Finding that matters for the test phase.** The baseline already abstains on all 8 development false-premise questions and answers all 8 twins, so the development pairs cannot discriminate between arms (ceiling). If the same holds on the test pairs, the decision rule of section 7 applies as frozen: a baseline that abstains on every P cannot yield "Supported". The known failures differ: the baseline still answered/partially answered two of three; every candidate abstained on all three. These three were not scored. The author-bias limitation of section 2a still applies, and human review was not conducted and is outside the scope of this experiment.
 
 **Chosen prompt:** `CANDIDATES["c1"]` in `backend/app/answer/prompt_v3.py`, SHA-256 `2a345ea491dc615d7627a3631f1d0b19df3bf6191f894d6270765e0150216b0d`. It is frozen with this commit; no test-set call has been made.
+
+## 14. Test-arm results (2026-10-13)
+
+Both arms ran on the 24 frozen test pairs (48 questions each), served model `gemini-3.5-flash-lite` in every call, with the chosen prompt `c1` (section 13). Raw rows: `evaluation/results/m15_test_baseline_raw.jsonl`, `evaluation/results/m15_test_c1_raw.jsonl`. The model-free diagnostic before the run is `evaluation/results/m15_test_diagnostic.json`.
+
+**Recorded deviation.** Three treatment calls (`t14-P`, `t16-P`, `t23-P`) failed with HTTP 503 ("high demand") after the runner's retries; the error rows are kept in the raw file. They were re-run once with `--retry-errors` (a flag added to the runner; no prompt, question or rule changed), as in M14. The model was not unavailable partway, so validity condition (v) is not triggered.
+
+| | Correct pairs (of 24) | False-premise questions abstained | Twins answered | Invalid |
+|---|---|---|---|---|
+| baseline | 19 | 20 | 23 | 1 |
+| treatment (c1) | 23 | 23 | 24 | 0 |
+
+Paired transitions: b (treatment correct, baseline not) = 4 (`t08`, `t11`, `t13`, `t23`); c (baseline correct, treatment not) = 0. Exact two-sided McNemar p = 0.125. Section 7 needs a significant test (b >= 6 with c = 0), so **the primary outcome is not significant and the frozen rule gives "Not supported"** (direction favours the treatment; the sample is too small to confirm it). The regression run of the 113 M14 cases was not needed to reach this verdict and has not been run. The author-bias limitation of section 2a applies, and human review was not conducted and is outside the scope of this experiment.

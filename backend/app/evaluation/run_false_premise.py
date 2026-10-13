@@ -210,6 +210,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--arm", choices=ARMS)
     parser.add_argument("--phase", choices=("dev", "test"), default="dev")
+    parser.add_argument("--retry-errors", action="store_true", help="re-run calls that failed")
     parser.add_argument("--report", action="store_true", help="no API calls")
     args = parser.parse_args(argv)
 
@@ -246,7 +247,7 @@ def main(argv: list[str] | None = None) -> int:
             try:
                 collect_condition(
                     cases, lambda c: evidence[c.id], make_service(args.arm, llm),
-                    raw_path(args.arm, args.phase), False, args.arm,
+                    raw_path(args.arm, args.phase), args.retry_errors, args.arm,
                 )  # fmt: skip
             except ra.QuotaExhausted as stop:
                 print(
