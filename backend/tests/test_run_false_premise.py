@@ -82,6 +82,15 @@ def test_score_arm_counts_pairs_invalid_outputs_and_known_failures() -> None:
     }
 
 
+def test_test_cases_are_the_48_frozen_questions_and_disjoint_from_dev() -> None:
+    cases, pairs = fp.test_cases()
+    dev, _ = fp.dev_cases()
+    assert len(pairs) == 24 and len(cases) == 48 and {c.set for c in cases} == {"P", "Q"}
+    assert not {c.question for c in cases} & {c.question for c in dev}
+    assert fp.raw_path("c1", "test").name == "m15_test_c1_raw.jsonl"
+    assert fp.raw_path("c1").name == "m15_dev_c1_raw.jsonl"
+
+
 # --- collection reuses the M14 machinery ---
 
 
