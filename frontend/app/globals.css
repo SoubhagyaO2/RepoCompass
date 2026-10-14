@@ -526,3 +526,75 @@ code {
   font-size: 0.9em;
   overflow-wrap: anywhere;
 }
+
+pre code {
+  overflow-wrap: normal;
+  font-size: inherit;
+}
+
+/* syntax highlighting (highlight.js tokens) on the lavender code background */
+.hljs-keyword,
+.hljs-literal {
+  color: #6a1fd0;
+  font-weight: 700;
+}
+
+.hljs-string,
+.hljs-doctag {
+  color: #1d6b45;
+}
+
+.hljs-comment {
+  color: #7d6c92;
+  font-style: italic;
+}
+
+.hljs-title,
+.hljs-title.function_,
+.hljs-title.class_ {
+  color: #9b1c2c;
+  font-weight: 700;
+}
+
+.hljs-number,
+.hljs-built_in,
+.hljs-meta {
+  color: #7a4300;
+}
+
+.hljs-params,
+.hljs-subst {
+  color: var(--ink);
+}
+
+/* file path and line range stay prominent in every evidence item */
+.ev-head code {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 52rem) {
+  main {
+    padding-top: 1.5rem;
+  }
+
+  h1 {
+    font-size: 1.9rem;
+  }
+
+  .evidence-col .card {
+    position: static;
+  }
+
+  .evidence {
+    max-height: none;
+  }
+
+  .row {
+    align-items: stretch;
+  }
+
+  .examples button.link {
+    text-align: left;
+  }
+}

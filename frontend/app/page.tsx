@@ -1,5 +1,7 @@
 "use client";
 
+import hljs from "highlight.js/lib/core";
+import python from "highlight.js/lib/languages/python";
 import { useEffect, useState } from "react";
 import {
   Answer,
@@ -12,6 +14,8 @@ import {
   searchEvidence,
 } from "@/lib/api";
 
+hljs.registerLanguage("python", python);
+
 const STATUS_TEXT: Record<Answer["status"], string> = {
   answered: "Answered",
   partial: "Partly answered",
@@ -19,12 +23,26 @@ const STATUS_TEXT: Record<Answer["status"], string> = {
   invalid_output: "The model's output failed validation",
 };
 
-// Example questions for the Flask index only; other indexes get none rather than wrong ones.
-const FLASK_EXAMPLES = [
-  "Where is the session cookie saved?",
-  "What calls url_for?",
-  "How does Flask handle errors raised in a view?",
-];
+// Example questions per indexed repository (matched on the index name). A repository without
+// examples shows none rather than wrong ones.
+const EXAMPLES: Record<string, string[]> = {
+  flask: [
+    "Where is the session cookie saved?",
+    "What calls url_for?",
+    "How does Flask handle errors raised in a view?",
+  ],
+  itsdangerous: [
+    "Where is the signature verified?",
+    "How are timestamps checked for expiry?",
+    "How does itsdangerous send analytics events?",
+  ],
+};
+
+function examplesFor(repository: string | undefined): string[] {
+  const name = (repository ?? "").toLowerCase();
+  const key = Object.keys(EXAMPLES).find((k) => name.includes(k));
+  return key ? EXAMPLES[key] : [];
+}
 
 const SNIPPET_LINES = 40;
 
@@ -37,11 +55,28 @@ function lines(item: { line_start: number; line_end: number }) {
   return `${item.line_start}-${item.line_end}`;
 }
 
+function highlight(code: string): string | null {
+  try {
+    return hljs.highlight(code, { language: "python" }).value;
+  } catch {
+    return null;
+  }
+}
+
 function snippet(text: string) {
   const all = text.split("\n");
   return all.length > SNIPPET_LINES
     ? `${all.slice(0, SNIPPET_LINES).join("\n")}\n… (${all.length - SNIPPET_LINES} more lines)`
     : text;
+}
+
+function HighlightedCode({ code }: { code: string }) {
+  const html = highlight(code);
+  return html === null ? (
+    <code>{code}</code>
+  ) : (
+    <code className="hljs" dangerouslySetInnerHTML={{ __html: html }} />
+  );
 }
 
 type Phase = "idle" | "retrieving" | "done";
@@ -115,7 +150,7 @@ export default function Home() {
   }
 
   const ready = health?.index_loaded ?? false;
-  const examples = index?.repository.includes("flask") ? FLASK_EXAMPLES : [];
+  const examples = examplesFor(index?.repository);
   const phase: Phase = busy ? "retrieving" : answer || evidence ? "done" : "idle";
   const canAsk = ready && !busy && question.trim().length > 0;
 
@@ -297,7 +332,9 @@ export default function Home() {
 
         <aside className="evidence-col">
           <div className="card">
-            {evidence ? <h2>Evidence ({evidence.length} files)</h2> : <h2>Evidence</h2>}
+            {evidence ? <h2>
+                Evidence ({evidence.length} {evidence.length === 1 ? "file" : "files"})
+              </h2> : <h2>Evidence</h2>}
             {!evidence && (
               <p className="muted">
                 {busy
@@ -333,7 +370,9 @@ export default function Home() {
                         }}
                       >
                         <summary>View code</summary>
-                        <pre>{snippet(item.text)}</pre>
+                        <pre>
+                          <HighlightedCode code={snippet(item.text)} />
+                        </pre>
                       </details>
                     )}
                   </li>
