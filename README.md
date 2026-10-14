@@ -1,19 +1,41 @@
 # RepoCompass
 
 Ask a Python repository a question and get an answer that cites exact files, symbols and line
-ranges, or an honest "the evidence does not show this". RepoCompass retrieves code with hybrid
-search (BM25 + embeddings over AST chunks), keeps the index current as files change, exposes the
-retrieved evidence through an API, and writes answers whose every claim is checked against that
-evidence.
+ranges, or an honest "the evidence does not show this".
+
+![Demo: a question, a cited answer, a citation jump, and an abstention](docs/media/demo.gif)
+
+*A real run (16 s, single questions on a small index; a [full-quality video](docs/media/demo.mp4)
+is in the repository).*
+
+RepoCompass retrieves code with hybrid search (BM25 + embeddings over AST chunks), keeps the index
+current as files change, exposes the retrieved evidence through an API, and writes answers whose
+every claim is checked against that evidence. It ships as an HTTP API, a web UI and an MCP server.
 
 It was built as a series of pre-registered experiments, so the project also records what did
-**not** work (reranking, always-on graph expansion, a premise-assessment prompt). Read
-[`docs/PROJECT_REPORT.md`](docs/PROJECT_REPORT.md) for the evidence, the rejected approaches, the
-limitations and the unfinished work before relying on any claim here.
+**not** work. Start with [`docs/PROJECT_REPORT.md`](docs/PROJECT_REPORT.md).
 
-> **What the checks mean.** The validator proves that every citation points at something that
-> exists in the retrieved evidence. It does not prove the evidence supports the claim. Human
-> review was not conducted and is outside the scope of the experiments.
+## Measured results and limitations at a glance
+
+| Measured (frozen 73-question Flask benchmark, one model) | Not established |
+|---|---|
+| Hybrid retrieval (BM25 + embeddings, RRF) has the best Top-5, 87.7%, against 80.8% for a naive fixed-size baseline | That any of this holds on other repositories, languages or models |
+| Grounded answers: 110 of 113 outputs valid, 0 fabricated references in 33 AI-reviewed answers, 0 planted instructions followed | That a valid citation *supports* the claim: the validator proves only that it exists in the evidence |
+| Extra chunks per file cut abstentions on answerable questions from 11 to 5 (exact McNemar p = 0.016) | Human-validated answer quality: no human review was conducted, and it is out of scope |
+| Reranking and always-on graph expansion **hurt** and were rejected; a premise-assessment prompt was **not supported** (p = 0.125, regression guard failed) | Reliability of the product's structured-output mode: checked on a handful of live questions, not measured |
+
+![An answered question with its citation highlighted in the evidence list](docs/media/ui-citation.png)
+
+**Before you try it:**
+
+- **The Docker images are large:** about 2.5 GB for the backend (CPU-only torch plus the embedding
+  model) and 1.3 GB for the frontend, 5.5 GB of disk in all, and the first build takes several
+  minutes. The local (non-Docker) install is smaller but also pulls torch.
+- **Answer quality was sampled lightly.** The benchmark is 73 questions on one repository; the
+  product checks (a handful of questions across two repositories) are smoke tests, not measurements.
+  The model's answers vary from run to run, and a weak answer can still carry a valid citation (see
+  [`docs/DEMO.md`](docs/DEMO.md) for one).
+- Python repositories only, English questions, and a free-tier Gemini model that can rate-limit.
 
 ## What is in the box
 
@@ -23,6 +45,24 @@ limitations and the unfinished work before relying on any claim here.
 | MCP server | `backend/app/mcp_server.py` | Tools `search_evidence`, `ask`, `index_status` for coding assistants |
 | Web UI | `frontend/` | Ask a question, see claims with citations, or evidence-only when no model key is set |
 | Experiments | `evaluation/` | Frozen benchmark (73 Flask questions), pre-registered plans M9-M15, raw results |
+
+## Architecture
+
+```mermaid
+flowchart LR
+    GH[(GitHub repo)] --> ING[Ingest] --> PARSE[Tree-sitter<br/>AST chunks + graph]
+    PARSE --> IDX[(Live index<br/>BM25 + embeddings)]
+    IDX --> EV[Evidence builder<br/>hybrid RRF]
+    EV --> API{{FastAPI}}
+    EV --> ANS[Answer layer<br/>model + validator]
+    ANS --> API
+    API --> UI[Web UI]
+    API --> MCP[MCP server]
+```
+
+The model sees only the retrieved evidence and must cite it; a deterministic validator rejects
+outputs whose citations, paths, lines or symbols are not in that evidence. Details:
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Quick start
 
@@ -150,5 +190,5 @@ and were checked on a handful of questions, which is not a measurement of answer
 backend/    Python package `app` (api, answer, llm, evidence, indexing, graph, retrieval, ...) and tests
 frontend/   Next.js UI (proxies /api/* to the backend)
 evaluation/ benchmark, pre-registered plans, raw results, backlog
-docs/       PROJECT_REPORT.md (start here), DEMO.md (a real run), decisions.md
+docs/       PROJECT_REPORT.md (start here), ARCHITECTURE.md, DEMO.md (a real run), media/, decisions.md
 ```
