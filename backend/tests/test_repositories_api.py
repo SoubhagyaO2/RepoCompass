@@ -165,3 +165,13 @@ def test_health_reports_ready_repositories_and_answers(tmp_path: Path, store: Ve
         body = client.get("/health").json()
         assert body["index_loaded"] is True and body["answer_enabled"] is True
         assert body["indexing_enabled"] is True
+
+
+def test_the_503_messages_say_what_is_missing(tmp_path: Path, store: VectorStore) -> None:
+    client, registry = client_with(tmp_path, store)  # no model, no default repository
+    with client:
+        body = connect(client, registry, "https://github.com/acme/widgets")
+        no_repo = client.post("/v1/answer", json={"question": "x"})
+        assert no_repo.status_code == 503 and "repository" in no_repo.json()["detail"]
+        no_model = client.post("/v1/answer", json={"question": "x", "repository": body["id"]})
+        assert no_model.status_code == 503 and "GEMINI_API_KEY" in no_model.json()["detail"]

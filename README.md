@@ -8,9 +8,11 @@ ranges, or an honest "the evidence does not show this".
 *A real run (16 s, single questions on a small index; a [full-quality video](docs/media/demo.mp4)
 is in the repository).*
 
-RepoCompass retrieves code with hybrid search (BM25 + embeddings over AST chunks), keeps the index
-current as files change, exposes the retrieved evidence through an API, and writes answers whose
-every claim is checked against that evidence. It ships as an HTTP API, a web UI and an MCP server.
+RepoCompass retrieves code with hybrid search (BM25 + embeddings over AST chunks), exposes the
+retrieved evidence through an API, and writes answers whose every claim is checked against that
+evidence. You can paste a public GitHub URL into the UI to index a repository; from the command
+line an existing index can also be updated incrementally when files change. It ships as an HTTP API,
+a web UI and an MCP server.
 
 It was built as a series of pre-registered experiments, so the project also records what did
 **not** work. Start with [`docs/PROJECT_REPORT.md`](docs/PROJECT_REPORT.md).
@@ -29,12 +31,16 @@ It was built as a series of pre-registered experiments, so the project also reco
 **Before you try it:**
 
 - **The Docker images are large:** about 2.5 GB for the backend (CPU-only torch plus the embedding
-  model) and 1.3 GB for the frontend, 5.5 GB of disk in all, and the first build takes several
+  model) and 1.4 GB for the frontend, 5.5 GB of disk in all, and the first build takes several
   minutes. The local (non-Docker) install is smaller but also pulls torch.
 - **Answer quality was sampled lightly.** The benchmark is 73 questions on one repository; the
-  product checks (a handful of questions across two repositories) are smoke tests, not measurements.
+  product checks (a handful of questions across several repositories) are smoke tests, not
+  measurements.
   The model's answers vary from run to run, and a weak answer can still carry a valid citation (see
   [`docs/DEMO.md`](docs/DEMO.md) for one).
+- **The product prompt is not the measured one.** The API and MCP server use the frozen prompt plus
+  one added rule (paths and code count as evidence for "what language is this written in"). It was
+  hand-checked, not measured; every published result used the frozen prompt.
 - Python repositories only, English questions, and a free-tier Gemini model that can rate-limit.
 
 ## What is in the box
@@ -43,7 +49,7 @@ It was built as a series of pre-registered experiments, so the project also reco
 |---|---|---|
 | Engine and API | `backend/` | Ingest, parse, chunk, index, retrieve, evidence (`/v1/evidence`, `/v2/evidence`), grounded answers (`/v1/answer`) |
 | MCP server | `backend/app/mcp_server.py` | Tools `search_evidence`, `ask`, `index_status` for coding assistants |
-| Web UI | `frontend/` | Ask a question, see claims with citations, or evidence-only when no model key is set |
+| Web UI | `frontend/` | Connect a public GitHub repository by URL, ask a question, see claims with citations and the code behind them, or evidence-only when no model key is set |
 | Experiments | `evaluation/` | Frozen benchmark (73 Flask questions), pre-registered plans M9-M15, raw results |
 
 ## Architecture
@@ -66,7 +72,9 @@ outputs whose citations, paths, lines or symbols are not in that evidence. Detai
 
 ## Quick start
 
-Requires Python 3.12+, Git, and Node 20+ for the UI.
+Requires Python 3.12+, Git, and Node 20+ for the UI. The shortest path: install (step 1), start the
+API with no index configured (`uvicorn app.main:app`) and the UI (step 4), then paste a GitHub URL
+into **Connect a repository**. Steps 2 and 3 are the command-line way to prepare and serve an index.
 
 ```bash
 # 1. Install
@@ -165,6 +173,10 @@ Example client configuration (adjust paths):
     "env": { "REPOCOMPASS_LIVE_REPOSITORY": "flask", "REPOCOMPASS_LIVE_ROOT": "data/repos/pallets/flask" } } } }
 ```
 
+The MCP server serves the one index named by `REPOCOMPASS_LIVE_REPOSITORY` and
+`REPOCOMPASS_LIVE_ROOT`; repositories connected through the UI belong to the API process and are not
+visible to it (the local vector store allows one process at a time).
+
 Tools: `search_evidence(query, top_k=5, extra_chunks=0)`, `ask(question, top_k)`, `index_status()`.
 Errors (bad arguments, no model key, quota) come back as tool errors with a readable message.
 
@@ -175,10 +187,17 @@ Errors (bad arguments, no model key, quota) come back as tool errors with a read
 # 2. One-time: clone and index a repository into the shared volume
 docker compose build
 docker compose run --rm backend python -m app.ingestion https://github.com/pallets/itsdangerous
-docker compose run --rm backend python -m app.evidence --repository itsdangerous     --root /data/repos/pallets/itsdangerous --build
+docker compose run --rm backend python -m app.evidence --repository itsdangerous \
+    --root /data/repos/pallets/itsdangerous --build
 # 3. Serve (the API on :8000, the UI on :3000)
-REPOCOMPASS_LIVE_REPOSITORY=itsdangerous REPOCOMPASS_LIVE_ROOT=/data/repos/pallets/itsdangerous     docker compose up -d
+REPOCOMPASS_LIVE_REPOSITORY=itsdangerous REPOCOMPASS_LIVE_ROOT=/data/repos/pallets/itsdangerous \
+    docker compose up -d
 ```
+
+Step 2 and the two variables in step 3 are optional: run `docker compose up -d` alone and connect
+repositories from the UI at http://127.0.0.1:3000 (they are kept in the `repocompass-data` volume;
+checked with no default index configured). The images are about 2.5 GB (backend) and 1.4 GB
+(frontend).
 
 In Git Bash on Windows, set `MSYS_NO_PATHCONV=1` first, or `/data/...` arguments are rewritten into
 Windows paths (the index command now refuses a root that does not exist or has no Python files).
@@ -187,9 +206,9 @@ The backend image uses CPU-only torch and bakes the embedding model in; it is la
 ## Tests
 
 ```bash
-cd backend && pytest && ruff check .        # 673 passed, 1 skipped; no network or API key needed
+cd backend && pytest && ruff check .        # 674 passed, 1 skipped; no network or API key needed
 cd frontend && npm run typecheck && npm run build
-cd frontend && npx playwright test          # 29 mocked-API browser tests, in the installed Chrome
+cd frontend && npx playwright test          # 33 mocked-API browser tests, in the installed Chrome
 ```
 
 Against a running stack: `REAL_STACK=1 npx playwright test` (real question, citation navigation,

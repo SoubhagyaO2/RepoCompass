@@ -499,6 +499,18 @@ test.describe("against the real stack", () => {
     await expect(page.locator("li:target")).toContainText("src/itsdangerous/signer.py");
   });
 
+  test("a real language question is answered from the files shown", async ({ page }) => {
+    await page.goto("/");
+    await ask(page, "What programming language is this project written in?");
+    await expect(page.locator(".badge")).toBeVisible({ timeout: 90_000 });
+    await expect(page.locator(".badge")).toHaveText("Answered");
+    await expect(page.locator(".claim").first()).toContainText("Python");
+    const chip = page.locator("a.cite").first();
+    await expect(chip).toContainText(".py");
+    await chip.click();
+    await expect(page.locator("li:target")).toContainText(".py");
+  });
+
   test("a real false-premise question abstains", async ({ page }) => {
     await page.goto("/");
     await ask(page, "How does itsdangerous send analytics events?");
@@ -552,5 +564,50 @@ test.describe("on a phone-sized screen", () => {
     await ask(page, "How does it send analytics?");
     await expect(page.getByText(/does not guess/)).toBeVisible();
     await noSideScroll(page);
+  });
+});
+
+test.describe("when the API sends something unexpected", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.route("**/api/health", (r) => r.fulfill({ json: HEALTH_OK }));
+  });
+
+  test("a repository list that is not a list does not crash the page", async ({ page }) => {
+    await page.route("**/api/v1/repositories", (r) => r.fulfill({ json: { detail: "oops" } }));
+    await page.goto("/");
+    await expect(page.getByRole("heading", { name: "Connect a repository" })).toBeVisible();
+    await expect(page.getByText("Application error")).toHaveCount(0);
+  });
+
+  test("an answer without the expected fields shows an error instead of crashing", async ({ page }) => {
+    await repos(page, [repo("itsdangerous", { default: true })]);
+    await page.route("**/api/v1/answer", (r) => r.fulfill({ json: {} }));
+    await page.goto("/");
+    await ask(page, "anything");
+    await expect(page.locator("p[role=alert]")).toContainText("unexpected");
+    await expect(page.getByText("Application error")).toHaveCount(0);
+    await expect(page.getByLabel("Your question")).toBeVisible();
+  });
+
+  test("an evidence response without a list shows an error instead of crashing", async ({ page }) => {
+    await page.unroute("**/api/health");
+    await page.route("**/api/health", (r) => r.fulfill({ json: { ...HEALTH_OK, answer_enabled: false } }));
+    await repos(page, [repo("itsdangerous", { default: true })]);
+    await page.route("**/api/v1/evidence?*", (r) => r.fulfill({ json: { nothing: true } }));
+    await page.goto("/");
+    await ask(page, "signature", "Find evidence");
+    await expect(page.locator("p[role=alert]")).toContainText("unexpected");
+    await expect(page.getByText("Application error")).toHaveCount(0);
+  });
+
+  test("a connect response without an id is reported", async ({ page }) => {
+    await page.route("**/api/v1/repositories", (r) =>
+      r.request().method() === "POST" ? r.fulfill({ status: 202, json: {} }) : r.fulfill({ json: [] }),
+    );
+    await page.goto("/");
+    await page.getByLabel("GitHub repository URL").fill("https://github.com/acme/widgets");
+    await page.getByRole("button", { name: "Index Repository" }).click();
+    await expect(page.locator("p[role=alert]")).toContainText("unexpected");
+    await expect(page.getByText("Application error")).toHaveCount(0);
   });
 });
