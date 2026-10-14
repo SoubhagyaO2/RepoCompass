@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Request
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 
 from app import __version__
@@ -11,6 +12,12 @@ class HealthResponse(BaseModel):
     version: str
     index_loaded: bool = False
     answer_enabled: bool = False
+
+
+@router.get("/", include_in_schema=False)
+def root() -> RedirectResponse:
+    """The API has no page of its own: send a browser to the interactive docs."""
+    return RedirectResponse("/docs")
 
 
 @router.get("/health", response_model=HealthResponse)

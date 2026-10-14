@@ -36,6 +36,8 @@ export type Answer = {
   model: { returned_model_version: string | null; latency_ms: number };
 };
 
+export type IndexStatus = { repository: string; files: number; chunks: number };
+
 export class ApiError extends Error {}
 
 async function readError(response: Response): Promise<string> {
@@ -51,6 +53,12 @@ async function readError(response: Response): Promise<string> {
 
 export async function getHealth(): Promise<Health> {
   const response = await fetch("/api/health");
+  if (!response.ok) throw new ApiError(await readError(response));
+  return response.json();
+}
+
+export async function getIndexStatus(): Promise<IndexStatus> {
+  const response = await fetch("/api/v1/index/status");
   if (!response.ok) throw new ApiError(await readError(response));
   return response.json();
 }

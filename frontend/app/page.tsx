@@ -5,8 +5,10 @@ import {
   Answer,
   EvidenceItem,
   Health,
+  IndexStatus,
   ask,
   getHealth,
+  getIndexStatus,
   searchEvidence,
 } from "@/lib/api";
 
@@ -17,7 +19,8 @@ const STATUS_TEXT: Record<Answer["status"], string> = {
   invalid_output: "The model's output failed validation",
 };
 
-const EXAMPLES = [
+// Example questions for the Flask index only; other indexes get none rather than wrong ones.
+const FLASK_EXAMPLES = [
   "Where is the session cookie saved?",
   "What calls url_for?",
   "How does Flask handle errors raised in a view?",
@@ -35,6 +38,7 @@ function lines(item: { line_start: number; line_end: number }) {
 export default function Home() {
   const [health, setHealth] = useState<Health | null>(null);
   const [healthError, setHealthError] = useState<string | null>(null);
+  const [index, setIndex] = useState<IndexStatus | null>(null);
   const [question, setQuestion] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +46,12 @@ export default function Home() {
   const [evidence, setEvidence] = useState<EvidenceItem[] | null>(null);
 
   useEffect(() => {
-    getHealth().then(setHealth).catch((e: Error) => setHealthError(e.message));
+    getHealth()
+      .then((h) => {
+        setHealth(h);
+        if (h.index_loaded) getIndexStatus().then(setIndex).catch(() => setIndex(null));
+      })
+      .catch((e: Error) => setHealthError(e.message));
   }, []);
 
   async function submit(text: string) {
@@ -68,6 +77,7 @@ export default function Home() {
   }
 
   const ready = health?.index_loaded ?? false;
+  const examples = index?.repository.includes("flask") ? FLASK_EXAMPLES : [];
 
   return (
     <main>
@@ -76,6 +86,13 @@ export default function Home() {
         Ask a code repository a question. Answers cite exact files and line ranges; when the
         evidence does not support an answer, RepoCompass says so.
       </p>
+
+      {index && (
+        <p className="fine">
+          Indexed repository: <strong>{index.repository}</strong> ({index.files} files,{" "}
+          {index.chunks} chunks)
+        </p>
+      )}
 
       {healthError && (
         <p className="notice bad" role="alert">
@@ -115,8 +132,8 @@ export default function Home() {
             {busy ? "Working…" : health?.answer_enabled ? "Ask" : "Find evidence"}
           </button>
           <span className="examples">
-            Try:{" "}
-            {EXAMPLES.map((ex) => (
+            {examples.length > 0 && "Try: "}
+            {examples.map((ex) => (
               <button
                 key={ex}
                 type="button"
