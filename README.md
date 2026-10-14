@@ -151,7 +151,7 @@ The backend image uses CPU-only torch and bakes the embedding model in; it is la
 ```bash
 cd backend && pytest && ruff check .        # 592 passed, 1 skipped; no network or API key needed
 cd frontend && npm run typecheck && npm run build
-cd frontend && npx playwright test          # 16 mocked-API browser tests, in the installed Chrome
+cd frontend && npx playwright test          # 19 mocked-API browser tests, in the installed Chrome
 ```
 
 Against a running stack: `REAL_STACK=1 npx playwright test` (real question, citation navigation,

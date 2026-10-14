@@ -58,21 +58,55 @@ async function ask(page: Page, text: string, button = "Ask") {
 }
 
 test.describe("with a mocked API", () => {
-  test("names the indexed repository and offers example questions only for Flask", async ({ page }) => {
+  test("names the indexed repository and offers examples only where it has them", async ({ page }) => {
+    const repo = (name: string) => ({ repository: name, files: 15, chunks: 156 });
     await page.route("**/api/health", (r) => r.fulfill({ json: HEALTH_OK }));
+    await page.route("**/api/v1/index/status", (r) => r.fulfill({ json: repo("itsdangerous") }));
+    await page.goto("/");
+    await expect(page.getByText("Indexed repository:")).toContainText("itsdangerous");
+    await expect(page.locator("button.link")).toHaveCount(3);
+
+    await page.unroute("**/api/v1/index/status");
+    await page.route("**/api/v1/index/status", (r) => r.fulfill({ json: repo("flask_evidence") }));
+    await page.reload();
+    await expect(page.locator("button.link")).toHaveCount(3);
+
+    await page.unroute("**/api/v1/index/status");
+    await page.route("**/api/v1/index/status", (r) => r.fulfill({ json: repo("some-other-lib") }));
+    await page.reload();
+    await expect(page.getByText("Indexed repository:")).toContainText("some-other-lib");
+    await expect(page.locator("button.link")).toHaveCount(0);
+  });
+
+  test("clicking an example question runs it immediately", async ({ page }) => {
     await page.route("**/api/v1/index/status", (r) =>
       r.fulfill({ json: { repository: "itsdangerous", files: 15, chunks: 156 } }),
     );
+    let asked = "";
+    await page.route("**/api/health", (r) => r.fulfill({ json: HEALTH_OK }));
+    await page.route("**/api/v1/answer", (r) => {
+      asked = r.request().postDataJSON().question;
+      return r.fulfill({ json: answer({ claims: [{ text: "Found.", citations: [CITATION] }] }) });
+    });
     await page.goto("/");
-    await expect(page.getByText("Indexed repository:")).toContainText("itsdangerous");
-    await expect(page.locator("button.link")).toHaveCount(0);
+    await page.getByRole("button", { name: "Where is the signature verified?" }).click();
+    await expect(page.getByText("Answered", { exact: true })).toBeVisible();
+    expect(asked).toBe("Where is the signature verified?");
+    await expect(page.getByLabel("Your question")).toHaveValue("Where is the signature verified?");
+  });
 
-    await page.unroute("**/api/v1/index/status");
-    await page.route("**/api/v1/index/status", (r) =>
-      r.fulfill({ json: { repository: "flask_evidence", files: 83, chunks: 1027 } }),
-    );
-    await page.reload();
-    await expect(page.locator("button.link")).toHaveCount(3);
+  test("evidence code is syntax highlighted", async ({ page }) => {
+    const code = ["def verify(self, value):", "    # check it", '    return "ok"'].join("\n");
+    const evidence = EVIDENCE.map((e) => ({ ...e, text: code }));
+    const body = answer({ claims: [{ text: "x", citations: [CITATION] }], evidence: { evidence } });
+    await mock(page, HEALTH_OK, { url: "**/api/v1/answer", status: 200, body });
+    await page.goto("/");
+    await ask(page, "where?");
+    await page.getByRole("link", { name: /\[E1\]/ }).click();
+    const block = page.locator("#ev-1 pre");
+    await expect(block.locator(".hljs-keyword").first()).toHaveText("def");
+    await expect(block.locator(".hljs-comment")).toContainText("check it");
+    await expect(block.locator(".hljs-string")).toContainText("ok");
   });
 
   test("the first screen shows the workflow, the index status and an empty evidence panel", async ({ page }) => {
@@ -289,5 +323,51 @@ test.describe("against the real stack", () => {
     await ask(page, "How does itsdangerous send analytics events?");
     await expect(page.locator(".badge")).toBeVisible({ timeout: 90_000 });
     await expect(page.locator(".badge")).toHaveText("Not enough evidence");
+  });
+});
+
+test.describe("on a phone-sized screen", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  async function noSideScroll(page: Page) {
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(0);
+  }
+
+  test("the first screen, an answer and an abstention fit the width and stack cleanly", async ({ page }) => {
+    const longName = "an-extremely-long-repository-name-that-could-overflow-the-status-bar";
+    await page.route("**/api/health", (r) => r.fulfill({ json: HEALTH_OK }));
+    await page.route("**/api/v1/index/status", (r) =>
+      r.fulfill({ json: { repository: longName, files: 1234, chunks: 56789 } }),
+    );
+    const code = [
+      "def verify_signature(self, value, signature, extra_argument_that_is_long):",
+      "    return True",
+    ].join("\n");
+    const evidence = EVIDENCE.map((e) => ({ ...e, text: code }));
+    const claim = { text: "Signatures are checked here.", citations: [CITATION] };
+    let reply = answer({ claims: [claim], evidence: { evidence } });
+    await page.route("**/api/v1/answer", (r) => r.fulfill({ json: reply }));
+    await page.goto("/");
+    await expect(page.getByText("Indexed repository:")).toContainText(longName);
+    await noSideScroll(page);
+
+    await ask(page, "Where is it checked?");
+    await expect(page.getByText("Answered", { exact: true })).toBeVisible();
+    await page.getByRole("link", { name: /\[E1\]/ }).click();
+    await expect(page.locator("#ev-1 pre")).toBeVisible();
+    await noSideScroll(page);
+    const answerBox = await page.locator(".answer-col .card").boundingBox();
+    const evidenceBox = await page.locator(".evidence-col .card").boundingBox();
+    expect(evidenceBox!.y).toBeGreaterThan(answerBox!.y + answerBox!.height - 1); // stacked, not side by side
+    expect(answerBox!.x + answerBox!.width).toBeLessThanOrEqual(390);
+    expect(evidenceBox!.x + evidenceBox!.width).toBeLessThanOrEqual(390);
+
+    reply = answer({ status: "insufficient_evidence", missing: "Nothing about it.", evidence: { evidence } });
+    await ask(page, "How does it send analytics?");
+    await expect(page.getByText(/does not guess/)).toBeVisible();
+    await noSideScroll(page);
   });
 });
