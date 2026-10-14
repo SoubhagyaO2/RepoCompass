@@ -12,6 +12,7 @@ from typing import Any
 from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 
+from app.answer.prompt_product import PRODUCT_PROMPT
 from app.answer.service import AnswerService, AnswerUnavailable
 from app.config import get_settings
 from app.evidence.builder import DEPTH, MAX_EXTRA_CHUNKS, EvidenceBuilder, EvidenceQueryError
@@ -97,6 +98,7 @@ def main() -> int:
             service: AnswerService | None = AnswerService(
                 lambda q, k: builder.build(q, k, include_text=True),
                 get_llm_client(settings),
+                system_prompt=PRODUCT_PROMPT,
                 structured_output=settings.structured_output,
             )
         except LLMConfigError as error:
