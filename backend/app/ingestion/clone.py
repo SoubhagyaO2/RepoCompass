@@ -1,6 +1,7 @@
 """Clone repositories with the git CLI."""
 
 import os
+import re
 import shutil
 import stat
 import subprocess
@@ -21,7 +22,55 @@ _HARDENED_OPTIONS = [
     "-c", "http.followRedirects=false",
     "-c", "core.symlinks=false",
     "-c", "core.hooksPath=",
+    "-c", "credential.helper=",
 ]  # fmt: skip
+
+
+ACCESS_MESSAGE = (
+    "This repository could not be accessed without credentials. It is private or does not "
+    "exist (GitHub answers the same way for both). RepoCompass indexes public repositories only: "
+    "make the repository public, or check the owner and name in the URL."
+)
+_ACCESS_SIGNS = (
+    "could not read username",
+    "could not read password",
+    "terminal prompts disabled",
+    "authentication failed",
+    "invalid username or password",
+    "repository not found",
+    "error: 401",
+    "error: 403",
+    "error: 404",
+    "not found",
+)
+_NETWORK_SIGNS = (
+    "could not resolve host",
+    "failed to connect",
+    "connection timed out",
+    "connection refused",
+    "ssl",
+    "unable to access",
+)
+
+
+# Local file paths (Windows or POSIX) in git's text; URLs are left alone.
+_PATH_RE = re.compile(r"(?<![:/\w])(?:[A-Za-z]:[\\/]|/)[^\s'\"]+")
+
+
+def explain_clone_failure(stderr: str) -> str:
+    """A message a user can act on, from git's stderr: never the raw text, which names local
+    paths and (for private repositories) a misleading credentials prompt."""
+    text = (stderr or "").lower()
+    if "error: 429" in text or "rate limit" in text or "too many requests" in text:
+        return "GitHub is rate-limiting requests from this server; try again later."
+    if "returned error: 5" in text:
+        return "GitHub is temporarily unavailable (a server error); try again later."
+    if any(sign in text for sign in _ACCESS_SIGNS):
+        return ACCESS_MESSAGE
+    if any(sign in text for sign in _NETWORK_SIGNS):
+        return "The server could not reach github.com (network or certificate problem)."
+    summary = " ".join(_PATH_RE.sub("<path>", stderr or "").split())[:200]
+    return f"git clone failed: {summary}"
 
 
 def directory_size_mb(root: Path) -> float:
@@ -69,6 +118,9 @@ def clone_repository(
         else dict(os.environ)
     )
     env = {**base, "GIT_TERMINAL_PROMPT": "0"}
+    if hardened:
+        # Ignore any system or per-user git configuration (credential helpers, URL rewrites).
+        env.update(GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL=os.devnull)
     try:
         subprocess.run(
             cmd,
@@ -87,8 +139,8 @@ def clone_repository(
         raise CloneError(f"git clone timed out after {timeout_s:.0f}s") from e
     except subprocess.CalledProcessError as e:
         _remove_tree(tmp)
-        detail = (e.stderr or "").strip().replace(str(tmp), "<clone>").replace(str(dest), "<clone>")
-        raise CloneError(f"git clone failed: {detail}") from e
+        detail = (e.stderr or "").replace(str(tmp), "<clone>").replace(str(dest), "<clone>")
+        raise CloneError(explain_clone_failure(detail)) from e
 
     tmp.rename(dest)
     return dest
