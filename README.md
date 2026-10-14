@@ -24,7 +24,7 @@ It was built as a series of pre-registered experiments, so the project also reco
 | Extra chunks per file cut abstentions on answerable questions from 11 to 5 (exact McNemar p = 0.016) | Human-validated answer quality: no human review was conducted, and it is out of scope |
 | Reranking and always-on graph expansion **hurt** and were rejected; a premise-assessment prompt was **not supported** (p = 0.125, regression guard failed) | Reliability of the product's structured-output mode: checked on a handful of live questions, not measured |
 
-![An answered question with its citation highlighted in the evidence list](docs/media/ui-citation.png)
+![An answered question: the citation highlights its evidence item and opens the cited code](docs/media/ui-citation.png)
 
 **Before you try it:**
 
@@ -151,7 +151,7 @@ The backend image uses CPU-only torch and bakes the embedding model in; it is la
 ```bash
 cd backend && pytest && ruff check .        # 592 passed, 1 skipped; no network or API key needed
 cd frontend && npm run typecheck && npm run build
-cd frontend && npx playwright test          # 12 mocked-API browser tests, in the installed Chrome
+cd frontend && npx playwright test          # 16 mocked-API browser tests, in the installed Chrome
 ```
 
 Against a running stack: `REAL_STACK=1 npx playwright test` (real question, citation navigation,

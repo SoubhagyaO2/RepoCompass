@@ -13,9 +13,9 @@ mkdirSync(tmp, { recursive: true });
 
 const browser = await chromium.launch({ channel: "chrome", headless: true });
 const context = await browser.newContext({
-  viewport: { width: 1000, height: 720 },
+  viewport: { width: 1200, height: 760 },
   colorScheme: "light",
-  recordVideo: { dir: tmp, size: { width: 1000, height: 720 } },
+  recordVideo: { dir: tmp, size: { width: 1200, height: 760 } },
 });
 const page = await context.newPage();
 const pause = (ms) => page.waitForTimeout(ms);
@@ -37,11 +37,10 @@ await page.screenshot({ path: join(out, "ui-start.png") });
 
 await ask("Where is the signature verified?");
 await page.screenshot({ path: join(out, "ui-answer.png") });
-await page.locator("a.cite").first().click(); // citation navigation: scrolls to and highlights the evidence
+await page.locator("a.cite").first().click(); // citation navigation: highlights the evidence and opens its code
 await pause(1800);
 await page.screenshot({ path: join(out, "ui-citation.png") });
 
-await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
 await ask("How does itsdangerous send analytics events?");
 await page.screenshot({ path: join(out, "ui-abstention.png") });
 await pause(1500);
