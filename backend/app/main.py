@@ -51,7 +51,9 @@ def create_app(builder: EvidenceBuilder | None = None, llm: LLMClient | None = N
                 client = None
             if client is not None:
                 app.state.answer_service = AnswerService(
-                    lambda q, k: active.build(q, k, include_text=True), client
+                    lambda q, k: active.build(q, k, include_text=True),
+                    client,
+                    structured_output=settings.structured_output,
                 )
         try:
             yield

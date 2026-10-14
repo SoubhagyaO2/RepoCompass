@@ -123,6 +123,8 @@ class GeminiClient:
         }
         if request.json_output:
             config["responseMimeType"] = "application/json"
+        if request.response_schema:
+            config["responseSchema"] = request.response_schema
         payload = {
             "systemInstruction": {"parts": [{"text": request.system}]},
             "contents": [{"role": "user", "parts": [{"text": request.user}]}],
