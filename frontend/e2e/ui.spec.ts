@@ -58,6 +58,23 @@ async function ask(page: Page, text: string, button = "Ask") {
 }
 
 test.describe("with a mocked API", () => {
+  test("names the indexed repository and offers example questions only for Flask", async ({ page }) => {
+    await page.route("**/api/health", (r) => r.fulfill({ json: HEALTH_OK }));
+    await page.route("**/api/v1/index/status", (r) =>
+      r.fulfill({ json: { repository: "itsdangerous", files: 15, chunks: 156 } }),
+    );
+    await page.goto("/");
+    await expect(page.getByText("Indexed repository:")).toContainText("itsdangerous");
+    await expect(page.locator("button.link")).toHaveCount(0);
+
+    await page.unroute("**/api/v1/index/status");
+    await page.route("**/api/v1/index/status", (r) =>
+      r.fulfill({ json: { repository: "flask_evidence", files: 83, chunks: 1027 } }),
+    );
+    await page.reload();
+    await expect(page.locator("button.link")).toHaveCount(3);
+  });
+
   test("renders an answer and navigates from a citation to its evidence", async ({ page }) => {
     const body = answer({
       claims: [{ text: "Signatures are checked by Signer.verify.", citations: [CITATION] }],
