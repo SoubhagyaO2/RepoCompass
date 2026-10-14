@@ -603,3 +603,127 @@ pre code {
     text-align: left;
   }
 }
+
+/* connect a repository */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.card.connect {
+  margin-bottom: 1.25rem;
+  background: var(--panel);
+}
+
+.connect-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.connect-form input {
+  flex: 1 1 18rem;
+  min-width: 0;
+  font: inherit;
+  padding: 0.65rem 0.8rem;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--shadow-small);
+}
+
+.connect-form input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.connect-form input:focus-visible {
+  outline: 3px solid var(--purple-strong);
+  outline-offset: 2px;
+}
+
+.connect .notice {
+  margin: 0.75rem 0 0;
+}
+
+.progress {
+  margin-top: 0.9rem;
+}
+
+.stages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.stages li {
+  padding: 0.15rem 0.8rem;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.stages li[data-state="done"] {
+  background: var(--ok-soft);
+  color: var(--ink);
+}
+
+.stages li[data-state="active"] {
+  background: var(--purple);
+  color: var(--ink);
+  box-shadow: var(--shadow-small);
+}
+
+.detail {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.6rem 0 0;
+  color: var(--muted);
+}
+
+.failed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.failed p {
+  margin: 0;
+}
+
+.repos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+
+.chip {
+  padding: 0.25rem 0.85rem;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: var(--shadow-small);
+}
+
+.chip[aria-pressed="true"] {
+  background: var(--purple);
+}
