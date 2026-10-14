@@ -29,10 +29,13 @@ def get_service(request: Request, repository: str | None = None) -> AnswerServic
         except RepositoryNotFound as error:
             if repository:
                 raise HTTPException(404, str(error)) from error
+            raise HTTPException(
+                503, "no repository is selected: send `repository`, or configure a default index"
+            ) from error
         except RepositoryNotReady as error:
             raise HTTPException(409, str(error)) from error
     if service is None:
-        raise HTTPException(503, "the answer layer is not configured (index and LLM key needed)")
+        raise HTTPException(503, "the answer layer is not configured (set GEMINI_API_KEY)")
     return service
 
 
