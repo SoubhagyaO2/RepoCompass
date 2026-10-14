@@ -132,21 +132,33 @@ export default function Home() {
       </header>
 
       <div className="status" role="status">
-        <span className={`pill ${ready ? "ok" : "bad"}`}>
-          <span aria-hidden="true">●</span>{" "}
-          {health ? (ready ? "Index ready" : "No index") : "Connecting…"}
+        <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="6" cy="5" r="2.2" />
+          <circle cx="6" cy="19" r="2.2" />
+          <circle cx="18" cy="7" r="2.2" />
+          <path d="M6 7.2v9.6M18 9.2c0 4-6 3-12 7" />
+        </svg>
+        <span className="repo">
+          {index ? (
+            <>
+              Indexed repository: <strong>{index.repository}</strong> ({index.files} files,{" "}
+              {index.chunks} chunks)
+            </>
+          ) : (
+            "No repository loaded yet"
+          )}
         </span>
-        {health && (
-          <span className={`pill ${health.answer_enabled ? "ok" : "warn"}`}>
-            {health.answer_enabled ? "Written answers on" : "Evidence-only"}
+        <span className="pills">
+          <span className={`pill ${ready ? "ok" : "bad"}`}>
+            <span aria-hidden="true">●</span>{" "}
+            {health ? (ready ? "Index ready" : "No index") : "Connecting…"}
           </span>
-        )}
-        {index && (
-          <span className="repo">
-            Indexed repository: <strong>{index.repository}</strong> ({index.files} files,{" "}
-            {index.chunks} chunks)
-          </span>
-        )}
+          {health && (
+            <span className={`pill ${health.answer_enabled ? "ok" : "warn"}`}>
+              {health.answer_enabled ? "Written answers on" : "Evidence-only"}
+            </span>
+          )}
+        </span>
       </div>
 
       {healthError && (
