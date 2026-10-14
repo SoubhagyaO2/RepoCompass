@@ -90,30 +90,59 @@ Example client configuration (adjust paths):
 Tools: `search_evidence(query, top_k=5, extra_chunks=0)`, `ask(question, top_k)`, `index_status()`.
 Errors (bad arguments, no model key, quota) come back as tool errors with a readable message.
 
-## Demo
+## Docker
 
-`python -m app.demo` runs four fixed questions against a running API; [`docs/DEMO.md`](docs/DEMO.md) has a captured run with commentary, including a weak answer.
+```bash
+# 1. Put GEMINI_API_KEY in backend/.env (optional: without it the stack runs evidence-only)
+# 2. One-time: clone and index a repository into the shared volume
+docker compose build
+docker compose run --rm backend python -m app.ingestion https://github.com/pallets/itsdangerous
+docker compose run --rm backend python -m app.evidence --repository itsdangerous     --root /data/repos/pallets/itsdangerous --build
+# 3. Serve (the API on :8000, the UI on :3000)
+REPOCOMPASS_LIVE_REPOSITORY=itsdangerous REPOCOMPASS_LIVE_ROOT=/data/repos/pallets/itsdangerous     docker compose up -d
+```
+
+In Git Bash on Windows, set `MSYS_NO_PATHCONV=1` first, or `/data/...` arguments are rewritten into
+Windows paths (the index command now refuses a root that does not exist or has no Python files).
+The backend image uses CPU-only torch and bakes the embedding model in; it is large (several GB).
 
 ## Tests
 
 ```bash
-cd backend && pytest && ruff check .        # 587 passed, 1 skipped; no network or API key needed
+cd backend && pytest && ruff check .        # 591 passed, 1 skipped; no network or API key needed
 cd frontend && npm run typecheck && npm run build
+cd frontend && npx playwright test          # 11 mocked-API browser tests, in the installed Chrome
 ```
 
-The suite uses fake models and embedders. Live behaviour is verified separately (see below).
+Against a running stack: `REAL_STACK=1 npx playwright test` (real question, citation navigation,
+real abstention; needs the itsdangerous index and a key), `EVIDENCE_ONLY=1 npx playwright test
+evidence-only` (stack started without a key), `BACKEND_DOWN=1 npx playwright test backend-down`
+(backend container stopped). The backend suite uses fake models and embedders.
+
+## Demo
+
+`python -m app.demo` runs four fixed questions against a running API; [`docs/DEMO.md`](docs/DEMO.md)
+has a captured run with commentary, including a weak answer.
 
 ## Verified, and not verified
 
-Checked end to end on 2026-10-14 against the Flask index with the real model: ingest -> build ->
-retrieve -> grounded answer through the HTTP API (also through the UI's `/api` proxy), and the
-MCP server over real stdio (all three tools, including an abstention on a false-premise
-question). A fresh clone-to-query run on a second repository (`pallets/itsdangerous`) worked.
-This is a smoke test, not a measurement: the measured results are in the report.
+Release verification, 2026-10-14 (smoke tests of the product; **not experimental evidence**, and the
+M0-M15 experiments, results and verdicts are untouched):
 
-Not verified: the Dockerfiles and `docker-compose.yml` were written but never built (no Docker
-daemon was running); the UI was exercised through its HTTP proxy but not in an automated browser
-test; only Python repositories are supported; Windows is the only OS the project was run on.
+- **Docker:** `docker compose build` of both images; on a fresh volume, ingest and index of
+  `pallets/itsdangerous` inside the container; both containers healthy; `/health` through the
+  backend and through the UI proxy; a real question returned `answered`, valid, with a citation
+  (`signer.py:227-242`, `Signer.verify_signature`) whose line range contains that function.
+- **Browser (Chrome via Playwright):** answer rendering, citation links that scroll to and
+  highlight the evidence item, partial answers, abstentions, validation-failure display,
+  evidence-only fallback, missing index, unreachable API, quota and server errors with recovery,
+  all with a mocked API; the real stack for a real answer, a real abstention, a real keyless
+  evidence-only stack and a really stopped backend.
+- **MCP server:** over real stdio against the Flask index, all three tools.
+
+Not verified: only Windows with Docker Desktop was used; no accessibility audit beyond keyboard
+focus styles; one browser (Chrome); only Python repositories; the model's answers vary run to run
+and were checked on a handful of questions, which is not a measurement of answer quality.
 
 ## Layout
 

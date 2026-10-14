@@ -1,4 +1,3 @@
-# NOT BUILT OR RUN in the environment where this was written (no Docker daemon was available).
 FROM node:22-alpine
 WORKDIR /app
 COPY package.json package-lock.json ./
