@@ -13,6 +13,7 @@ def test_health_returns_ok_without_an_index() -> None:
         "version": "0.1.0",
         "index_loaded": False,
         "answer_enabled": False,
+        "indexing_enabled": True,
     }
 
 

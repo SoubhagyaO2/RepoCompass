@@ -40,6 +40,15 @@ class Settings(BaseSettings):
     # Provider-enforced output shape for the API and MCP server. Off for every evaluation run.
     structured_output: bool = True
 
+    # Connecting repositories by URL (the API clones public GitHub repositories and indexes them).
+    # Meant for local or trusted use: anyone who can reach the API can start an index job.
+    enable_repo_indexing: bool = True
+    max_repositories: int = 10
+    max_queued_jobs: int = 3
+    max_python_files: int = 3000
+    max_clone_mb: int = 300
+    clone_timeout_s: int = 300
+
     # The live index served by the Evidence API (Milestones 11-12).
     live_repository: str | None = None
     live_root: Path | None = None

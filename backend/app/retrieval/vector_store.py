@@ -1,6 +1,7 @@
 """A thin wrapper around Qdrant (local, in-process mode) so the rest of the code never
 touches the client API directly."""
 
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -10,10 +11,30 @@ from qdrant_client.models import Distance, PointIdsList, PointStruct, VectorPara
 UPSERT_BATCH = 256
 
 
+class _Locked:
+    """Serialises every method call on a client: the API threads and the indexing worker share one
+    local Qdrant client, which is a single-process store."""
+
+    def __init__(self, client: Any) -> None:
+        self._inner = client
+        self._lock = threading.RLock()
+
+    def __getattr__(self, name: str) -> Any:
+        attribute = getattr(self._inner, name)
+        if not callable(attribute):
+            return attribute
+
+        def call(*args: Any, **kwargs: Any) -> Any:
+            with self._lock:
+                return attribute(*args, **kwargs)
+
+        return call
+
+
 class VectorStore:
     def __init__(self, path: Path) -> None:
         path.mkdir(parents=True, exist_ok=True)
-        self._client = QdrantClient(path=str(path))
+        self._client = _Locked(QdrantClient(path=str(path)))
 
     def close(self) -> None:
         self._client.close()
