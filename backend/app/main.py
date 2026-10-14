@@ -20,6 +20,7 @@ from app.api.health import router as health_router
 from app.config import get_settings
 from app.evidence.builder import EvidenceBuilder
 from app.evidence.service import load_builder
+from app.indexing.live_index import IndexStateError
 from app.llm import get_llm_client
 from app.llm.base import LLMClient, LLMConfigError
 
@@ -35,9 +36,12 @@ def create_app(builder: EvidenceBuilder | None = None, llm: LLMClient | None = N
         store = None
         app.state.evidence_builder = builder
         if builder is None and settings.live_repository and settings.live_root:
-            app.state.evidence_builder, store = load_builder(
-                settings, settings.live_repository, settings.live_root
-            )
+            try:
+                app.state.evidence_builder, store = load_builder(
+                    settings, settings.live_repository, settings.live_root
+                )
+            except IndexStateError as error:
+                raise RuntimeError(f"cannot load the live index: {error}") from None
         app.state.answer_service = None
         active = app.state.evidence_builder
         if active is not None:

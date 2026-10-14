@@ -193,7 +193,7 @@ def settings(**values: Any) -> Settings:
 
 def test_provider_selection() -> None:
     client = get_llm_client(settings(llm_provider="gemini", GEMINI_API_KEY=KEY))
-    assert client.provider == "gemini" and client.model == "gemini-3.7-flash"
+    assert client.provider == "gemini" and client.model == "gemini-3.5-flash-lite"
 
 
 def test_unknown_provider_and_missing_key_are_clear_errors() -> None:

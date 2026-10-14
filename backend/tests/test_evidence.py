@@ -393,3 +393,30 @@ def test_http_without_an_index_is_503() -> None:
         assert client.get("/v1/evidence", params={"q": "x"}).status_code == 503
         assert client.get("/v1/index/status").status_code == 503
         assert client.get("/health").status_code == 200
+
+
+def test_health_reports_the_loaded_index_and_the_answer_layer(builder: EvidenceBuilder) -> None:
+    from answer_fixtures import FakeLLM, output
+
+    with TestClient(create_app(builder, FakeLLM(output()))) as client:
+        body = client.get("/health").json()
+    assert body["index_loaded"] is True and body["answer_enabled"] is True
+
+
+def test_startup_failure_names_the_problem_in_one_line(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.main as main
+    from app.indexing.live_index import IndexStateError
+
+    def broken(*args: Any, **kwargs: Any) -> Any:
+        raise IndexStateError("the stored index was built with another configuration; rebuild it")
+
+    monkeypatch.setenv("REPOCOMPASS_LIVE_REPOSITORY", "x")
+    monkeypatch.setenv("REPOCOMPASS_LIVE_ROOT", ".")
+    main.get_settings.cache_clear()
+    monkeypatch.setattr(main, "load_builder", broken)
+    try:
+        with pytest.raises(RuntimeError, match="cannot load the live index.*rebuild it"):
+            with TestClient(main.create_app()):
+                pass
+    finally:
+        main.get_settings.cache_clear()

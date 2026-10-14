@@ -19,6 +19,7 @@ dependencies = [
     "sentence-transformers>=3.0",
     "qdrant-client>=1.10",
     "networkx>=3.2",
+    "mcp>=2.3,<3",
 ]
 
 [project.optional-dependencies]
