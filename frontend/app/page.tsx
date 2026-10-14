@@ -157,12 +157,7 @@ export default function Home() {
   return (
     <main>
       <header>
-        <h1>RepoCompass</h1>
-        <p className="lede">
-          Ask a code repository a question. RepoCompass retrieves the relevant source code, answers
-          only from it, cites the exact files and lines, and says so when the evidence does not
-          support an answer.
-        </p>
+        <h1 className="brand">RepoCompass</h1>
         <Workflow phase={phase} />
       </header>
 
