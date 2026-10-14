@@ -11,7 +11,34 @@ class CloneError(RuntimeError):
     """Raised when a repository cannot be cloned."""
 
 
-def clone_repository(clone_url: str, dest: Path, timeout_s: float = 600) -> Path:
+# The only environment variables git sees when cloning for a web request: nothing secret.
+_GIT_ENV_KEYS = ("PATH", "SYSTEMROOT", "TEMP", "TMP", "TMPDIR", "HOME", "USERPROFILE", "LANG")
+
+# git options for a clone requested over HTTP: https only, no redirects, no hooks, no symlinks.
+_HARDENED_OPTIONS = [
+    "-c", "protocol.allow=never",
+    "-c", "protocol.https.allow=always",
+    "-c", "http.followRedirects=false",
+    "-c", "core.symlinks=false",
+    "-c", "core.hooksPath=",
+]  # fmt: skip
+
+
+def directory_size_mb(root: Path) -> float:
+    """Size of the working tree in MiB (the .git directory is not counted)."""
+    total = 0
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames if d != ".git"]
+        for name in filenames:
+            path = Path(dirpath) / name
+            if not path.is_symlink():
+                total += path.stat().st_size
+    return total / 1_048_576
+
+
+def clone_repository(
+    clone_url: str, dest: Path, timeout_s: float = 600, hardened: bool = False
+) -> Path:
     """Shallow-clone `clone_url` into `dest` and return `dest`.
 
     If `dest` already holds a clone it is reused as-is; refreshing an existing
@@ -29,9 +56,19 @@ def clone_repository(clone_url: str, dest: Path, timeout_s: float = 600) -> Path
     _remove_tree(tmp)  # leftover from an earlier interrupted run
     dest.parent.mkdir(parents=True, exist_ok=True)
 
-    cmd = ["git", "clone", "--depth", "1", "--", clone_url, str(tmp)]
+    options = (
+        [*_HARDENED_OPTIONS, "clone", "--depth", "1", "--no-tags"]
+        if hardened
+        else ["clone", "--depth", "1"]
+    )
+    cmd = ["git", *options, "--", clone_url, str(tmp)]
     # Fail instead of hanging on a credentials prompt (private or missing repos).
-    env = {**os.environ, "GIT_TERMINAL_PROMPT": "0"}
+    base = (
+        {k: os.environ[k] for k in _GIT_ENV_KEYS if k in os.environ}
+        if hardened
+        else dict(os.environ)
+    )
+    env = {**base, "GIT_TERMINAL_PROMPT": "0"}
     try:
         subprocess.run(
             cmd,
@@ -50,7 +87,8 @@ def clone_repository(clone_url: str, dest: Path, timeout_s: float = 600) -> Path
         raise CloneError(f"git clone timed out after {timeout_s:.0f}s") from e
     except subprocess.CalledProcessError as e:
         _remove_tree(tmp)
-        raise CloneError(f"git clone failed: {e.stderr.strip()}") from e
+        detail = (e.stderr or "").strip().replace(str(tmp), "<clone>").replace(str(dest), "<clone>")
+        raise CloneError(f"git clone failed: {detail}") from e
 
     tmp.rename(dest)
     return dest

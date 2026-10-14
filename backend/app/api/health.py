@@ -3,6 +3,7 @@ from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 
 from app import __version__
+from app.config import get_settings
 
 router = APIRouter(tags=["health"])
 
@@ -12,6 +13,7 @@ class HealthResponse(BaseModel):
     version: str
     index_loaded: bool = False
     answer_enabled: bool = False
+    indexing_enabled: bool = False
 
 
 @router.get("/", include_in_schema=False)
@@ -23,10 +25,16 @@ def root() -> RedirectResponse:
 @router.get("/health", response_model=HealthResponse)
 def health(request: Request) -> HealthResponse:
     """Liveness check, plus whether an index is loaded and the answer layer is configured."""
-    state = request.app.state
+    registry = getattr(request.app.state, "registry", None)
+    entries = registry.list() if registry is not None else []
     return HealthResponse(
         status="ok",
         version=__version__,
-        index_loaded=getattr(state, "evidence_builder", None) is not None,
-        answer_enabled=getattr(state, "answer_service", None) is not None,
+        index_loaded=any(e.status == "ready" for e in entries),
+        answer_enabled=any(e.status == "ready" and e.service is not None for e in entries),
+        indexing_enabled=(
+            registry.indexing_enabled
+            if registry is not None
+            else get_settings().enable_repo_indexing
+        ),
     )

@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from app.answer.schema import AnswerResponse
 from app.answer.service import AnswerService, AnswerUnavailable
 from app.evidence.builder import DEPTH, MAX_QUERY_CHARS
+from app.repositories import RepositoryNotFound, RepositoryNotReady, RepositoryRegistry
 
 router = APIRouter(prefix="/v1", tags=["answer"])
 
@@ -16,10 +17,20 @@ router = APIRouter(prefix="/v1", tags=["answer"])
 class AnswerRequest(BaseModel):
     question: Annotated[str, Field(min_length=1, max_length=MAX_QUERY_CHARS)]
     top_k: Annotated[int | None, Field(ge=1, le=DEPTH)] = None
+    repository: Annotated[str | None, Field(max_length=200)] = None
 
 
-def get_service(request: Request) -> AnswerService:
-    service: AnswerService | None = getattr(request.app.state, "answer_service", None)
+def get_service(request: Request, repository: str | None = None) -> AnswerService:
+    registry: RepositoryRegistry | None = getattr(request.app.state, "registry", None)
+    service: AnswerService | None = None
+    if registry is not None:
+        try:
+            service = registry.service(repository)
+        except RepositoryNotFound as error:
+            if repository:
+                raise HTTPException(404, str(error)) from error
+        except RepositoryNotReady as error:
+            raise HTTPException(409, str(error)) from error
     if service is None:
         raise HTTPException(503, "the answer layer is not configured (index and LLM key needed)")
     return service
@@ -30,7 +41,7 @@ def answer(body: AnswerRequest, request: Request) -> AnswerResponse | JSONRespon
     """A grounded answer: claims with resolved citations, or an abstention, with the evidence."""
     if not body.question.strip():
         raise HTTPException(422, "the question is empty")
-    service = get_service(request)
+    service = get_service(request, body.repository)
     try:
         return service.answer(body.question, body.top_k)
     except AnswerUnavailable as error:

@@ -14,9 +14,11 @@ def open_live_index(
     repository: str,
     root: Path,
     embedder: Embedder | None = None,
+    store: VectorStore | None = None,
 ) -> tuple[LiveIndex, VectorStore]:
-    """The live index of `repository` under `settings.data_dir`. The caller closes the store."""
-    store = VectorStore(settings.live_qdrant_path)
+    """The live index of `repository` under `settings.data_dir`. The caller closes the store (a
+    store passed in is shared, for serving several repositories from one process)."""
+    store = store or VectorStore(settings.live_qdrant_path)
     index = LiveIndex(
         repository,
         root,
