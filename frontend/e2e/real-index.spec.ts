@@ -29,14 +29,21 @@ test("indexes a real public repository from its URL and answers about it", async
   await expect(page.getByText("Indexed repository:")).toContainText("itsdangerous");
 });
 
-test("a repository that does not exist fails with a readable message and no server paths", async ({ page }) => {
-  test.setTimeout(180_000);
-  await page.goto("/");
-  await page.getByLabel("GitHub repository URL").fill("https://github.com/pallets/no-such-repository-xyz");
-  await page.getByRole("button", { name: "Index Repository" }).click();
-  const failure = page.locator("div[role=alert]").filter({ hasText: "failed" });
-  await expect(failure).toBeVisible({ timeout: 150_000 });
-  const text = await failure.innerText();
-  expect(text).not.toMatch(/\/data\/|\/app\//);
-  await expect(page.getByRole("button", { name: "Try again" })).toBeVisible();
-});
+for (const url of [
+  "https://github.com/pallets/no-such-repository-xyz",
+  "https://github.com/SoubhagyaO2/Whizan-cloud-service", // private or missing: the case that was reported
+]) {
+  test(`a private or missing repository (${url}) fails with a clear, safe message`, async ({ page }) => {
+    test.setTimeout(180_000);
+    await page.goto("/");
+    await page.getByLabel("GitHub repository URL").fill(url);
+    await page.getByRole("button", { name: "Index Repository" }).click();
+    const failure = page.locator("div[role=alert]").filter({ hasText: "failed" });
+    await expect(failure).toBeVisible({ timeout: 150_000 });
+    const text = await failure.innerText();
+    expect(text).toContain("private or does not exist");
+    expect(text).toContain("public");
+    expect(text).not.toMatch(/terminal prompts|Username|\/data\/|\/app\//);
+    await expect(page.getByRole("button", { name: "Try again" })).toBeVisible();
+  });
+}

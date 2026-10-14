@@ -114,12 +114,18 @@ What protects the server (each point has automated tests):
   validated owner and name, and git is limited to https with redirects, hooks, symlinks and
   submodules off, so a user-supplied string never chooses where the server connects.
 - **No secrets reach git or the browser.** git runs with a short allow-list of environment
-  variables (no API keys). Status and error messages contain no server paths.
+  variables (no API keys), credential helpers are disabled and system and per-user git
+  configuration is ignored, so credentials or URL rewrites cannot be inherited. Status and error messages contain no server paths.
 - **Isolation.** Each repository has its own id, clone directory, state directory and vector
   collection. A request can create or retry only its own id; asking for an already indexed
   repository returns it unchanged, so one request cannot replace or rebuild another's index.
 - **Limits.** One indexing worker, a bounded queue, a cap on repositories (none is evicted), a
   clone timeout, a size limit and a limit on Python files.
+
+A private repository cannot be indexed, by design (no token is ever requested or sent). GitHub answers
+unauthenticated requests for a private repository exactly as it does for one that does not exist
+(HTTP 401 for git, 404 for the page), so the UI says "It is private or does not exist" and asks for a
+public repository.
 
 Limits of this design: there are no user accounts, so connected repositories are shared by everyone
 who can reach the API; there is no rate limit per client; only public repositories work; refreshing
@@ -181,7 +187,7 @@ The backend image uses CPU-only torch and bakes the embedding model in; it is la
 ## Tests
 
 ```bash
-cd backend && pytest && ruff check .        # 654 passed, 1 skipped; no network or API key needed
+cd backend && pytest && ruff check .        # 667 passed, 1 skipped; no network or API key needed
 cd frontend && npm run typecheck && npm run build
 cd frontend && npx playwright test          # 29 mocked-API browser tests, in the installed Chrome
 ```
