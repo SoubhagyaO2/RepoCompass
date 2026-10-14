@@ -53,6 +53,17 @@ authoring checks establish structural quality, not freedom from author bias.
   not what the published answer-layer numbers were measured with (those used prompt-only JSON
   and show format failures such as plain-string claims). A handful of live checks after the
   change returned valid output, which is not a measurement.
+- **The API and MCP server also use a product prompt, not the frozen one.** It is the frozen M13
+  prompt plus one rule (`app/answer/prompt_product.py`): the paths and code of the evidence items
+  count as evidence for "what language is this written in", the claim is limited to the files
+  shown, and frameworks still need an item that names or imports them. Reason: the model sometimes
+  abstained on that question because no item "stated" the language. Hand checks, not an
+  experiment and not counted as one: the language question was answered on 2 repositories (it was
+  abstained on one before), a framework question stayed abstained where no item names a framework,
+  and re-running the 35 unanswerable and mismatched-evidence cases of the frozen benchmark with
+  this prompt abstained on 15 of 15 and 19 of 20 (the frozen prompt: 13 of 15 and 19 of 20; the
+  model is nondeterministic and the structured-output setting also differed). No published result
+  was produced with this prompt.
 - **Single-process index.** The local Qdrant store allows one process at a time, so the API and
   the MCP server cannot serve the same data directory simultaneously.
 

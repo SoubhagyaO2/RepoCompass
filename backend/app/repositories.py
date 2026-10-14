@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
+from app.answer.prompt_product import PRODUCT_PROMPT
 from app.answer.service import AnswerService
 from app.config import Settings
 from app.evidence.builder import EvidenceBuilder
@@ -173,6 +174,7 @@ class RepositoryRegistry:
         return AnswerService(
             lambda q, k: builder.build(q, k, include_text=True),
             self._llm,
+            system_prompt=PRODUCT_PROMPT,
             structured_output=self._settings.structured_output,
         )
 
