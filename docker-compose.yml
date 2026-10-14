@@ -1,0 +1,20 @@
+# NOT BUILT OR RUN in the environment where this was written (no Docker daemon was available).
+# Build the index once into the shared volume (see the README), then: docker compose up
+services:
+  backend:
+    build: ./backend
+    env_file: ./backend/.env
+    environment:
+      REPOCOMPASS_LIVE_REPOSITORY: ${REPOCOMPASS_LIVE_REPOSITORY:-}
+      REPOCOMPASS_LIVE_ROOT: ${REPOCOMPASS_LIVE_ROOT:-}
+    volumes:
+      - repocompass-data:/data
+    ports:
+      - "8000:8000"
+  frontend:
+    build: ./frontend
+    depends_on: [backend]
+    ports:
+      - "3000:3000"
+volumes:
+  repocompass-data:
