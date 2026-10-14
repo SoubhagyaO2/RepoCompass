@@ -97,6 +97,36 @@ the answer layer is enabled.
 Only one process can open a local index at a time: stop the API before running the MCP server or
 `python -m app.evidence` against the same data directory.
 
+## Connect a repository from the UI
+
+Open the UI, paste a public GitHub URL (`https://github.com/owner/repository`) into **Connect a
+repository** and click **Index Repository**. The API validates the URL, clones the repository
+shallowly, indexes its Python files with the same pipeline as the command line, and the page shows
+the stages (Queued, Cloning, Indexing, Ready). Then ask questions about it; with several repositories
+indexed, choose which one to ask about. Connected repositories are reloaded when the API restarts.
+The same thing over HTTP: `POST /v1/repositories {"url": ...}` (202), `GET /v1/repositories`,
+`GET /v1/repositories/{id}`; the evidence and answer endpoints take an optional `repository`.
+
+What protects the server (each point has automated tests):
+
+- **No outbound requests except to GitHub.** Only `https://github.com/<owner>/<repo>` is accepted:
+  no other host, scheme, port, credentials, or extra path. The clone URL is rebuilt from the
+  validated owner and name, and git is limited to https with redirects, hooks, symlinks and
+  submodules off, so a user-supplied string never chooses where the server connects.
+- **No secrets reach git or the browser.** git runs with a short allow-list of environment
+  variables (no API keys). Status and error messages contain no server paths.
+- **Isolation.** Each repository has its own id, clone directory, state directory and vector
+  collection. A request can create or retry only its own id; asking for an already indexed
+  repository returns it unchanged, so one request cannot replace or rebuild another's index.
+- **Limits.** One indexing worker, a bounded queue, a cap on repositories (none is evicted), a
+  clone timeout, a size limit and a limit on Python files.
+
+Limits of this design: there are no user accounts, so connected repositories are shared by everyone
+who can reach the API; there is no rate limit per client; only public repositories work; refreshing
+an indexed repository to a newer commit is not implemented (remove its state and index it again);
+progress is by stage, not by percentage. It is meant for local or trusted use: switch it off with
+`REPOCOMPASS_ENABLE_REPO_INDEXING=false` on anything public.
+
 ## Configuration
 
 Settings come from environment variables or `backend/.env` (never commit it). See `.env.example`.
@@ -108,6 +138,8 @@ Settings come from environment variables or `backend/.env` (never commit it). Se
 | `REPOCOMPASS_LIVE_REPOSITORY`, `REPOCOMPASS_LIVE_ROOT` | The index name and working tree to serve |
 | `REPOCOMPASS_DATA_DIR` | Where clones and indexes live (default `data`) |
 | `REPOCOMPASS_STRUCTURED_OUTPUT` | Provider-enforced answer shape for the API and MCP server (default on; **off for every experiment**) |
+| `REPOCOMPASS_ENABLE_REPO_INDEXING` | Lets the API clone and index repositories from a pasted URL (default `true`; set `false` on any server that untrusted people can reach) |
+| `REPOCOMPASS_MAX_REPOSITORIES`, `_MAX_QUEUED_JOBS`, `_MAX_PYTHON_FILES`, `_MAX_CLONE_MB`, `_CLONE_TIMEOUT_S` | Limits on connected repositories (defaults 10, 3, 3000, 300 MiB, 300 s) |
 
 A shell variable named `GEMINI_API_KEY` overrides `backend/.env`; clear it if the wrong key is used.
 
@@ -149,15 +181,17 @@ The backend image uses CPU-only torch and bakes the embedding model in; it is la
 ## Tests
 
 ```bash
-cd backend && pytest && ruff check .        # 592 passed, 1 skipped; no network or API key needed
+cd backend && pytest && ruff check .        # 654 passed, 1 skipped; no network or API key needed
 cd frontend && npm run typecheck && npm run build
-cd frontend && npx playwright test          # 19 mocked-API browser tests, in the installed Chrome
+cd frontend && npx playwright test          # 29 mocked-API browser tests, in the installed Chrome
 ```
 
 Against a running stack: `REAL_STACK=1 npx playwright test` (real question, citation navigation,
 real abstention; needs the itsdangerous index and a key), `EVIDENCE_ONLY=1 npx playwright test
 evidence-only` (stack started without a key), `BACKEND_DOWN=1 npx playwright test backend-down`
-(backend container stopped). The backend suite uses fake models and embedders.
+(backend container stopped), `REAL_INDEX=1 npx playwright test real-index` (clones and indexes real
+GitHub repositories through the UI; needs outbound access). The backend suite uses fake models and
+embedders, and a fake clone for the connect-a-repository tests.
 
 ## Demo
 
@@ -179,8 +213,18 @@ M0-M15 experiments, results and verdicts are untouched):
   all with a mocked API; the real stack for a real answer, a real abstention, a real keyless
   evidence-only stack and a really stopped backend.
 - **MCP server:** over real stdio against the Flask index, all three tools.
+- **Connect a repository (2026-10-14, Docker, real GitHub):** `pallets/markupsafe` pasted into
+  the UI was cloned inside the container, indexed (13 files, about 20 s), answered a question with
+  valid citations, and appeared next to the first repository without replacing it; `pallets/click`
+  (91 files, 1,568 chunks, about 3 minutes) indexed while queries to another repository kept
+  returning 200; a nonexistent repository failed with a readable message and no server path;
+  seven SSRF-style URLs (loopback, link-local metadata address, look-alike hosts, credentials,
+  port, `file://`) were all refused with 422 and changed nothing; repositories came back after a
+  backend restart.
 
-Not verified: only Windows with Docker Desktop was used; no accessibility audit beyond keyboard
+Not verified: per-client rate limiting and authentication do not exist (see "Connect a repository
+from the UI"); repositories larger than the click test; refreshing an indexed repository to a newer
+commit; only Windows with Docker Desktop was used; no accessibility audit beyond keyboard
 focus styles; one browser (Chrome); only Python repositories; the model's answers vary run to run
 and were checked on a handful of questions, which is not a measurement of answer quality.
 

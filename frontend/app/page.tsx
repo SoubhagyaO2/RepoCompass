@@ -2,15 +2,17 @@
 
 import hljs from "highlight.js/lib/core";
 import python from "highlight.js/lib/languages/python";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Answer,
   EvidenceItem,
   Health,
-  IndexStatus,
+  RepoStatus,
+  Repository,
   ask,
+  connectRepository,
   getHealth,
-  getIndexStatus,
+  listRepositories,
   searchEvidence,
 } from "@/lib/api";
 
@@ -23,7 +25,7 @@ const STATUS_TEXT: Record<Answer["status"], string> = {
   invalid_output: "The model's output failed validation",
 };
 
-// Example questions per indexed repository (matched on the index name). A repository without
+// Example questions per indexed repository (matched on the repository name). A repository without
 // examples shows none rather than wrong ones.
 const EXAMPLES: Record<string, string[]> = {
   flask: [
@@ -44,7 +46,15 @@ function examplesFor(repository: string | undefined): string[] {
   return key ? EXAMPLES[key] : [];
 }
 
+const GITHUB_URL = /^https:\/\/github\.com\/[A-Za-z0-9-]+\/[A-Za-z0-9._-]+?(\.git)?\/?$/;
+const POLL_MS = 1500;
 const SNIPPET_LINES = 40;
+const STAGES: { status: RepoStatus; label: string }[] = [
+  { status: "queued", label: "Queued" },
+  { status: "cloning", label: "Cloning" },
+  { status: "indexing", label: "Indexing" },
+  { status: "ready", label: "Ready" },
+];
 
 // "E3" and "E3b" both belong to evidence item 3 (the b/c ids are extra chunks of the same file).
 function evidenceRank(id: string) {
@@ -102,10 +112,42 @@ function Workflow({ phase }: { phase: Phase }) {
   );
 }
 
+function Progress({ repo }: { repo: Repository }) {
+  const current = STAGES.findIndex((s) => s.status === repo.status);
+  const detail =
+    repo.status === "cloning"
+      ? `Fetching ${repo.name} from GitHub…`
+      : repo.status === "indexing"
+        ? `Parsing and embedding ${repo.files_total ?? "the"} Python files. Large repositories can take a few minutes.`
+        : repo.status === "queued"
+          ? "Waiting for the indexer…"
+          : null;
+  return (
+    <div className="progress" aria-live="polite">
+      <ol className="stages" aria-label="Indexing progress">
+        {STAGES.map((s, i) => (
+          <li key={s.status} data-state={i < current ? "done" : i === current ? "active" : "todo"}>
+            {s.label}
+          </li>
+        ))}
+      </ol>
+      {detail && (
+        <p className="detail">
+          <span className="spinner" aria-hidden="true" /> {detail}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function Home() {
   const [health, setHealth] = useState<Health | null>(null);
   const [healthError, setHealthError] = useState<string | null>(null);
-  const [index, setIndex] = useState<IndexStatus | null>(null);
+  const [repos, setRepos] = useState<Repository[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [url, setUrl] = useState("");
+  const [connecting, setConnecting] = useState(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
   const [question, setQuestion] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -113,18 +155,65 @@ export default function Home() {
   const [evidence, setEvidence] = useState<EvidenceItem[] | null>(null);
   const [opened, setOpened] = useState<Set<number>>(new Set());
 
+  const refresh = useCallback(async () => {
+    try {
+      const list = await listRepositories();
+      setRepos(list);
+      setSelectedId((current) => {
+        if (current && list.some((r) => r.id === current)) return current;
+        const first = list.find((r) => r.default && r.status === "ready") ?? list.find((r) => r.status === "ready");
+        return first?.id ?? null;
+      });
+    } catch {
+      // keep what is shown; the next poll or reload retries
+    }
+  }, []);
+
   useEffect(() => {
     getHealth()
       .then((h) => {
         setHealth(h);
-        if (h.index_loaded) getIndexStatus().then(setIndex).catch(() => setIndex(null));
+        refresh();
       })
       .catch((e: Error) => setHealthError(e.message));
-  }, []);
+  }, [refresh]);
+
+  const indexing = repos.some((r) => ["queued", "cloning", "indexing"].includes(r.status));
+  useEffect(() => {
+    if (!indexing) return;
+    const timer = setInterval(refresh, POLL_MS);
+    return () => clearInterval(timer);
+  }, [indexing, refresh]);
+
+  const selected = repos.find((r) => r.id === selectedId) ?? null;
+  const ready = selected?.status === "ready";
+
+  async function connect(text: string) {
+    const value = text.trim();
+    if (!value || connecting) return;
+    if (!GITHUB_URL.test(value)) {
+      setConnectError("Enter a public GitHub repository URL like https://github.com/owner/repository");
+      return;
+    }
+    setConnecting(true);
+    setConnectError(null);
+    try {
+      const repo = await connectRepository(value);
+      setSelectedId(repo.id);
+      setAnswer(null);
+      setEvidence(null);
+      setRepos((prev) => [...prev.filter((r) => r.id !== repo.id), repo]);
+      await refresh();
+    } catch (e) {
+      setConnectError(e instanceof Error ? e.message : "Could not start indexing.");
+    } finally {
+      setConnecting(false);
+    }
+  }
 
   async function submit(text: string) {
     const q = text.trim();
-    if (!q || busy) return;
+    if (!q || busy || !selected || !ready) return;
     setBusy(true);
     setError(null);
     setAnswer(null);
@@ -132,11 +221,11 @@ export default function Home() {
     setOpened(new Set());
     try {
       if (health?.answer_enabled) {
-        const result = await ask(q);
+        const result = await ask(q, selected.id);
         setAnswer(result);
         setEvidence(result.evidence.evidence);
       } else {
-        setEvidence(await searchEvidence(q));
+        setEvidence(await searchEvidence(q, selected.id));
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
@@ -149,10 +238,13 @@ export default function Home() {
     setOpened((prev) => new Set(prev).add(rank));
   }
 
-  const ready = health?.index_loaded ?? false;
-  const examples = examplesFor(index?.repository);
+  const examples = ready ? examplesFor(selected?.name) : [];
   const phase: Phase = busy ? "retrieving" : answer || evidence ? "done" : "idle";
   const canAsk = ready && !busy && question.trim().length > 0;
+  const indexingOff = health !== null && health.indexing_enabled !== true;
+  const canConnect = !connecting && url.trim().length > 0 && !indexingOff;
+  const working = repos.find((r) => r.id === selectedId && ["queued", "cloning", "indexing"].includes(r.status));
+  const failed = repos.find((r) => r.id === selectedId && r.status === "failed");
 
   return (
     <main>
@@ -160,6 +252,89 @@ export default function Home() {
         <h1 className="brand">RepoCompass</h1>
         <Workflow phase={phase} />
       </header>
+
+      <section className="card connect" aria-labelledby="connect-title">
+        <h2 id="connect-title">Connect a repository</h2>
+        <p className="muted">Paste a public GitHub repository URL to get started.</p>
+        <form
+          className="connect-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            connect(url);
+          }}
+        >
+          <label htmlFor="repo-url" className="sr-only">
+            GitHub repository URL
+          </label>
+          <input
+            id="repo-url"
+            type="url"
+            inputMode="url"
+            autoComplete="off"
+            value={url}
+            maxLength={300}
+            disabled={indexingOff}
+            onChange={(e) => {
+              setUrl(e.target.value);
+              setConnectError(null);
+            }}
+            placeholder="https://github.com/owner/repository"
+          />
+          <button type="submit" className="primary" disabled={!canConnect} aria-busy={connecting}>
+            {connecting && <span className="spinner" aria-hidden="true" />}
+            {connecting ? "Starting…" : "Index Repository"}
+          </button>
+        </form>
+        {indexingOff && (
+          <p className="notice">
+            Connecting repositories is turned off on this server. Index one with the command line
+            instead (see the README).
+          </p>
+        )}
+        {connectError && (
+          <p className="notice bad" role="alert">
+            {connectError}
+          </p>
+        )}
+        {working && <Progress repo={working} />}
+        {failed && (
+          <div className="notice bad failed" role="alert">
+            <p>
+              Indexing {failed.name} failed: {failed.error ?? "unknown error"}
+            </p>
+            <button
+              type="button"
+              className="link"
+              onClick={() => connect(`https://github.com/${failed.name}`)}
+            >
+              Try again
+            </button>
+          </div>
+        )}
+        {repos.some((r) => r.status === "ready") && (
+          <div className="repos" role="group" aria-label="Indexed repositories">
+            <span className="muted">Ask about:</span>
+            {repos
+              .filter((r) => r.status === "ready")
+              .map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  className="chip"
+                  aria-pressed={r.id === selectedId}
+                  onClick={() => {
+                    setSelectedId(r.id);
+                    setAnswer(null);
+                    setEvidence(null);
+                    setError(null);
+                  }}
+                >
+                  {r.name}
+                </button>
+              ))}
+          </div>
+        )}
+      </section>
 
       <div className="status" role="status">
         <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -169,19 +344,23 @@ export default function Home() {
           <path d="M6 7.2v9.6M18 9.2c0 4-6 3-12 7" />
         </svg>
         <span className="repo">
-          {index ? (
+          {selected && ready ? (
             <>
-              Indexed repository: <strong>{index.repository}</strong> ({index.files} files,{" "}
-              {index.chunks} chunks)
+              Indexed repository: <strong>{selected.name}</strong> ({selected.files} files,{" "}
+              {selected.chunks} chunks)
+            </>
+          ) : selected ? (
+            <>
+              Repository: <strong>{selected.name}</strong>
             </>
           ) : (
             "No repository loaded yet"
           )}
         </span>
         <span className="pills">
-          <span className={`pill ${ready ? "ok" : "bad"}`}>
+          <span className={`pill ${ready ? "ok" : working ? "warn" : "bad"}`}>
             <span aria-hidden="true">●</span>{" "}
-            {health ? (ready ? "Index ready" : "No index") : "Connecting…"}
+            {health ? (ready ? "Index ready" : working ? "Indexing…" : "No index") : "Connecting…"}
           </span>
           {health && (
             <span className={`pill ${health.answer_enabled ? "ok" : "warn"}`}>
@@ -196,7 +375,7 @@ export default function Home() {
           Cannot reach the API ({healthError}). Start it with <code>uvicorn app.main:app</code>.
         </p>
       )}
-      {health && !health.index_loaded && (
+      {health && !health.index_loaded && !working && indexingOff && (
         <p className="notice bad" role="alert">
           No index is loaded. Set <code>REPOCOMPASS_LIVE_REPOSITORY</code> and{" "}
           <code>REPOCOMPASS_LIVE_ROOT</code> and restart the API.
@@ -222,7 +401,11 @@ export default function Home() {
           onChange={(e) => setQuestion(e.target.value)}
           rows={3}
           maxLength={2000}
-          placeholder="e.g. Where is the signature verified?"
+          placeholder={
+            ready
+              ? "e.g. Where is the signature verified?"
+              : "Index a repository first, then ask about it"
+          }
         />
         <div className="row">
           <button type="submit" className="primary" disabled={!canAsk} aria-busy={busy}>
@@ -327,9 +510,13 @@ export default function Home() {
 
         <aside className="evidence-col">
           <div className="card">
-            {evidence ? <h2>
+            {evidence ? (
+              <h2>
                 Evidence ({evidence.length} {evidence.length === 1 ? "file" : "files"})
-              </h2> : <h2>Evidence</h2>}
+              </h2>
+            ) : (
+              <h2>Evidence</h2>
+            )}
             {!evidence && (
               <p className="muted">
                 {busy
