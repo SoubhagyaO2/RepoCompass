@@ -24,6 +24,7 @@ export type EvidenceItem = {
   line_end: number;
   category: string;
   symbol: { qualified_name: string } | null;
+  text?: string | null;
 };
 
 export type Answer = {
@@ -74,7 +75,7 @@ export async function ask(question: string): Promise<Answer> {
 }
 
 export async function searchEvidence(question: string): Promise<EvidenceItem[]> {
-  const response = await fetch(`/api/v1/evidence?q=${encodeURIComponent(question)}&top_k=8`);
+  const response = await fetch(`/api/v1/evidence?q=${encodeURIComponent(question)}&top_k=8&include_text=true`);
   if (!response.ok) throw new ApiError(await readError(response));
   return (await response.json()).evidence;
 }

@@ -75,6 +75,66 @@ test.describe("with a mocked API", () => {
     await expect(page.locator("button.link")).toHaveCount(3);
   });
 
+  test("the first screen shows the workflow, the index status and an empty evidence panel", async ({ page }) => {
+    await page.route("**/api/health", (r) => r.fulfill({ json: HEALTH_OK }));
+    await page.route("**/api/v1/index/status", (r) =>
+      r.fulfill({ json: { repository: "itsdangerous", files: 15, chunks: 156 } }),
+    );
+    await page.goto("/");
+    const flow = page.getByRole("list", { name: "How RepoCompass works" });
+    await expect(flow.locator("li")).toHaveText([/Question/, /Retrieval/, /Evidence-backed answer/]);
+    await expect(flow.locator("li").first()).toHaveAttribute("data-state", "active");
+    await expect(page.getByRole("status")).toContainText("Index ready");
+    await expect(page.getByRole("status")).toContainText("Written answers on");
+    await expect(page.getByText(/Retrieved source code appears here/)).toBeVisible();
+  });
+
+  test("the Ask button is disabled until there is a question, shows progress, then recovers", async ({ page }) => {
+    await page.route("**/api/health", (r) => r.fulfill({ json: HEALTH_OK }));
+    await page.route("**/api/v1/answer", async (r) => {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      await r.fulfill({ json: answer({ status: "insufficient_evidence", missing: "none" }) });
+    });
+    await page.goto("/");
+    const button = page.getByRole("button", { name: "Ask", exact: true });
+    await expect(button).toBeDisabled();
+    await page.getByLabel("Your question").fill("anything");
+    await expect(button).toBeEnabled();
+    await button.click();
+    const working = page.getByRole("button", { name: "Working…" });
+    await expect(working).toBeDisabled();
+    await expect(working).toHaveAttribute("aria-busy", "true");
+    const flow = page.getByRole("list", { name: "How RepoCompass works" });
+    await expect(flow.locator("li").nth(1)).toHaveAttribute("data-state", "active");
+    await expect(page.getByText("Not enough evidence")).toBeVisible();
+    await expect(flow.locator("li").nth(2)).toHaveAttribute("data-state", "active");
+    await expect(page.getByRole("button", { name: "Ask", exact: true })).toBeEnabled();
+  });
+
+  test("an abstention is an explicit state, not an empty answer", async ({ page }) => {
+    const body = answer({ status: "insufficient_evidence", missing: "Nothing about analytics." });
+    await mock(page, HEALTH_OK, { url: "**/api/v1/answer", status: 200, body });
+    await page.goto("/");
+    await ask(page, "analytics?");
+    await expect(page.locator(".card.answer.insufficient_evidence")).toBeVisible();
+    await expect(page.getByText(/does not guess/)).toBeVisible();
+  });
+
+  test("clicking a citation opens the cited code in the evidence panel", async ({ page }) => {
+    const code = ["def verify(self):", "    return True"].join("\n");
+    const evidence = EVIDENCE.map((e) => ({ ...e, text: code }));
+    const body = answer({
+      claims: [{ text: "It is verified.", citations: [CITATION] }],
+      evidence: { evidence },
+    });
+    await mock(page, HEALTH_OK, { url: "**/api/v1/answer", status: 200, body });
+    await page.goto("/");
+    await ask(page, "where?");
+    await expect(page.locator("#ev-1 pre")).toBeHidden();
+    await page.getByRole("link", { name: /\[E1\]/ }).click();
+    await expect(page.locator("#ev-1 pre")).toContainText("def verify(self):");
+  });
+
   test("renders an answer and navigates from a citation to its evidence", async ({ page }) => {
     const body = answer({
       claims: [{ text: "Signatures are checked by Signer.verify.", citations: [CITATION] }],
