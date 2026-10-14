@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     gemini_model: str = "gemini-3.5-flash-lite"
     gemini_api_key: SecretStr | None = Field(default=None, validation_alias="GEMINI_API_KEY")
 
+    # Provider-enforced output shape for the API and MCP server. Off for every evaluation run.
+    structured_output: bool = True
+
     # The live index served by the Evidence API (Milestones 11-12).
     live_repository: str | None = None
     live_root: Path | None = None

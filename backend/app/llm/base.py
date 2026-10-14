@@ -5,7 +5,7 @@ nothing about retrieval, the index, the graph or evidence: the answer layer hand
 There are no tools, no files and no search on this interface.
 """
 
-from typing import Protocol
+from typing import Any, Protocol
 
 from pydantic import BaseModel
 
@@ -64,6 +64,7 @@ class LLMRequest(BaseModel):
     max_output_tokens: int = 8192
     temperature: float = 0.0
     json_output: bool = True
+    response_schema: dict[str, Any] | None = None  # provider-enforced output shape
 
 
 class LLMResponse(BaseModel):

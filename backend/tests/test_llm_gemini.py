@@ -239,3 +239,12 @@ def test_a_short_rate_limit_is_still_retried() -> None:
     script = Script((429, body), (200, ok_body()))
     assert script.client(min_interval_s=0).generate(REQUEST).usage.retries == 1
     assert script.sleeps == [20.0]
+
+
+def test_a_response_schema_is_sent_only_when_requested() -> None:
+    script = Script((200, ok_body()), (200, ok_body()))
+    schema = {"type": "OBJECT", "properties": {"status": {"type": "STRING"}}}
+    script.client().generate(LLMRequest(system="S", user="U", response_schema=schema))
+    script.client().generate(LLMRequest(system="S", user="U"))
+    assert script.calls[0][2]["generationConfig"]["responseSchema"] == schema
+    assert "responseSchema" not in script.calls[1][2]["generationConfig"]

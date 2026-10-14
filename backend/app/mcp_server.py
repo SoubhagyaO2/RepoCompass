@@ -95,7 +95,9 @@ def main() -> int:
     try:
         try:
             service: AnswerService | None = AnswerService(
-                lambda q, k: builder.build(q, k, include_text=True), get_llm_client(settings)
+                lambda q, k: builder.build(q, k, include_text=True),
+                get_llm_client(settings),
+                structured_output=settings.structured_output,
             )
         except LLMConfigError as error:
             print(f"note: answers disabled ({error}); search_evidence still works", file=sys.stderr)

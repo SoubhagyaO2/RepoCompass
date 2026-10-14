@@ -77,6 +77,7 @@ def test_request_contains_only_the_prompt_and_the_context() -> None:
         "max_output_tokens",
         "temperature",
         "json_output",
+        "response_schema",  # an output shape only: still no tools, files or search
     }  # no tools, files or search on the interface
 
 
@@ -190,3 +191,18 @@ def test_http_quota_exhaustion_is_429_with_the_retry_hint() -> None:
         assert r.status_code == 429
         body = r.json()
         assert body["quota_exhausted"] and body["retry_after_s"] == 3600.0 and body["evidence"]
+
+
+def test_structured_output_is_opt_in_and_the_schema_matches_the_contract() -> None:
+    from app.answer.output_schema import ANSWER_SCHEMA
+
+    plain, structured = FakeLLM(output()), FakeLLM(output())
+    service(plain).answer("q")
+    AnswerService(lambda q, k: make_evidence(q), structured, structured_output=True).answer("q")
+    assert plain.requests[0].response_schema is None  # the measured behaviour is the default
+    assert structured.requests[0].response_schema == ANSWER_SCHEMA
+    props = ANSWER_SCHEMA["properties"]
+    assert set(props) == {"status", "claims", "missing"}
+    assert set(ANSWER_SCHEMA["required"]) == set(props)
+    assert set(props["claims"]["items"]["required"]) == {"text", "citations"}
+    assert props["status"]["enum"] == ["answered", "partial", "insufficient_evidence"]

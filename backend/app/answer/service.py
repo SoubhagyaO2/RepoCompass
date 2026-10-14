@@ -15,6 +15,7 @@ from app.answer.context import (
     build_context,
     build_context_v2,
 )
+from app.answer.output_schema import ANSWER_SCHEMA
 from app.answer.premise import validate_output_v3
 from app.answer.prompt import PROMPT_SHA256, SYSTEM_PROMPT
 from app.answer.schema import AnswerResponse, Claim, ResolvedCitation, ValidationReport
@@ -84,6 +85,7 @@ class AnswerService:
         max_output_tokens: int = MAX_OUTPUT_TOKENS,
         system_prompt: str = SYSTEM_PROMPT,
         contract: str = "v1",
+        structured_output: bool = False,
     ) -> None:
         if contract not in ("v1", "v3"):
             raise ValueError(f"unknown contract {contract!r}")
@@ -95,6 +97,7 @@ class AnswerService:
         self._max_output_tokens = max_output_tokens
         self._prompt = system_prompt
         self._contract = contract
+        self._schema = ANSWER_SCHEMA if structured_output and contract == "v1" else None
         self.prompt_sha256 = (
             PROMPT_SHA256
             if system_prompt == SYSTEM_PROMPT
@@ -118,6 +121,7 @@ class AnswerService:
             user=context.text,
             max_output_tokens=self._max_output_tokens,
             temperature=0.0,
+            response_schema=self._schema,
         )
         try:
             reply = self._llm.generate(request)
