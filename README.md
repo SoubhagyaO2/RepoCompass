@@ -90,10 +90,14 @@ Example client configuration (adjust paths):
 Tools: `search_evidence(query, top_k=5, extra_chunks=0)`, `ask(question, top_k)`, `index_status()`.
 Errors (bad arguments, no model key, quota) come back as tool errors with a readable message.
 
+## Demo
+
+`python -m app.demo` runs four fixed questions against a running API; [`docs/DEMO.md`](docs/DEMO.md) has a captured run with commentary, including a weak answer.
+
 ## Tests
 
 ```bash
-cd backend && pytest && ruff check .        # 585 passed, 1 skipped; no network or API key needed
+cd backend && pytest && ruff check .        # 587 passed, 1 skipped; no network or API key needed
 cd frontend && npm run typecheck && npm run build
 ```
 
@@ -117,5 +121,5 @@ test; only Python repositories are supported; Windows is the only OS the project
 backend/    Python package `app` (api, answer, llm, evidence, indexing, graph, retrieval, ...) and tests
 frontend/   Next.js UI (proxies /api/* to the backend)
 evaluation/ benchmark, pre-registered plans, raw results, backlog
-docs/       PROJECT_REPORT.md (start here), decisions.md
+docs/       PROJECT_REPORT.md (start here), DEMO.md (a real run), decisions.md
 ```
