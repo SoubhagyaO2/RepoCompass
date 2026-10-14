@@ -12,3 +12,5 @@ npm run typecheck && npm run build
 
 The page reads `GET /api/health`: with an index and a model key it answers; with an index only it
 shows the retrieved files and lines; without an index it says what to configure.
+
+Browser tests (installed Chrome, no download): `npx playwright test` runs the mocked-API suite against a running UI (`UI_URL`, default http://127.0.0.1:3000); see the root README for the real-stack variants.

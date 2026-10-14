@@ -1,9 +1,10 @@
-# NOT BUILT OR RUN in the environment where this was written (no Docker daemon was available).
-# Build the index once into the shared volume (see the README), then: docker compose up
+# One-time setup into the shared volume (README, "Docker"), then: docker compose up
 services:
   backend:
     build: ./backend
-    env_file: ./backend/.env
+    env_file:
+      - path: ./backend/.env
+        required: false
     environment:
       REPOCOMPASS_LIVE_REPOSITORY: ${REPOCOMPASS_LIVE_REPOSITORY:-}
       REPOCOMPASS_LIVE_ROOT: ${REPOCOMPASS_LIVE_ROOT:-}
@@ -11,9 +12,17 @@ services:
       - repocompass-data:/data
     ports:
       - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:8000/health', timeout=4)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
   frontend:
     build: ./frontend
-    depends_on: [backend]
+    depends_on:
+      backend:
+        condition: service_healthy
     ports:
       - "3000:3000"
 volumes:

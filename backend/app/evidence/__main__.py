@@ -14,7 +14,17 @@ from pathlib import Path
 from app.config import get_settings
 from app.evidence.builder import EvidenceBuilder, EvidenceQueryError
 from app.evidence.service import open_live_index
+from app.indexing.changes import scan_python_files
 from app.indexing.live_index import IndexStateError
+
+
+def root_problem(root: Path) -> str | None:
+    """Why `root` cannot be indexed, or None (a mistyped path used to build an empty index)."""
+    if not root.is_dir():
+        return f"the root {root} does not exist or is not a directory"
+    if not scan_python_files(root):
+        return f"no Python files found under {root}; check the path"
+    return None
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -29,6 +39,11 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if not args.build and not args.query:
         parser.error("give a query, or --build")
+
+    problem = root_problem(args.root)
+    if problem:
+        print(f"error: {problem}", file=sys.stderr)
+        return 2
 
     index, store = open_live_index(get_settings(), args.repository, args.root)
     try:

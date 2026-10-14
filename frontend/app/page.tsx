@@ -23,6 +23,11 @@ const EXAMPLES = [
   "How does Flask handle errors raised in a view?",
 ];
 
+// "E3" and "E3b" both belong to evidence item 3 (the b/c ids are extra chunks of the same file).
+function evidenceRank(id: string) {
+  return /^E(\d+)/.exec(id)?.[1] ?? "";
+}
+
 function lines(item: { line_start: number; line_end: number }) {
   return `${item.line_start}-${item.line_end}`;
 }
@@ -145,10 +150,15 @@ export default function Home() {
               <p>{claim.text}</p>
               <p className="cites">
                 {claim.citations.map((c) => (
-                  <span className="cite" key={c.evidence_id} title={c.symbol ?? undefined}>
+                  <a
+                    className="cite"
+                    key={c.evidence_id}
+                    href={`#ev-${evidenceRank(c.evidence_id)}`}
+                    title={c.symbol ?? undefined}
+                  >
                     [{c.evidence_id}] {c.file}:{lines(c)}
                     {c.symbol ? ` · ${c.symbol}` : ""}
-                  </span>
+                  </a>
                 ))}
               </p>
             </div>
@@ -176,7 +186,7 @@ export default function Home() {
           <h2>Evidence ({evidence.length} files)</h2>
           <ol className="evidence">
             {evidence.map((item) => (
-              <li key={item.rank}>
+              <li key={item.rank} id={`ev-${item.rank}`}>
                 <code>
                   {item.file}:{lines(item)}
                 </code>
