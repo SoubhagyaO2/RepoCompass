@@ -407,6 +407,45 @@ test.describe("connecting a repository", () => {
     expect(asked.repository).toBe("gh__acme__widgets");
   });
 
+  test("an indexing job the server loses track of is reported instead of spinning forever", async ({ page }) => {
+    let polls = 0;
+    let posts = 0;
+    const cloning = repo("acme/widgets", { id: "gh__acme__widgets", status: "cloning", files: null, chunks: null });
+    await page.route("**/api/v1/repositories", (r) => {
+      if (r.request().method() === "POST") {
+        posts += 1;
+        return r.fulfill({ status: 202, json: cloning });
+      }
+      polls += 1;
+      // the server restarted: it knows nothing about the job any more
+      return r.fulfill({ json: polls <= 2 ? [cloning] : [] });
+    });
+    await page.goto("/");
+    await page.getByLabel("GitHub repository URL").fill("https://github.com/acme/widgets");
+    await page.getByRole("button", { name: "Index Repository" }).click();
+    await expect(page.getByRole("list", { name: "Indexing progress" })).toBeVisible();
+    const notice = page.locator("div[role=alert]").filter({ hasText: "lost track" });
+    await expect(notice).toBeVisible({ timeout: 15_000 });
+    await expect(notice).toContainText("acme/widgets");
+    await expect(page.getByRole("list", { name: "Indexing progress" })).toBeHidden();
+    await notice.getByRole("button", { name: "Try again" }).click();
+    await expect.poll(() => posts).toBe(2);
+  });
+
+  test("losing contact with the server while indexing is reported", async ({ page }) => {
+    let polls = 0;
+    const cloning = repo("acme/widgets", { id: "gh__acme__widgets", status: "cloning", files: null, chunks: null });
+    await page.route("**/api/v1/repositories", (r) => {
+      if (r.request().method() === "POST") return r.fulfill({ status: 202, json: cloning });
+      polls += 1;
+      return polls <= 1 ? r.fulfill({ json: [cloning] }) : r.fulfill({ status: 502, json: { detail: "down" } });
+    });
+    await page.goto("/");
+    await page.getByLabel("GitHub repository URL").fill("https://github.com/acme/widgets");
+    await page.getByRole("button", { name: "Index Repository" }).click();
+    await expect(page.locator("p[role=alert]")).toContainText("Lost contact with the server", { timeout: 20_000 });
+  });
+
   test("a failed job shows its error and Try again starts it again", async ({ page }) => {
     let posts = 0;
     const failed = repo("acme/private", {

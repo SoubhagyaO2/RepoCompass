@@ -2,7 +2,7 @@
 
 import hljs from "highlight.js/lib/core";
 import python from "highlight.js/lib/languages/python";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Answer,
   EvidenceItem,
@@ -48,6 +48,8 @@ function examplesFor(repository: string | undefined): string[] {
 
 const GITHUB_URL = /^https:\/\/github\.com\/[A-Za-z0-9-]+\/[A-Za-z0-9._-]+?(\.git)?\/?$/;
 const POLL_MS = 1500;
+const POLL_FAILURES_BEFORE_WARNING = 3;
+const ACTIVE_STATUSES: RepoStatus[] = ["queued", "cloning", "indexing"];
 const SNIPPET_LINES = 40;
 const STAGES: { status: RepoStatus; label: string }[] = [
   { status: "queued", label: "Queued" },
@@ -154,10 +156,29 @@ export default function Home() {
   const [answer, setAnswer] = useState<Answer | null>(null);
   const [evidence, setEvidence] = useState<EvidenceItem[] | null>(null);
   const [opened, setOpened] = useState<Set<number>>(new Set());
+  const [lost, setLost] = useState<{ id: string; name: string } | null>(null);
+  const [lostContact, setLostContact] = useState(false);
+  const tracked = useRef<Map<string, string>>(new Map()); // repositories we saw being indexed
+  const failures = useRef(0);
 
   const refresh = useCallback(async () => {
     try {
       const list = await listRepositories();
+      failures.current = 0;
+      setLostContact(false);
+      // A job we were following that the server no longer lists: it restarted (or ran out of
+      // memory) and the in-memory job is gone. Say so instead of spinning forever.
+      const present = new Set(list.map((r) => r.id));
+      tracked.current.forEach((name, id) => {
+        if (!present.has(id)) {
+          setLost({ id, name });
+          tracked.current.delete(id);
+        }
+      });
+      list.forEach((r) => {
+        if (ACTIVE_STATUSES.includes(r.status)) tracked.current.set(r.id, r.name);
+        else tracked.current.delete(r.id);
+      });
       setRepos(list);
       setSelectedId((current) => {
         if (current && list.some((r) => r.id === current)) return current;
@@ -165,7 +186,9 @@ export default function Home() {
         return first?.id ?? null;
       });
     } catch {
-      // keep what is shown; the next poll or reload retries
+      // keep what is shown and retry on the next poll; after a few failures in a row, say so
+      failures.current += 1;
+      if (failures.current >= POLL_FAILURES_BEFORE_WARNING) setLostContact(true);
     }
   }, []);
 
@@ -197,8 +220,10 @@ export default function Home() {
     }
     setConnecting(true);
     setConnectError(null);
+    setLost(null);
     try {
       const repo = await connectRepository(value);
+      if (ACTIVE_STATUSES.includes(repo.status)) tracked.current.set(repo.id, repo.name);
       setSelectedId(repo.id);
       setAnswer(null);
       setEvidence(null);
@@ -297,6 +322,27 @@ export default function Home() {
           </p>
         )}
         {working && <Progress repo={working} />}
+        {lostContact && indexing && (
+          <p className="notice bad" role="alert">
+            Lost contact with the server while indexing. The job may still be running; reload the
+            page to check.
+          </p>
+        )}
+        {lost && (
+          <div className="notice bad failed" role="alert">
+            <p>
+              RepoCompass lost track of {lost.name} while indexing it. The server may have restarted
+              or run out of memory. Try again; if it keeps happening, check the server&apos;s logs.
+            </p>
+            <button
+              type="button"
+              className="link"
+              onClick={() => connect(`https://github.com/${lost.name}`)}
+            >
+              Try again
+            </button>
+          </div>
+        )}
         {failed && (
           <div className="notice bad failed" role="alert">
             <p>

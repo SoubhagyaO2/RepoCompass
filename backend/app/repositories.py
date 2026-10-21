@@ -13,6 +13,7 @@ nothing here indexes on its own. Safety rules, each covered by a test:
 - status and errors never contain server paths or secrets.
 """
 
+import logging
 import shutil
 import threading
 from collections.abc import Callable
@@ -34,6 +35,13 @@ from app.llm.base import LLMClient
 from app.models.repository import RepoRef
 from app.retrieval.embedder import Embedder
 from app.retrieval.vector_store import VectorStore
+
+log = logging.getLogger("repocompass.indexer")
+if not log.handlers:  # uvicorn configures only its own loggers; make ours visible in the host log
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+    log.addHandler(_handler)
+    log.setLevel(logging.INFO)
 
 ID_PREFIX = "gh__"
 ACTIVE = ("queued", "cloning", "indexing")
@@ -210,6 +218,7 @@ class RepositoryRegistry:
             text = text.replace(secret, "<data>")
         entry.error = text[:ERROR_LIMIT]
         entry.status = "failed"
+        log.warning("%s failed: %s", entry.id, entry.error)
         self._cleanup(entry.id, dest)
 
     def _cleanup(self, rid: str, dest: Path | None) -> None:
@@ -238,6 +247,7 @@ class RepositoryRegistry:
         dest = self._settings.repos_dir / ref.owner.lower() / ref.name.lower()
         try:
             entry.status = "cloning"
+            log.info("%s cloning", entry.id)
             self._clone(
                 ref.clone_url, dest, timeout_s=self._settings.clone_timeout_s, hardened=True
             )
@@ -264,6 +274,7 @@ class RepositoryRegistry:
                 )
                 return
             entry.status = "indexing"
+            log.info("%s indexing %d Python files", entry.id, len(python))
             index = self._index(entry.id, dest)
             index.build_full()
             builder = EvidenceBuilder(index)
@@ -272,9 +283,11 @@ class RepositoryRegistry:
             entry.builder = builder
             entry.service = self._service_for(builder)
             entry.status = "ready"
+            log.info("%s ready: %s files, %s chunks", entry.id, entry.files, entry.chunks)
         except CloneError as error:
             self._fail(entry, str(error), dest)
         except Exception as error:  # noqa: BLE001  (a job must always end in a visible state)
+            log.exception("%s: unexpected error while indexing", entry.id)
             self._fail(entry, f"Indexing failed ({type(error).__name__})", dest)
 
     # --- lookup ---

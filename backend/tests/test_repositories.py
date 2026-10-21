@@ -350,3 +350,38 @@ def test_repositories_are_reloaded_after_a_restart(tmp_path: Path, store: Vector
     reloaded = second.get(entry.id)
     assert reloaded and reloaded.status == "ready" and reloaded.name == "acme/widgets"
     assert second.builder(entry.id).build("signer", 2, False).evidence
+
+
+# --- the job leaves a trail in the server log (the status shown to users is deliberately brief) ---
+
+
+def test_stages_and_failures_are_logged(
+    tmp_path: Path, store: VectorStore, caplog: pytest.LogCaptureFixture
+) -> None:
+    import logging
+
+    def clone(url: str, dest: Path, timeout_s: float = 0, hardened: bool = False) -> Path:
+        if "broken" in url:
+            raise CloneError("This repository could not be accessed without credentials.")
+        return fake_clone()(url, dest, timeout_s, hardened)
+
+    caplog.set_level(logging.INFO, logger="repocompass.indexer")
+    registry, _ = make(tmp_path, store, clone=clone)
+    registry.wait(registry.submit("https://github.com/acme/widgets").id)
+    registry.wait(registry.submit("https://github.com/acme/broken").id)
+    text = caplog.text
+    assert "gh__acme__widgets" in text and "cloning" in text and "ready" in text
+    assert "gh__acme__broken" in text and "failed" in text and "without credentials" in text
+
+
+def test_an_unexpected_exception_is_logged_with_its_traceback(
+    tmp_path: Path, store: VectorStore, caplog: pytest.LogCaptureFixture
+) -> None:
+    def clone(url: str, dest: Path, timeout_s: float = 0, hardened: bool = False) -> Path:
+        raise MemoryError("simulated out of memory in the embedder")
+
+    registry, _ = make(tmp_path, store, clone=clone)
+    entry = registry.submit("https://github.com/acme/widgets")
+    registry.wait(entry.id)
+    assert registry.get(entry.id).error == "Indexing failed (MemoryError)"  # brief for the user
+    assert "simulated out of memory" in caplog.text and "Traceback" in caplog.text
