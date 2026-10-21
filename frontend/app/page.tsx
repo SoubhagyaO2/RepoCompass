@@ -372,7 +372,9 @@ export default function Home() {
 
       {healthError && (
         <p className="notice bad" role="alert">
-          Cannot reach the API ({healthError}). Start it with <code>uvicorn app.main:app</code>.
+          Cannot reach the API ({healthError}). Check that the backend is running (locally:{" "}
+          <code>uvicorn app.main:app</code>) and that the web server&apos;s{" "}
+          <code>REPOCOMPASS_API_URL</code> points at it.
         </p>
       )}
       {health && !health.index_loaded && !working && indexingOff && (

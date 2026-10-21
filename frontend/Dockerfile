@@ -3,9 +3,8 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
-# Next resolves rewrites at build time, so the API address is a build argument.
-ARG REPOCOMPASS_API_URL=http://backend:8000
-ENV REPOCOMPASS_API_URL=$REPOCOMPASS_API_URL
 RUN npm run build
+# The API address is read when each request arrives, so it can be set at run time.
+ENV REPOCOMPASS_API_URL=http://backend:8000
 EXPOSE 3000
 CMD ["npm", "run", "start"]

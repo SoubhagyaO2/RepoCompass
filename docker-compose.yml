@@ -20,6 +20,8 @@ services:
       start_period: 40s
   frontend:
     build: ./frontend
+    environment:
+      REPOCOMPASS_API_URL: http://backend:8000
     depends_on:
       backend:
         condition: service_healthy

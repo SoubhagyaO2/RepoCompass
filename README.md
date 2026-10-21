@@ -141,6 +141,9 @@ an indexed repository to a newer commit is not implemented (remove its state and
 progress is by stage, not by percentage. It is meant for local or trusted use: switch it off with
 `REPOCOMPASS_ENABLE_REPO_INDEXING=false` on anything public.
 
+Deploying the API and UI on a host (and fixing "Cannot reach the API (The server answered 502)"):
+[`docs/DEPLOY.md`](docs/DEPLOY.md).
+
 ## Configuration
 
 Settings come from environment variables or `backend/.env` (never commit it). See `.env.example`.
@@ -151,6 +154,7 @@ Settings come from environment variables or `backend/.env` (never commit it). Se
 | `REPOCOMPASS_GEMINI_MODEL` | Default `gemini-3.5-flash-lite`, the model all results were measured with |
 | `REPOCOMPASS_LIVE_REPOSITORY`, `REPOCOMPASS_LIVE_ROOT` | The index name and working tree to serve |
 | `REPOCOMPASS_DATA_DIR` | Where clones and indexes live (default `data`) |
+| `REPOCOMPASS_API_URL` | Set on the **UI server**: the API's address (default `http://127.0.0.1:8000`; `http://backend:8000` in Compose) |
 | `REPOCOMPASS_STRUCTURED_OUTPUT` | Provider-enforced answer shape for the API and MCP server (default on; **off for every experiment**) |
 | `REPOCOMPASS_ENABLE_REPO_INDEXING` | Lets the API clone and index repositories from a pasted URL (default `true`; set `false` on any server that untrusted people can reach) |
 | `REPOCOMPASS_MAX_REPOSITORIES`, `_MAX_QUEUED_JOBS`, `_MAX_PYTHON_FILES`, `_MAX_CLONE_MB`, `_CLONE_TIMEOUT_S` | Limits on connected repositories (defaults 10, 3, 3000, 300 MiB, 300 s) |

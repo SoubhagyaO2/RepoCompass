@@ -1,8 +1,10 @@
 # frontend
 
-Next.js + TypeScript UI. It calls `/api/*`, which Next forwards to the FastAPI backend
-(`REPOCOMPASS_API_URL`, default `http://127.0.0.1:8000`; read when the app is built or started in
-dev), so the backend needs no CORS configuration.
+Next.js + TypeScript UI. It calls `/api/*`, which this server forwards to the FastAPI backend
+(`app/api/[...path]/route.ts`). The backend address is `REPOCOMPASS_API_URL` (default
+`http://127.0.0.1:8000`), read **when each request arrives**, so a deployment can set it at run time;
+the browser never talks to the backend directly and the backend needs no CORS configuration. See
+[`docs/DEPLOY.md`](../docs/DEPLOY.md).
 
 ```bash
 npm install
