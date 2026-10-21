@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from app import __version__
 from app.config import get_settings
+from app.runtime import memory_limit_mb, rss_mb
 
 router = APIRouter(tags=["health"])
 
@@ -14,6 +15,7 @@ class HealthResponse(BaseModel):
     index_loaded: bool = False
     answer_enabled: bool = False
     indexing_enabled: bool = False
+    memory: dict[str, float | int | None] = {}
 
 
 @router.get("/", include_in_schema=False)
@@ -32,6 +34,11 @@ def health(request: Request) -> HealthResponse:
         version=__version__,
         index_loaded=any(e.status == "ready" for e in entries),
         answer_enabled=any(e.status == "ready" and e.service is not None for e in entries),
+        memory={
+            "limit_mb": memory_limit_mb(),
+            "used_mb": round(rss, 1) if (rss := rss_mb()) is not None else None,
+            "needed_mb": get_settings().min_memory_mb,
+        },
         indexing_enabled=(
             registry.indexing_enabled
             if registry is not None

@@ -48,6 +48,9 @@ class Settings(BaseSettings):
     max_python_files: int = 3000
     max_clone_mb: int = 300
     clone_timeout_s: int = 300
+    # Indexing loads an embedding model (torch): refuse to start a job in a container with less
+    # memory than this (MiB), which would be killed part-way. 0 turns the check off.
+    min_memory_mb: int = 900
 
     # The live index served by the Evidence API (Milestones 11-12).
     live_repository: str | None = None

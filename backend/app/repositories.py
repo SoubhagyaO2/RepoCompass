@@ -35,6 +35,7 @@ from app.llm.base import LLMClient
 from app.models.repository import RepoRef
 from app.retrieval.embedder import Embedder
 from app.retrieval.vector_store import VectorStore
+from app.runtime import memory_limit_mb
 
 log = logging.getLogger("repocompass.indexer")
 if not log.handlers:  # uvicorn configures only its own loggers; make ours visible in the host log
@@ -128,6 +129,7 @@ class RepositoryRegistry:
         embedder: Embedder | None = None,
         llm: LLMClient | None = None,
         clone: Callable[..., Path] = clone_repository,
+        memory_limit: Callable[[], int | None] = memory_limit_mb,
     ) -> None:
         self._settings = settings
         self._store_ = store
@@ -135,6 +137,7 @@ class RepositoryRegistry:
         self._owns_store = False
         self._llm = llm
         self._clone = clone
+        self._memory_limit = memory_limit
         self._entries: dict[str, RepoEntry] = {}
         self._default: str | None = None
         self._lock = threading.RLock()
@@ -217,14 +220,17 @@ class RepositoryRegistry:
         for secret in (str(self._settings.data_dir.resolve()), str(self._settings.data_dir)):
             text = text.replace(secret, "<data>")
         entry.error = text[:ERROR_LIMIT]
+        started_indexing = entry.status == "indexing"
         entry.status = "failed"
         log.warning("%s failed: %s", entry.id, entry.error)
-        self._cleanup(entry.id, dest)
+        self._cleanup(entry.id, dest, drop_collections=started_indexing)
 
-    def _cleanup(self, rid: str, dest: Path | None) -> None:
+    def _cleanup(self, rid: str, dest: Path | None, drop_collections: bool) -> None:
         if dest is not None:
             shutil.rmtree(dest, ignore_errors=True)
         shutil.rmtree(self._settings.live_state_dir(rid), ignore_errors=True)
+        if not drop_collections:
+            return  # nothing is in the vector store yet (and no model needs loading)
         try:
             probe = self._index(rid, dest or self._settings.repos_dir)
             for view in ("ast", "fixed"):
@@ -246,6 +252,16 @@ class RepositoryRegistry:
     def _run(self, entry: RepoEntry, ref: RepoRef) -> None:
         dest = self._settings.repos_dir / ref.owner.lower() / ref.name.lower()
         try:
+            limit = self._memory_limit()
+            needed = self._settings.min_memory_mb
+            if needed and limit is not None and limit < needed:
+                self._fail(
+                    entry,
+                    f"This server has {limit} MiB of memory; indexing needs about {needed} MiB "
+                    "(it loads an embedding model). Run the API with more memory.",
+                    None,
+                )
+                return
             entry.status = "cloning"
             log.info("%s cloning", entry.id)
             self._clone(

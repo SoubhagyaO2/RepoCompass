@@ -7,6 +7,7 @@ export type Health = {
   index_loaded: boolean;
   answer_enabled: boolean;
   indexing_enabled?: boolean;
+  memory?: { limit_mb: number | null; used_mb: number | null; needed_mb: number };
 };
 
 export type Citation = {
@@ -64,6 +65,9 @@ async function readError(response: Response): Promise<string> {
     if (body.error) return body.quota_exhausted ? `Model quota exhausted: ${body.error}` : body.error;
   } catch {
     // not JSON: fall through
+  }
+  if ([502, 503, 504].includes(response.status)) {
+    return `The backend is not responding (HTTP ${response.status}). It may be starting up, asleep, out of memory or restarting.`;
   }
   return `The server answered ${response.status}.`;
 }

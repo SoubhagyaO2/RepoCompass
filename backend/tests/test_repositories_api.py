@@ -175,3 +175,12 @@ def test_the_503_messages_say_what_is_missing(tmp_path: Path, store: VectorStore
         assert no_repo.status_code == 503 and "repository" in no_repo.json()["detail"]
         no_model = client.post("/v1/answer", json={"question": "x", "repository": body["id"]})
         assert no_model.status_code == 503 and "GEMINI_API_KEY" in no_model.json()["detail"]
+
+
+def test_health_reports_memory_so_a_small_host_can_be_spotted(
+    tmp_path: Path, store: VectorStore
+) -> None:
+    with client_with(tmp_path, store)[0] as client:
+        body = client.get("/health").json()
+        assert set(body["memory"]) == {"limit_mb", "used_mb", "needed_mb"}
+        assert body["memory"]["needed_mb"] == 900

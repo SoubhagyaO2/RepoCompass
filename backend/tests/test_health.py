@@ -8,7 +8,9 @@ client = TestClient(app)
 def test_health_returns_ok_without_an_index() -> None:
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json() == {
+    body = response.json()
+    assert set(body.pop("memory")) == {"limit_mb", "used_mb", "needed_mb"}
+    assert body == {
         "status": "ok",
         "version": "0.1.0",
         "index_loaded": False,

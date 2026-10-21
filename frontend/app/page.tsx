@@ -267,6 +267,12 @@ export default function Home() {
   const phase: Phase = busy ? "retrieving" : answer || evidence ? "done" : "idle";
   const canAsk = ready && !busy && question.trim().length > 0;
   const indexingOff = health !== null && health.indexing_enabled !== true;
+  const memory = health?.memory;
+  const smallHost =
+    !indexingOff &&
+    memory?.limit_mb != null &&
+    memory.needed_mb > 0 &&
+    memory.limit_mb < memory.needed_mb;
   const canConnect = !connecting && url.trim().length > 0 && !indexingOff;
   const working = repos.find((r) => r.id === selectedId && ["queued", "cloning", "indexing"].includes(r.status));
   const failed = repos.find((r) => r.id === selectedId && r.status === "failed");
@@ -310,6 +316,13 @@ export default function Home() {
             {connecting ? "Starting…" : "Index Repository"}
           </button>
         </form>
+        {smallHost && health?.memory && (
+          <p className="notice bad" role="alert">
+            This server has {health.memory.limit_mb} MiB of memory; indexing needs about{" "}
+            {health.memory.needed_mb} MiB (it loads an embedding model), so indexing will fail here.
+            Run the API with more memory.
+          </p>
+        )}
         {indexingOff && (
           <p className="notice">
             Connecting repositories is turned off on this server. Index one with the command line

@@ -157,6 +157,7 @@ Settings come from environment variables or `backend/.env` (never commit it). Se
 | `REPOCOMPASS_API_URL` | Set on the **UI server**: the API's address (default `http://127.0.0.1:8000`; `http://backend:8000` in Compose) |
 | `REPOCOMPASS_STRUCTURED_OUTPUT` | Provider-enforced answer shape for the API and MCP server (default on; **off for every experiment**) |
 | `REPOCOMPASS_ENABLE_REPO_INDEXING` | Lets the API clone and index repositories from a pasted URL (default `true`; set `false` on any server that untrusted people can reach) |
+| `REPOCOMPASS_MIN_MEMORY_MB` | Indexing is refused, with a clear message, when the container has less memory than this (default 900; `0` turns the check off) |
 | `REPOCOMPASS_MAX_REPOSITORIES`, `_MAX_QUEUED_JOBS`, `_MAX_PYTHON_FILES`, `_MAX_CLONE_MB`, `_CLONE_TIMEOUT_S` | Limits on connected repositories (defaults 10, 3, 3000, 300 MiB, 300 s) |
 
 A shell variable named `GEMINI_API_KEY` overrides `backend/.env`; clear it if the wrong key is used.

@@ -385,3 +385,44 @@ def test_an_unexpected_exception_is_logged_with_its_traceback(
     registry.wait(entry.id)
     assert registry.get(entry.id).error == "Indexing failed (MemoryError)"  # brief for the user
     assert "simulated out of memory" in caplog.text and "Traceback" in caplog.text
+
+
+# --- a host that is too small fails clearly instead of being killed while indexing ---
+
+
+def test_too_little_memory_fails_before_the_embedding_model_is_loaded(
+    tmp_path: Path, store: VectorStore
+) -> None:
+    settings = Settings(_env_file=None, data_dir=tmp_path / "data")
+    registry = RepositoryRegistry(  # no embedder given: loading one would be the heavy step
+        settings, store, None, clone=fake_clone(), memory_limit=lambda: 512
+    )
+    entry = registry.submit("https://github.com/acme/widgets")
+    registry.wait(entry.id)
+    failed = registry.get(entry.id)
+    assert failed.status == "failed" and registry._embedder_ is None  # noqa: SLF001
+    assert "512 MiB" in failed.error and "memory" in failed.error
+    assert not (settings.repos_dir / "acme" / "widgets").exists()  # nothing left behind
+
+
+@pytest.mark.parametrize("limit", [None, 4096, 900])
+def test_enough_or_unknown_memory_does_not_block_indexing(
+    tmp_path: Path, store: VectorStore, limit: int | None
+) -> None:
+    settings = Settings(_env_file=None, data_dir=tmp_path / "data")
+    registry = RepositoryRegistry(
+        settings, store, HashingEmbedder(), clone=fake_clone(), memory_limit=lambda: limit
+    )
+    entry = registry.submit("https://github.com/acme/widgets")
+    registry.wait(entry.id)
+    assert registry.get(entry.id).status == "ready"
+
+
+def test_the_memory_check_can_be_switched_off(tmp_path: Path, store: VectorStore) -> None:
+    settings = Settings(_env_file=None, data_dir=tmp_path / "data", min_memory_mb=0)
+    registry = RepositoryRegistry(
+        settings, store, HashingEmbedder(), clone=fake_clone(), memory_limit=lambda: 128
+    )
+    entry = registry.submit("https://github.com/acme/widgets")
+    registry.wait(entry.id)
+    assert registry.get(entry.id).status == "ready"

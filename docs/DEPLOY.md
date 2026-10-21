@@ -23,8 +23,12 @@ That message means the UI loaded but its server could not reach the API. Check i
 2. **Is the API up?** Open `<API address>/health`: you should see `{"status":"ok", ...}`. Many free
    tiers stop an idle service; the first request after a sleep can take a minute.
 3. **Does the address include the scheme?** `https://host`, not `host`. No trailing path.
-4. **Is the API out of memory?** It loads an embedding model and needs roughly 1 GB of RAM or more.
-   If the host kills it (look for "out of memory" in its logs) the UI sees 502.
+4. **Is the API out of memory?** Indexing loads an embedding model (torch) and needs about 1 GB of
+   RAM; a 512 MB host is killed at that moment (reproduced: a 512 MiB container dies right after
+   "Loading weights", exit code 137). The UI first shows "Indexing", then "Lost contact with the
+   server", then 502. Open `<API address>/health`: its `memory` field shows the container's limit,
+   and indexing now refuses to start below `REPOCOMPASS_MIN_MEMORY_MB` (default 900) with a clear
+   message instead of crashing.
 5. **Can the UI server reach the API's network?** Private addresses only work if both run on the
    same private network (for example two services in one `docker compose`).
 

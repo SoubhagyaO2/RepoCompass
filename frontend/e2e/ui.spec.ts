@@ -522,6 +522,39 @@ test.describe("connecting a repository", () => {
   });
 });
 
+test.describe("a host that cannot index", () => {
+  test("warns when the server has too little memory for indexing", async ({ page }) => {
+    await page.route("**/api/health", (r) =>
+      r.fulfill({ json: { ...HEALTH_OK, memory: { limit_mb: 512, used_mb: 300, needed_mb: 900 } } }),
+    );
+    await repos(page, []);
+    await page.goto("/");
+    await expect(page.locator("p[role=alert]")).toContainText("512 MiB");
+    await expect(page.locator("p[role=alert]")).toContainText("900 MiB");
+  });
+
+  test("does not warn when memory is enough or unknown", async ({ page }) => {
+    for (const memory of [
+      { limit_mb: 4096, used_mb: 300, needed_mb: 900 },
+      { limit_mb: null, used_mb: null, needed_mb: 900 },
+    ]) {
+      await page.unroute("**/api/health").catch(() => undefined);
+      await page.route("**/api/health", (r) => r.fulfill({ json: { ...HEALTH_OK, memory } }));
+      await repos(page, []);
+      await page.goto("/");
+      await expect(page.getByRole("heading", { name: "Connect a repository" })).toBeVisible();
+      await expect(page.getByText(/MiB of memory/)).toHaveCount(0);
+    }
+  });
+
+  test("a bare 502 from a host gateway is explained", async ({ page }) => {
+    await page.route("**/api/health", (r) => r.fulfill({ status: 502, body: "Bad Gateway" }));
+    await page.goto("/");
+    await expect(page.locator("p[role=alert]")).toContainText("not responding");
+    await expect(page.locator("p[role=alert]")).toContainText("out of memory");
+  });
+});
+
 // Needs the real stack (Docker or local) with the itsdangerous index and a model key.
 test.describe("against the real stack", () => {
   test.skip(process.env.REAL_STACK !== "1", "set REAL_STACK=1 with a running stack");
