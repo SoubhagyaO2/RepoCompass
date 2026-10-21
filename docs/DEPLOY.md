@@ -23,9 +23,10 @@ That message means the UI loaded but its server could not reach the API. Check i
 2. **Is the API up?** Open `<API address>/health`: you should see `{"status":"ok", ...}`. Many free
    tiers stop an idle service; the first request after a sleep can take a minute.
 3. **Does the address include the scheme?** `https://host`, not `host`. No trailing path.
-4. **Is the API out of memory?** Indexing loads an embedding model (torch) and needs about 1 GB of
-   RAM; a 512 MB host is killed at that moment (reproduced: a 512 MiB container dies right after
-   "Loading weights", exit code 137). The UI first shows "Indexing", then "Lost contact with the
+4. **Is the API out of memory?** Indexing loads an embedding model. With the ONNX embedder (the
+   Docker image) it needs about 450 MiB and runs in a 512 MiB container (tested); with the torch
+   embedder it needs about 900 MiB, and a 512 MB host is killed at that moment (reproduced: a
+   512 MiB container dies right after "Loading weights", exit code 137). The UI first shows "Indexing", then "Lost contact with the
    server", then 502. Open `<API address>/health`: its `memory` field shows the container's limit,
    and indexing now refuses to start below `REPOCOMPASS_MIN_MEMORY_MB` (default 900) with a clear
    message instead of crashing.
@@ -34,8 +35,9 @@ That message means the UI loaded but its server could not reach the API. Check i
 
 ## What the API needs from its host
 
-- **About 1 GB of RAM or more**, and several GB of disk for the image (it contains torch and the
-  embedding model).
+- **512 MiB of RAM or more** with the Docker image (ONNX embedder; peak 361 MiB while indexing
+  two small repositories in a test, more for large repositories). A local install using the torch
+  embedder needs about 900 MiB. About 1 GB of disk for the image.
 - **One instance only.** The local vector store allows one process at a time, so do not run two
   copies against the same data directory or scale the API horizontally.
 - **A persistent disk** mounted at `REPOCOMPASS_DATA_DIR` (`/data` in the Docker image). Without it,

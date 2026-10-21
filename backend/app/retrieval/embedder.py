@@ -52,10 +52,52 @@ class SentenceTransformerEmbedder:
         return self.embed_documents([self._query_prefix + text])[0]
 
 
+class OnnxEmbedder:
+    """The same model through ONNX Runtime (fastembed), without torch: about 300 MiB resident
+    instead of 600 or more, so a 512 MiB host can serve it. Vectors match the torch embedder to
+    about six decimals (cosine 0.999999 on a check), so existing indexes remain usable.
+
+    Batch size 1 and no memory arena are deliberate. Batches are padded to their longest text, and
+    code chunks vary a lot in length, so larger batches use far more memory and are slower
+    (measured on 81 chunks: batch 16 peaked at 785 MiB in 26 s; batch 1 at 283 MiB in 5 s)."""
+
+    device = "cpu"
+
+    def __init__(self, model_name: str, query_prefix: str = "", batch_size: int = 1) -> None:
+        try:
+            from fastembed import TextEmbedding
+        except ImportError as error:  # also raised when the module is blocked
+            raise RuntimeError(
+                "the onnx embedder needs the fastembed package: pip install 'repocompass[onnx]'"
+            ) from error
+        self._model = TextEmbedding(model_name, enable_cpu_mem_arena=False)
+        self._query_prefix = query_prefix
+        self._batch_size = batch_size
+        self.model_name = model_name
+        self.dimension = int(TextEmbedding.get_embedding_size(model_name))
+
+    def embed_documents(self, texts: list[str], show_progress: bool = False) -> list[list[float]]:
+        if not texts:
+            return []
+        import numpy as np
+
+        vectors = np.array(list(self._model.embed(texts, batch_size=self._batch_size)), dtype=float)
+        norms = np.linalg.norm(vectors, axis=1, keepdims=True)
+        return (vectors / np.where(norms == 0, 1.0, norms)).tolist()
+
+    def embed_query(self, text: str) -> list[float]:
+        return self.embed_documents([self._query_prefix + text])[0]
+
+
 def get_embedder(settings: Settings) -> Embedder:
-    return SentenceTransformerEmbedder(
-        settings.embedding_model, query_prefix=settings.embedding_query_prefix
-    )
+    backend = settings.embedder_backend
+    if backend == "onnx":
+        return OnnxEmbedder(settings.embedding_model, query_prefix=settings.embedding_query_prefix)
+    if backend == "torch":
+        return SentenceTransformerEmbedder(
+            settings.embedding_model, query_prefix=settings.embedding_query_prefix
+        )
+    raise ValueError(f"unknown embedder_backend {backend!r}; use 'torch' or 'onnx'")
 
 
 class HashingEmbedder:

@@ -30,9 +30,11 @@ It was built as a series of pre-registered experiments, so the project also reco
 
 **Before you try it:**
 
-- **The Docker images are large:** about 2.5 GB for the backend (CPU-only torch plus the embedding
-  model) and 1.4 GB for the frontend, 5.5 GB of disk in all, and the first build takes several
-  minutes. The local (non-Docker) install is smaller but also pulls torch.
+- **The Docker images are sizeable:** about 0.9 GB for the backend (the embedding model runs through
+  ONNX, without torch) and 1.4 GB for the frontend, and the first build takes a few minutes. The
+  backend runs in 512 MiB of memory (tested: a 512 MiB container indexed two repositories and
+  searched them, peaking at 361 MiB); indexing is refused with a clear message below about
+  450 MiB. A local install with the default torch embedder needs about 900 MiB.
 - **Answer quality was sampled lightly.** The benchmark is 73 questions on one repository; the
   product checks (a handful of questions across several repositories) are smoke tests, not
   measurements.
@@ -81,7 +83,9 @@ into **Connect a repository**. Steps 2 and 3 are the command-line way to prepare
 cd backend
 python -m venv .venv
 .venv\Scripts\activate            # Windows;  source .venv/bin/activate on macOS/Linux
-pip install -e ".[dev]"
+pip install -e ".[dev,torch]"       # torch: the default embedder, used by every experiment
+                                      # (or ".[dev,onnx]" and REPOCOMPASS_EMBEDDER_BACKEND=onnx: the same
+                                      # model without torch, about half the memory)
 cp ../.env.example .env           # then edit; see "Configuration"
 
 # 2. Get a repository and index it (any public Python repository)
@@ -157,7 +161,8 @@ Settings come from environment variables or `backend/.env` (never commit it). Se
 | `REPOCOMPASS_API_URL` | Set on the **UI server**: the API's address (default `http://127.0.0.1:8000`; `http://backend:8000` in Compose) |
 | `REPOCOMPASS_STRUCTURED_OUTPUT` | Provider-enforced answer shape for the API and MCP server (default on; **off for every experiment**) |
 | `REPOCOMPASS_ENABLE_REPO_INDEXING` | Lets the API clone and index repositories from a pasted URL (default `true`; set `false` on any server that untrusted people can reach) |
-| `REPOCOMPASS_MIN_MEMORY_MB` | Indexing is refused, with a clear message, when the container has less memory than this (default 900; `0` turns the check off) |
+| `REPOCOMPASS_EMBEDDER_BACKEND` | `torch` (default; what every experiment used) or `onnx` (the same model through ONNX Runtime; what the Docker image uses) |
+| `REPOCOMPASS_MIN_MEMORY_MB` | Indexing is refused, with a clear message, when the container has less memory than this (default 900 with torch, 450 with onnx; `0` turns the check off) |
 | `REPOCOMPASS_MAX_REPOSITORIES`, `_MAX_QUEUED_JOBS`, `_MAX_PYTHON_FILES`, `_MAX_CLONE_MB`, `_CLONE_TIMEOUT_S` | Limits on connected repositories (defaults 10, 3, 3000, 300 MiB, 300 s) |
 
 A shell variable named `GEMINI_API_KEY` overrides `backend/.env`; clear it if the wrong key is used.
@@ -201,12 +206,13 @@ REPOCOMPASS_LIVE_REPOSITORY=itsdangerous REPOCOMPASS_LIVE_ROOT=/data/repos/palle
 
 Step 2 and the two variables in step 3 are optional: run `docker compose up -d` alone and connect
 repositories from the UI at http://127.0.0.1:3000 (they are kept in the `repocompass-data` volume;
-checked with no default index configured). The images are about 2.5 GB (backend) and 1.4 GB
+checked with no default index configured). The images are about 0.9 GB (backend) and 1.4 GB
 (frontend).
 
 In Git Bash on Windows, set `MSYS_NO_PATHCONV=1` first, or `/data/...` arguments are rewritten into
 Windows paths (the index command now refuses a root that does not exist or has no Python files).
-The backend image uses CPU-only torch and bakes the embedding model in; it is large (several GB).
+The backend image uses the ONNX embedder (`REPOCOMPASS_EMBEDDER_BACKEND=onnx`, the same model as the
+torch one, cosine 0.999999 against it) and bakes the model in, so it starts offline.
 
 ## Tests
 

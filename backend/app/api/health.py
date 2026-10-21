@@ -37,7 +37,7 @@ def health(request: Request) -> HealthResponse:
         memory={
             "limit_mb": memory_limit_mb(),
             "used_mb": round(rss, 1) if (rss := rss_mb()) is not None else None,
-            "needed_mb": get_settings().min_memory_mb,
+            "needed_mb": get_settings().required_memory_mb,
         },
         indexing_enabled=(
             registry.indexing_enabled

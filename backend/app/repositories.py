@@ -253,7 +253,7 @@ class RepositoryRegistry:
         dest = self._settings.repos_dir / ref.owner.lower() / ref.name.lower()
         try:
             limit = self._memory_limit()
-            needed = self._settings.min_memory_mb
+            needed = self._settings.required_memory_mb
             if needed and limit is not None and limit < needed:
                 self._fail(
                     entry,

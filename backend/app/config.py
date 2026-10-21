@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     # Embeddings. bge models expect this prefix on *queries* (not on documents); set it to
     # an empty string if you switch to a model that does not use one.
     embedding_model: str = "BAAI/bge-small-en-v1.5"
+    # 'torch' (sentence-transformers) is the default and what every experiment used; 'onnx'
+    # (fastembed) is the same model without torch, for small hosts and a small Docker image.
+    embedder_backend: str = "torch"
     embedding_query_prefix: str = "Represent this sentence for searching relevant passages: "
 
     # Naive baseline chunking (Milestone 4).
@@ -50,11 +53,17 @@ class Settings(BaseSettings):
     clone_timeout_s: int = 300
     # Indexing loads an embedding model (torch): refuse to start a job in a container with less
     # memory than this (MiB), which would be killed part-way. 0 turns the check off.
-    min_memory_mb: int = 900
+    min_memory_mb: int | None = None  # default: 900 with torch, 450 with onnx
 
     # The live index served by the Evidence API (Milestones 11-12).
     live_repository: str | None = None
     live_root: Path | None = None
+
+    @property
+    def required_memory_mb(self) -> int:
+        if self.min_memory_mb is not None:
+            return self.min_memory_mb
+        return 450 if self.embedder_backend == "onnx" else 900
 
     def live_state_dir(self, repository: str) -> Path:
         return self.data_dir / "live_state" / repository
